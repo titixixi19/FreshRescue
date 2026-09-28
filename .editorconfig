@@ -1,0 +1,164 @@
+# FreshRescue — quy ước định dạng & style
+# Visual Studio, VS Code và `dotnet format` đều đọc file này.
+# Sửa file này = sửa luật cho cả nhóm. Đừng chỉnh style trong Options của riêng máy mình.
+
+root = true
+
+# ─────────────────────────────────────────────────────────────
+# Chung cho mọi file
+# ─────────────────────────────────────────────────────────────
+[*]
+charset = utf-8
+end_of_line = crlf
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{json,yml,yaml,csproj,props,targets,config,xml}]
+indent_size = 2
+
+[*.{js,css,html,cshtml}]
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false   # hai dấu cách cuối dòng là xuống dòng trong Markdown
+
+# ─────────────────────────────────────────────────────────────
+# C#
+# ─────────────────────────────────────────────────────────────
+[*.cs]
+indent_size = 4
+max_line_length = 120
+
+# --- using ---
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = false
+csharp_using_directive_placement = outside_namespace:warning
+dotnet_diagnostic.IDE0005.severity = warning          # using thừa
+
+# --- namespace ---
+csharp_style_namespace_declarations = file_scoped:warning
+
+# --- this. ---
+dotnet_style_qualification_for_field = false:warning
+dotnet_style_qualification_for_property = false:warning
+dotnet_style_qualification_for_method = false:warning
+dotnet_style_qualification_for_event = false:warning
+
+# --- kiểu dữ liệu ---
+dotnet_style_predefined_type_for_locals_parameters_members = true:warning   # string, không phải String
+dotnet_style_predefined_type_for_member_access = true:warning
+csharp_style_var_for_built_in_types = false:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = false:suggestion
+
+# --- biểu thức hiện đại ---
+csharp_style_expression_bodied_methods = when_on_single_line:suggestion
+csharp_style_expression_bodied_properties = true:suggestion
+csharp_style_expression_bodied_constructors = false:suggestion
+csharp_prefer_braces = true:warning                  # LUÔN có ngoặc nhọn, kể cả if một dòng
+csharp_style_prefer_switch_expression = true:suggestion
+csharp_style_throw_expression = true:suggestion
+csharp_style_conditional_delegate_call = true:suggestion
+dotnet_style_null_propagation = true:warning
+dotnet_style_coalesce_expression = true:warning
+dotnet_style_object_initializer = true:suggestion
+dotnet_style_collection_initializer = true:suggestion
+dotnet_style_prefer_auto_properties = true:warning
+
+# --- readonly / const ---
+dotnet_style_readonly_field = true:warning
+csharp_prefer_static_local_function = true:suggestion
+
+# --- pattern matching ---
+csharp_style_pattern_matching_over_is_with_cast_check = true:warning
+csharp_style_pattern_matching_over_as_with_null_check = true:warning
+csharp_style_prefer_not_pattern = true:warning
+
+# --- dấu cách ---
+csharp_space_after_cast = false
+csharp_space_after_keywords_in_control_flow_statements = true
+csharp_space_between_method_declaration_parameter_list_parentheses = false
+csharp_space_between_method_call_parameter_list_parentheses = false
+csharp_space_around_binary_operators = before_and_after
+
+# --- xuống dòng ---
+csharp_new_line_before_open_brace = all              # ngoặc mở xuống dòng (kiểu Allman)
+csharp_new_line_before_else = true
+csharp_new_line_before_catch = true
+csharp_new_line_before_finally = true
+csharp_new_line_before_members_in_object_initializers = true
+csharp_new_line_between_query_expression_clauses = true
+
+# --- thụt lề ---
+csharp_indent_case_contents = true
+csharp_indent_switch_labels = true
+csharp_indent_labels = one_less_than_current
+
+# ─────────────────────────────────────────────────────────────
+# Quy tắc đặt tên — phần dễ lệch nhất khi 6 người cùng viết
+# ─────────────────────────────────────────────────────────────
+
+# interface: IPascalCase
+dotnet_naming_rule.interface_phai_bat_dau_bang_I.severity = warning
+dotnet_naming_rule.interface_phai_bat_dau_bang_I.symbols = interface_symbol
+dotnet_naming_rule.interface_phai_bat_dau_bang_I.style = i_pascal_style
+dotnet_naming_symbols.interface_symbol.applicable_kinds = interface
+dotnet_naming_style.i_pascal_style.required_prefix = I
+dotnet_naming_style.i_pascal_style.capitalization = pascal_case
+
+# kiểu & thành viên public: PascalCase
+dotnet_naming_rule.kieu_va_thanh_vien_pascal.severity = warning
+dotnet_naming_rule.kieu_va_thanh_vien_pascal.symbols = types_and_members
+dotnet_naming_rule.kieu_va_thanh_vien_pascal.style = pascal_style
+dotnet_naming_symbols.types_and_members.applicable_kinds = class,struct,enum,property,method,event,namespace,delegate
+dotnet_naming_style.pascal_style.capitalization = pascal_case
+
+# trường private: _camelCase
+dotnet_naming_rule.truong_private_gach_duoi.severity = warning
+dotnet_naming_rule.truong_private_gach_duoi.symbols = private_fields
+dotnet_naming_rule.truong_private_gach_duoi.style = underscore_camel_style
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+dotnet_naming_style.underscore_camel_style.required_prefix = _
+dotnet_naming_style.underscore_camel_style.capitalization = camel_case
+
+# hằng số: PascalCase (KHÔNG dùng SCREAMING_CASE)
+dotnet_naming_rule.hang_so_pascal.severity = warning
+dotnet_naming_rule.hang_so_pascal.symbols = constants
+dotnet_naming_rule.hang_so_pascal.style = pascal_style
+dotnet_naming_symbols.constants.applicable_kinds = field
+dotnet_naming_symbols.constants.required_modifiers = const
+
+# tham số & biến cục bộ: camelCase
+dotnet_naming_rule.tham_so_camel.severity = warning
+dotnet_naming_rule.tham_so_camel.symbols = parameters_locals
+dotnet_naming_rule.tham_so_camel.style = camel_style
+dotnet_naming_symbols.parameters_locals.applicable_kinds = parameter,local
+dotnet_naming_style.camel_style.capitalization = camel_case
+
+# phương thức async: bắt buộc hậu tố Async
+dotnet_naming_rule.async_phai_co_hau_to.severity = warning
+dotnet_naming_rule.async_phai_co_hau_to.symbols = async_methods
+dotnet_naming_rule.async_phai_co_hau_to.style = async_suffix_style
+dotnet_naming_symbols.async_methods.applicable_kinds = method
+dotnet_naming_symbols.async_methods.required_modifiers = async
+dotnet_naming_style.async_suffix_style.required_suffix = Async
+dotnet_naming_style.async_suffix_style.capitalization = pascal_case
+
+# ─────────────────────────────────────────────────────────────
+# Cảnh báo nghiêm — những lỗi thật, không phải chuyện thẩm mỹ
+# ─────────────────────────────────────────────────────────────
+dotnet_diagnostic.CS4014.severity = error    # gọi async mà quên await
+dotnet_diagnostic.CS1998.severity = warning  # async nhưng không có await
+dotnet_diagnostic.CS0168.severity = warning  # khai báo biến rồi không dùng
+dotnet_diagnostic.CS0219.severity = warning
+
+# File sinh tự động (Migrations, gRPC) — miễn kiểm tra style
+[**/Migrations/*.cs]
+generated_code = true
+dotnet_analyzer_diagnostic.severity = none
+
+[**/obj/**.cs]
+generated_code = true

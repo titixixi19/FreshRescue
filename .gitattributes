@@ -1,0 +1,38 @@
+# Chuẩn hoá ký tự xuống dòng.
+# Không có file này, mỗi lần người dùng Windows và người dùng cấu hình khác nhau
+# commit là diff hiện "đổi toàn bộ file" dù không sửa gì.
+
+* text=auto eol=crlf
+
+*.sh    text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+
+*.cs      text diff=csharp
+*.csproj  text
+*.sln     text eol=crlf
+*.props   text
+*.targets text
+*.json    text
+*.md      text
+*.cshtml  text
+*.js      text
+*.css     text
+*.proto   text
+
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.webp binary
+*.gif  binary
+*.ico  binary
+*.pdf  binary
+*.rar  binary
+*.zip  binary
+*.dll  binary
+*.pdb  binary
+
+# Migration do EF sinh — gộp code bằng tay ở đây gần như luôn sai.
+# Xung đột thì tạo lại migration, đừng sửa tay (xem 05-TEAM-RULES.md §3).
+**/Migrations/*.Designer.cs  linguist-generated=true
+**/Migrations/*ModelSnapshot.cs linguist-generated=true

@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Tầng trong cùng: không tham chiếu project hay package nào (06-CODING-STANDARDS.md §3). -->
+
+</Project>

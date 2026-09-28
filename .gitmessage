@@ -1,0 +1,10 @@
+# <loại>(<phạm vi>): <mô tả ngắn, tiếng Việt có dấu, không quá 72 ký tự>
+#
+# Thân bài: giải thích VÌ SAO, không mô tả LÀM GÌ (diff đã nói rồi).
+#
+# Loại:    feat fix refactor test docs chore
+# Phạm vi: auth order offer batch qr odata signalr web db infra
+#
+# Ví dụ:
+#   feat(order): thêm optimistic locking khi đặt hàng
+#   fix(qr): quét lần hai trả 409 thay vì trừ hàng lần nữa

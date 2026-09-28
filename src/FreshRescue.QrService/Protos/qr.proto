@@ -1,0 +1,26 @@
+// Nguồn sự thật: docs/03-API-CONTRACT.md §11. Sửa contract trước, rồi mới sửa file này.
+syntax = "proto3";
+package freshrescue.qr;
+
+option csharp_namespace = "FreshRescue.QrService.Protos";
+
+service QrService {
+  rpc IssueTicket  (IssueTicketRequest)  returns (IssueTicketReply);
+  rpc VerifyTicket (VerifyTicketRequest) returns (VerifyTicketReply);
+}
+
+message IssueTicketRequest {
+  string order_id  = 1;
+  string store_id  = 2;
+  int64  expires_at_unix = 3;
+}
+message IssueTicketReply { string token = 1; }
+
+message VerifyTicketRequest { string token = 1; }
+message VerifyTicketReply {
+  bool   valid     = 1;
+  string order_id  = 2;
+  string store_id  = 3;
+  int64  expires_at_unix = 4;
+  string error_code = 5;   // QR_INVALID_SIGNATURE | QR_EXPIRED
+}

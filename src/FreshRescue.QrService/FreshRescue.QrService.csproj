@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!--
+    Tiến trình riêng, KHÔNG tham chiếu project nào khác và KHÔNG chạm CSDL (03-API-CONTRACT.md §11).
+    Chỉ dịch vụ này giữ khoá bí mật ký QR (OQ-22).
+  -->
+
+  <ItemGroup>
+    <Protobuf Include="Protos\qr.proto" GrpcServices="Server" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Grpc.AspNetCore" />
+  </ItemGroup>
+
+</Project>

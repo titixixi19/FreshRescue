@@ -1,0 +1,12 @@
+{
+  "ConnectionStrings": {
+    "Default": "Server=(localdb)\\MSSQLLocalDB;Database=FreshRescue;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning",
+      "Microsoft.EntityFrameworkCore.Database.Command": "Information"
+    }
+  }
+}

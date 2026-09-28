@@ -1,0 +1,44 @@
+<Project>
+
+  <!--
+    Thiết lập dùng chung cho MỌI project trong solution.
+    Không lặp lại những thuộc tính này trong từng .csproj — đặt ở đây một lần.
+    Xem docs/06-CODING-STANDARDS.md §2.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>12.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <InvariantGlobalization>true</InvariantGlobalization>
+
+    <!--
+      Ghim mức phân tích mã theo 8.0.
+      Máy trong nhóm đang có SDK 9 và 10. Nếu không ghim, mỗi SDK bật thêm một bộ
+      cảnh báo khác nhau, và cùng một dòng code sẽ "sạch" trên máy này nhưng
+      "có cảnh báo" trên máy kia — đúng kiểu không đồng nhất cần tránh.
+    -->
+    <AnalysisLevel>8.0</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+
+    <!--
+      Cố ý KHÔNG bật TreatWarningsAsErrors.
+      Với lịch 5 tuần, dừng build vì một cảnh báo thẩm mỹ là phản tác dụng.
+      Cổng kiểm tra thật nằm ở `dotnet format` (chế độ verify-no-changes) lúc mở PR.
+      Lưu ý: comment XML không được chứa hai dấu gạch liền nhau, nếu không MSBuild báo lỗi.
+    -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningsAsErrors>CS4014</WarningsAsErrors>
+
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- CS1591: thiếu XML comment cho thành viên public — chỉ bật ở project API -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <DebugType>portable</DebugType>
+  </PropertyGroup>
+
+</Project>
