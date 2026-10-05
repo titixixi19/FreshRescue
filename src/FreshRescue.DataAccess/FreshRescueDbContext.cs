@@ -124,6 +124,18 @@ public class FreshRescueDbContext : IdentityDbContext<AppUser, AppRole, Guid>
     {
         var now = _clock.GetUtcNow().UtcDateTime;
 
+        // Remove() trên bảng ISoftDelete thành xoá mềm (OQ-06) — service không phải nhớ, và không
+        // ai lỡ tay xoá cứng làm đơn cũ trỏ vào khoảng không. BR-24 vẫn phải kiểm ở service.
+        foreach (var entry in ChangeTracker.Entries<ISoftDelete>())
+        {
+            if (entry.State == EntityState.Deleted)
+            {
+                entry.State = EntityState.Modified;
+                entry.Entity.IsDeleted = true;
+                entry.Entity.DeletedAt = now;
+            }
+        }
+
         foreach (var entry in ChangeTracker.Entries<IHasCreatedAt>())
         {
             if (entry.State == EntityState.Added)
