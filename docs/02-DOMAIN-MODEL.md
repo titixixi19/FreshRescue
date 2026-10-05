@@ -608,12 +608,16 @@ Ghi ra để không ai "sửa giúp" rồi làm hỏng.
 1. **Chỉ Tùng chạy `Add-Migration`** (`00-PLAN.md` §5.1).
 2. `RowVersion` khai bằng `[Timestamp]` hoặc
    `.IsRowVersion()` — **đừng** tự tạo cột `int Version` rồi tăng tay.
-3. `CHECK (RemainingQuantity >= 0)` thêm qua
-   `migrationBuilder.Sql("ALTER TABLE ... ADD CONSTRAINT ...")`, vì Fluent API không
-   diễn đạt được.
-4. Global Query Filter phải khai **nhất quán**: nếu `Store` có filter mà `Order` không
-   có, EF sẽ cảnh báo về navigation bắt buộc. Truy vấn lịch sử dùng
-   `IgnoreQueryFilters()` (`BR-22`).
+3. `CHECK` khai bằng Fluent API trong file Configuration —
+   `builder.ToTable(t => t.HasCheckConstraint(...))` (EF Core 7 trở lên). Migration tự
+   sinh, **không** viết `migrationBuilder.Sql` tay. Hiện có hai: `CK_Offers_RemainingQuantity`
+   (`BR-01`) và `CK_SaleBatches_TimeOrder` (`BR-15`). *(Sửa 05/10.)*
+4. Global Query Filter **chỉ** khai trên 5 bảng `ISoftDelete` (`BR-22`), **không** lọc theo
+   dây chuyền xuống `Order`, `OrderItem`, `SaleBatch`, `StoreStaff`, `Review`,
+   `FavoriteStore` — đơn của chi nhánh đã xoá vẫn phải còn. EF sẽ cảnh báo 10622 về
+   navigation bắt buộc trỏ tới bảng có filter; cảnh báo này đã được tắt có chủ đích trong
+   `FreshRescueDbContext`. Hệ quả cần nhớ: `Include` tới bản ghi đã xoá mềm sẽ làm mất
+   luôn dòng cha, nên truy vấn lịch sử **bắt buộc** `IgnoreQueryFilters()`. *(Chốt 05/10.)*
 5. `decimal` phải khai rõ độ chính xác, nếu không EF mặc định `decimal(18,2)` và tiền
    VND sẽ mọc ra hai số lẻ vô nghĩa.
 6. Seed data (`OQ-34`) đặt ở `DbSeeder` chạy lúc khởi động, **không** nhét vào

@@ -7,6 +7,7 @@ using FreshRescue.Entities.Ordering;
 using FreshRescue.Entities.Sales;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace FreshRescue.DataAccess;
 
@@ -56,6 +57,14 @@ public class FreshRescueDbContext : IdentityDbContext<AppUser, AppRole, Guid>
     public DbSet<FavoriteStore> FavoriteStores => Set<FavoriteStore>();
 
     public DbSet<Notification> Notifications => Set<Notification>();
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        // Cố ý chỉ lọc 5 bảng ISoftDelete, không lọc bảng phụ thuộc (02 §8.4): đơn của chi nhánh
+        // đã xoá vẫn phải còn. Hệ quả EF cảnh báo đã được xử lý bằng IgnoreQueryFilters (BR-22).
+        optionsBuilder.ConfigureWarnings(w =>
+            w.Ignore(CoreEventId.PossibleIncorrectRequiredNavigationWithQueryFilterInteractionWarning));
+    }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
