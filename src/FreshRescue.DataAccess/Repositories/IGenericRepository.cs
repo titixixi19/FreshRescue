@@ -14,5 +14,6 @@ public interface IGenericRepository<TEntity>
 
     Task AddAsync(TEntity entity, CancellationToken cancellationToken);
 
+    /// <summary>Với bảng <c>ISoftDelete</c>, <c>SaveChangesAsync</c> đổi thành xoá mềm.</summary>
     void Remove(TEntity entity);
 }
