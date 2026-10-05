@@ -75,4 +75,6 @@ public class UnitOfWork : IUnitOfWork
 
     public Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken)
         => _context.Database.BeginTransactionAsync(cancellationToken);
+
+    public void ClearChangeTracker() => _context.ChangeTracker.Clear();
 }
