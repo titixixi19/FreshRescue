@@ -1,6 +1,7 @@
 using FreshRescue.Entities.Catalog;
 using FreshRescue.Entities.Common;
 using FreshRescue.Entities.Enums;
+using FreshRescue.Entities.Ordering;
 
 namespace FreshRescue.Entities.Sales;
 
@@ -46,4 +47,6 @@ public class SaleBatch : BaseEntity, IAuditable
     public Store Store { get; set; } = null!;
 
     public ICollection<Offer> Offers { get; set; } = [];
+
+    public ICollection<Order> Orders { get; set; } = [];
 }
