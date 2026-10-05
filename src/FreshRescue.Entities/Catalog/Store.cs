@@ -1,5 +1,6 @@
 using FreshRescue.Entities.Common;
 using FreshRescue.Entities.Enums;
+using FreshRescue.Entities.Sales;
 
 namespace FreshRescue.Entities.Catalog;
 
@@ -53,4 +54,6 @@ public class Store : BaseEntity, ISoftDelete, IAuditable
     public Brand Brand { get; set; } = null!;
 
     public ICollection<StoreStaff> Staff { get; set; } = [];
+
+    public ICollection<SaleBatch> SaleBatches { get; set; } = [];
 }
