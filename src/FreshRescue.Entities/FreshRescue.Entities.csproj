@@ -1,5 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- Tầng trong cùng: không tham chiếu project hay package nào (06-CODING-STANDARDS.md §3). -->
+  <!--
+    Tầng trong cùng: không tham chiếu project nào, và KHÔNG tham chiếu EF Core
+    (06-CODING-STANDARDS.md §3). Cấu hình cột, khoá, chỉ mục nằm ở DataAccess/Configurations.
+  -->
+
+  <ItemGroup>
+    <!-- Chỉ để AppUser kế thừa IdentityUser<Guid> (02-DOMAIN-MODEL.md §3.1). -->
+    <PackageReference Include="Microsoft.Extensions.Identity.Stores" />
+  </ItemGroup>
 
 </Project>

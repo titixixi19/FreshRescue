@@ -26,6 +26,8 @@
   <ItemGroup Label="Identity + JWT">
     <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.31" />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.31" />
+    <!-- Cho AppUser : IdentityUser<Guid> ở tầng Entities mà không kéo EF Core vào tầng đó. -->
+    <PackageVersion Include="Microsoft.Extensions.Identity.Stores" Version="8.0.31" />
   </ItemGroup>
 
   <ItemGroup Label="API">
