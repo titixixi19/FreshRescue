@@ -11,6 +11,7 @@ using FreshRescue.Entities.Sales;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Moq;
 
 namespace FreshRescue.Tests.Ordering;
@@ -166,7 +167,10 @@ public class OrderServiceTests
             mapper,
             currentUser.Object,
             new FixedTimeProvider(_now),
-            NullLogger<OrderService>.Instance);
+            NullLogger<OrderService>.Instance,
+            // InMemory không chạy được SQL khoá dòng của chế độ Pessimistic; hai chế độ chỉ khác
+            // nhau ở bước nạp offer, phần quy tắc nghiệp vụ dùng chung.
+            Options.Create(new OrderingOptions { LockingStrategy = OfferLockingStrategy.Optimistic }));
     }
 
     private async Task SeedExistingOrderAsync(OrderStatus status, int quantity)
