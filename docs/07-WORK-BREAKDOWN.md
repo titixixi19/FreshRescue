@@ -160,7 +160,7 @@ CRUD Store chạy end-to-end.
 
 | Người | Mã | Việc | Liên quan | pd |
 | --- | --- | --- | --- | --- |
-| **Tùng** | `T4-TUNG-01` | **`POST /orders`: transaction + optimistic locking + retry 3 lần + `409`** | `NFR-01`, `BR-01`…`BR-06` | 2.5 |
+| **Tùng** | `T4-TUNG-01` | **`POST /orders`: transaction + pessimistic locking (mặc định) + optimistic + retry 3 lần (để so sánh) + `409`** | `NFR-01`, `BR-01`…`BR-06` | 2.5 |
 | **Tùng** | `T4-TUNG-02` | Sắp `Offer` theo `Id` chống deadlock + kiểm giới hạn mua cộng dồn | `02` §6.2, `BR-06` | 0.5 |
 | **Tùng** | `T4-TUNG-03` | Thanh toán mock + cấp `QrTicket` (gọi gRPC) | `OQ-17`, `FR-C07` | 0.5 |
 | **Tùng** | `T4-TUNG-04` | **`POST /staff/redemptions` idempotent** | `BR-08`, `BR-09`, `BR-10` | 1.0 |

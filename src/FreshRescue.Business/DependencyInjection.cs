@@ -23,6 +23,7 @@ public static class DependencyInjection
         // --- Sales (Quang Huy) ---
 
         // --- Ordering + Redemption (Tùng) ---
+        services.AddOptions<OrderingOptions>().BindConfiguration(OrderingOptions.SectionName);
         services.AddScoped<IOrderService, OrderService>();
 
         return services;

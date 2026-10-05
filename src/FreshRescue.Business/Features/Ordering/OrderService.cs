@@ -6,6 +6,7 @@ using FreshRescue.Entities.Enums;
 using FreshRescue.Entities.Ordering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace FreshRescue.Business.Features.Ordering;
 
@@ -27,19 +28,22 @@ public class OrderService : IOrderService
     private readonly ICurrentUser _currentUser;
     private readonly TimeProvider _clock;
     private readonly ILogger<OrderService> _logger;
+    private readonly OrderingOptions _options;
 
     public OrderService(
         IUnitOfWork uow,
         IMapper mapper,
         ICurrentUser currentUser,
         TimeProvider clock,
-        ILogger<OrderService> logger)
+        ILogger<OrderService> logger,
+        IOptions<OrderingOptions> options)
     {
         _uow = uow;
         _mapper = mapper;
         _currentUser = currentUser;
         _clock = clock;
         _logger = logger;
+        _options = options.Value;
     }
 
     public async Task<OrderDto> CreateAsync(CreateOrderRequest request, CancellationToken cancellationToken)
@@ -48,6 +52,7 @@ public class OrderService : IOrderService
             ?? throw new InvalidOperationException("POST /orders phải yêu cầu đăng nhập.");
 
         // NFR-01: tranh chấp tồn kho → nạp lại và thử lại, tối đa 3 lần (02-DOMAIN-MODEL.md §6.1).
+        // Chỉ xảy ra ở chế độ Optimistic; chế độ Pessimistic xếp hàng chờ khoá nên không xung đột.
         for (var attempt = 1; ; attempt++)
         {
             try
@@ -99,13 +104,13 @@ public class OrderService : IOrderService
 
         var offerIds = request.Items.Select(i => i.OfferId).ToList();
 
+        var loaded = _options.LockingStrategy == OfferLockingStrategy.Pessimistic
+            ? await _uow.Offers.GetForUpdateAsync(offerIds, cancellationToken)
+            : await _uow.Offers.Query().Where(o => offerIds.Contains(o.Id)).ToListAsync(cancellationToken);
+
         // 02 §6.2: luôn xử lý offer theo Id tăng dần. Hai đơn khoá cùng các dòng theo thứ tự khác
         // nhau sẽ deadlock. Sắp ở bộ nhớ để dùng đúng phép so sánh Guid mà EF dùng khi xếp lệnh UPDATE.
-        var offers = (await _uow.Offers.Query()
-                .Where(o => offerIds.Contains(o.Id))
-                .ToListAsync(cancellationToken))
-            .OrderBy(o => o.Id)
-            .ToList();
+        var offers = loaded.OrderBy(o => o.Id).ToList();
 
         if (offers.Count != offerIds.Count)
         {

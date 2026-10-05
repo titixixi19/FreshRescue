@@ -35,7 +35,7 @@ public interface IUnitOfWork
 
     IGenericRepository<SaleBatch> SaleBatches { get; }
 
-    IGenericRepository<Offer> Offers { get; }
+    IOfferRepository Offers { get; }
 
     IGenericRepository<Order> Orders { get; }
 

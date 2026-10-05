@@ -21,7 +21,7 @@ public class UnitOfWork : IUnitOfWork
     private IGenericRepository<Category>? _categories;
     private IGenericRepository<OfferTemplate>? _offerTemplates;
     private IGenericRepository<SaleBatch>? _saleBatches;
-    private IGenericRepository<Offer>? _offers;
+    private IOfferRepository? _offers;
     private IGenericRepository<Order>? _orders;
     private IGenericRepository<OrderItem>? _orderItems;
     private IGenericRepository<QrTicket>? _qrTickets;
@@ -52,7 +52,7 @@ public class UnitOfWork : IUnitOfWork
 
     public IGenericRepository<SaleBatch> SaleBatches => _saleBatches ??= new GenericRepository<SaleBatch>(_context);
 
-    public IGenericRepository<Offer> Offers => _offers ??= new GenericRepository<Offer>(_context);
+    public IOfferRepository Offers => _offers ??= new OfferRepository(_context);
 
     public IGenericRepository<Order> Orders => _orders ??= new GenericRepository<Order>(_context);
 
