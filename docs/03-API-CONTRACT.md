@@ -323,7 +323,7 @@ nghiệp vụ trả `BRAND_NOT_APPROVED` cho tới khi Admin duyệt.
 | `PURCHASE_LIMIT_EXCEEDED` | "Mỗi người chỉ mua tối đa 3 suất" |
 | `OFFER_CROSS_BATCH` | Lỗi lập trình phía client, không phải lỗi người dùng |
 | `CONCURRENCY_CONFLICT` | "Hệ thống đang bận" — cho phép thử lại |
-| `VALIDATION_FAILED` | Ví dụ đơn quá **20 mặt hàng** trong `items` — client nên chặn trước khi gửi |
+| `VALIDATION_FAILED` | `items` sai định dạng — client nên chặn trước khi gửi: từ **1 đến 20** dòng, mỗi `offerId` **chỉ một dòng** (không gộp), `quantity` từ **1 đến 10** |
 
 ### 4.2. `POST /orders/{id}/payment`
 
