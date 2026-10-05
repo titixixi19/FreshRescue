@@ -9,7 +9,7 @@ namespace FreshRescue.Entities.Engagement;
 /// Khiếu nại sau khi nhận hàng: chỉ đơn Redeemed, trong 2 giờ kể từ RedeemedAt, mỗi đơn một
 /// khiếu nại (BR-17). Chỉ SystemAdmin được duyệt / từ chối (OQ-25).
 /// </summary>
-public class Dispute : BaseEntity
+public class Dispute : BaseEntity, IAuditable
 {
     public Guid OrderId { get; set; }
 
@@ -35,6 +35,11 @@ public class Dispute : BaseEntity
     public Guid? ResolvedByUserId { get; set; }
 
     public DateTime? ResolvedAt { get; set; }
+
+    /// <summary>Để Admin xếp hàng đợi khiếu nại theo thời gian.</summary>
+    public DateTime CreatedAt { get; set; }
+
+    public DateTime? UpdatedAt { get; set; }
 
     public Order Order { get; set; } = null!;
 

@@ -7,7 +7,7 @@ namespace FreshRescue.Entities.Ordering;
 /// Một đơn có nhiều bản ghi: lần thanh toán hỏng, lần thành công, và bản ghi ÂM khi hoàn tiền
 /// (BR-21). Số dư thực = SUM(Amount) của các bản ghi <see cref="PaymentStatus.Succeeded"/>.
 /// </summary>
-public class Payment : BaseEntity
+public class Payment : BaseEntity, IHasCreatedAt
 {
     public Guid OrderId { get; set; }
 

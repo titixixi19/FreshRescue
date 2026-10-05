@@ -27,6 +27,9 @@ public class Brand : BaseEntity, ISoftDelete, IAuditable
 
     public Guid? ApprovedByUserId { get; set; }
 
+    /// <summary>Lý do của lần từ chối / khoá gần nhất — lần sau ghi đè lần trước.</summary>
+    public string? StatusReason { get; set; }
+
     public bool IsDeleted { get; set; }
 
     public DateTime? DeletedAt { get; set; }

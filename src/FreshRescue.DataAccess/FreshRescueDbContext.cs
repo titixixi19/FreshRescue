@@ -39,13 +39,17 @@ public class FreshRescueDbContext : DbContext
     {
         var now = _clock.GetUtcNow().UtcDateTime;
 
-        foreach (var entry in ChangeTracker.Entries<IAuditable>())
+        foreach (var entry in ChangeTracker.Entries<IHasCreatedAt>())
         {
             if (entry.State == EntityState.Added)
             {
                 entry.Entity.CreatedAt = now;
             }
-            else if (entry.State == EntityState.Modified)
+        }
+
+        foreach (var entry in ChangeTracker.Entries<IAuditable>())
+        {
+            if (entry.State == EntityState.Modified)
             {
                 entry.Entity.UpdatedAt = now;
             }

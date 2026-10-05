@@ -7,7 +7,7 @@ namespace FreshRescue.Entities.Engagement;
 /// <summary>
 /// Thông báo trong ứng dụng — không có push (DeviceToken đã bỏ 28/09, 00-PLAN.md §0).
 /// </summary>
-public class Notification : BaseEntity
+public class Notification : BaseEntity, IHasCreatedAt
 {
     public Guid UserId { get; set; }
 

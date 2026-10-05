@@ -40,6 +40,9 @@ public class SaleBatch : BaseEntity, IAuditable
     /// <summary>Chốt lúc đóng đợt, phục vụ số liệu ESG (OQ-15).</summary>
     public int? TotalUnsoldQuantity { get; set; }
 
+    /// <summary>Bắt buộc khi huỷ cả đợt (BR-23).</summary>
+    public string? CancelReason { get; set; }
+
     public DateTime CreatedAt { get; set; }
 
     public DateTime? UpdatedAt { get; set; }

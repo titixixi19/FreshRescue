@@ -9,7 +9,7 @@ namespace FreshRescue.Entities.Engagement;
 /// Đánh giá gắn vào đơn, quy về chi nhánh (OQ-28). Chỉ đơn Redeemed, mỗi đơn đúng một đánh giá
 /// (BR-12) — <see cref="OrderId"/> unique.
 /// </summary>
-public class Review : BaseEntity
+public class Review : BaseEntity, IHasCreatedAt
 {
     public Guid OrderId { get; set; }
 

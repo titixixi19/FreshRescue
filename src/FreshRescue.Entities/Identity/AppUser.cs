@@ -1,3 +1,4 @@
+using FreshRescue.Entities.Common;
 using Microsoft.AspNetCore.Identity;
 
 namespace FreshRescue.Entities.Identity;
@@ -6,7 +7,7 @@ namespace FreshRescue.Entities.Identity;
 /// Một user có thể mang nhiều role cùng lúc (OQ-03) — ví dụ nhân viên cửa hàng vẫn đi mua
 /// túi mù ở chỗ khác. Vai trò lưu ở bảng AspNetUserRoles của Identity.
 /// </summary>
-public class AppUser : IdentityUser<Guid>
+public class AppUser : IdentityUser<Guid>, IHasCreatedAt
 {
     public AppUser()
     {
