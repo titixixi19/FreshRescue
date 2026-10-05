@@ -1,7 +1,7 @@
 # FreshRescue — Phân tích yêu cầu
 
 > Nguồn: `../PRN232.md` · Kế hoạch: `00-PLAN.md`
-> Cập nhật: 2026-09-28 — cắt `FR-C08`, `FR-C14` do bỏ PRM393 (`00-PLAN.md` §0)
+> Cập nhật: 2026-09-29 — thêm Import/Export (`FR-B07`, `FR-B08`, `FR-A07`) và `NFR-09` theo yêu cầu báo cáo cuối kỳ (`08-REPORT-REQUIREMENTS.md`)
 >
 > Tài liệu này là **cơ sở chung để cả nhóm hiểu giống nhau** trước khi vẽ ERD.
 > Mọi mục đều có mã (FR/BR/NFR) để tham chiếu trong contract, code và báo cáo.
@@ -217,6 +217,8 @@ cứu 35k), *"Hộp cơm cá hồi"* (giảm 50%)… kèm ảnh và mô tả chu
 | FR-B04 | **CRUD `OfferTemplate`** — chuẩn hoá mặt hàng toàn chuỗi | Bắt buộc |
 | FR-B05 | Xem / tạo / sửa đợt bán của **mọi chi nhánh thuộc brand mình** | Bắt buộc |
 | FR-B06 | Thống kê theo chi nhánh — **rút gọn còn 2 biểu đồ**: doanh thu và số suất đã cứu. Định nghĩa số liệu ở `BR-25` | Nên có |
+| FR-B07 | **Import `OfferTemplate` từ file Excel**: tải file mẫu, điền, tải lên. Quy tắc ở `BR-26` | Bắt buộc *(yêu cầu báo cáo)* |
+| FR-B08 | **Export đơn hàng + thống kê** của thương hiệu ra Excel, lọc theo khoảng ngày. Quy tắc ở `BR-27` | Bắt buộc *(yêu cầu báo cáo)* |
 
 ### 6.4. System Admin
 
@@ -226,6 +228,7 @@ cứu 35k), *"Hộp cơm cá hồi"* (giảm 50%)… kèm ảnh và mô tả chu
 | FR-A02 | Quản lý người dùng và vai trò | Bắt buộc |
 | FR-A03 | Quản lý danh mục (Bánh ngọt, Đồ mặn, Đồ chay…) | Bắt buộc |
 | FR-A04 | **Duyệt / từ chối khiếu nại**; duyệt thì kích hoạt hoàn tiền | Nên có |
+| FR-A07 | **Export đơn hàng toàn sàn** ra Excel, lọc theo khoảng ngày (`BR-27`) | Bắt buộc *(yêu cầu báo cáo)* |
 | ~~FR-A05~~ | ~~Thống kê toàn sàn~~ — **đã cắt 17/09**, xem `00-PLAN.md` §1.2 | ❌ |
 | ~~FR-A06~~ | ~~Nhật ký đối soát~~ — **đã cắt**; `NFR-05` vẫn được thoả bằng 2 cột trên `QrTicket` | ❌ |
 
@@ -282,6 +285,8 @@ unit test nhất.
 | **BR-23** | Huỷ cả đợt bán (`SaleBatch → Cancelled`) kéo theo: huỷ mọi đơn `PendingPayment` (trả tồn kho) **và** mọi đơn `Paid` (hoàn 100%, `CancelledBy = Store`), dùng lại đúng luồng `BR-16`. **Chỉ Brand Manager** được huỷ đợt, bắt buộc nhập lý do. Đợt đã có đơn `Redeemed` thì **không** huỷ được nữa |
 | **BR-24** | **Cấm xoá `Offer` đã có `OrderItem`.** Muốn ngừng bán giữa chừng thì đặt `RemainingQuantity = 0`. *Xoá mềm sẽ bị Global Query Filter giấu đi, khiến đơn cũ trỏ vào khoảng không* |
 | **BR-25** | Định nghĩa số liệu cho `FR-B06`: **doanh thu** = `SUM(StorePayoutAmount)` của đơn `Status IN (Redeemed, NoShow)` **và** `RefundStatus = None`; **số suất đã cứu** = `SUM(OrderItem.Quantity)` của đơn `Redeemed`. *Không định nghĩa rõ thì hai biểu đồ sẽ đếm cả đơn đã hoàn tiền* |
+| **BR-26** | *(Đề xuất 29/09 — chờ nhóm duyệt)* Import `OfferTemplate` là **tất cả hoặc không**: mỗi dòng được kiểm y như `POST /brand/offer-templates`, kể cả `BR-07`; chỉ cần **một** dòng sai là không nhập dòng nào, trả `400 VALIDATION_FAILED` kèm lỗi theo số dòng. Chỉ nhận `.xlsx` ≤ 5 MB, tối đa 200 dòng. Mẫu nhập vào luôn thuộc `brand_id` trong token (`BR-11`). *Nhập được một nửa thì Brand Manager không biết dòng nào đã vào, dòng nào chưa — sửa file rồi nhập lại sẽ sinh bản trùng* |
+| **BR-27** | *(Đề xuất 29/09 — chờ nhóm duyệt)* Export chỉ gồm đơn trong phạm vi quyền: Brand Manager chỉ thấy chi nhánh của mình (`BR-11`), Admin thấy toàn sàn. Truy vấn phải `IgnoreQueryFilters()` (`BR-22`) để đơn của chi nhánh đã xoá vẫn có mặt. Cột thời gian trong file đổi sang **giờ Việt Nam (UTC+7)** và ghi rõ ở tiêu đề cột — file Excel là để người đọc, không phải để máy đọc lại (`OQ-33` chỉ áp cho API JSON) |
 
 ### 7.1. Mô hình trạng thái đơn hàng
 
@@ -318,6 +323,7 @@ RefundStatus: None | Refunded                            ← trường riêng, k
 | NFR-06 | Mọi API danh sách đều phân trang, trả `PagedResponse<T>` | Contract |
 | NFR-07 | Swagger đầy đủ mô tả, có Authorize | Mở Swagger |
 | NFR-08 | API danh sách phản hồi < 500 ms với seed data | Đo tay |
+| NFR-09 | **Mọi bảng có ít nhất 20 bản ghi** sau khi seed *(yêu cầu báo cáo cuối kỳ)*. Ngoại lệ không tránh được: `AspNetRoles` chỉ có 4 role cố định (`02-DOMAIN-MODEL.md` §3.1) | `SELECT COUNT(*)` từng bảng |
 
 ---
 
@@ -398,7 +404,7 @@ Bối cảnh và lý lẽ đầy đủ ở `04-OPEN-QUESTIONS.md`. Đây là b�
 | **OQ-31** | Web Client = **toàn bộ nghiệp vụ quản trị** (Admin/Brand/Staff) + **1 storefront + Quick Checkout** cho khách. Bản đồ, vé offline, push **không làm** — không có app di động (28/09) |
 | **OQ-32** | Quét QR trên web bằng **HTML5-QRCode qua webcam**, luôn kèm ô nhập mã 8 ký tự làm dự phòng |
 | **OQ-33** | **Lưu UTC** trong DB. API nhận/trả ISO-8601 có offset. Client tự đổi sang UTC+7 khi hiển thị |
-| **OQ-34/35** | Seed theo mặc định §9 của `04-OPEN-QUESTIONS.md`. Web chỉ tiếng Việt |
+| **OQ-34/35** | Seed **ít nhất 20 bản ghi cho mọi bảng** (`NFR-09`, đổi 29/09 — mặc định cũ ở `04-OPEN-QUESTIONS.md` không còn đủ). Web chỉ tiếng Việt |
 
 ### 9.3. Hai điều chỉnh so với bản chốt gốc — và vì sao
 
@@ -464,3 +470,4 @@ Ba cách xử lý và lý do chọn:
 | Ch.09 **gRPC** | Dịch vụ cấp & xác thực QR (`FR-C07`, `FR-S05`) |
 | Ch.10 Microservices | QrService tách tiến trình riêng |
 | *Ngoài chương trình* | Concurrency (`NFR-01`), BackgroundService (`FR-X01…X06`), SignalR (`FR-X06`) |
+| *Yêu cầu báo cáo cuối kỳ* | Import/Export (`FR-B07`, `FR-B08`, `FR-A07`) · search & sort (OData `$filter`, `$orderby=a,b desc`) · đăng ký / đăng nhập / reset password (`FR-C01`, `OQ-04`) · ≥ 20 bản ghi mỗi bảng (`NFR-09`) |

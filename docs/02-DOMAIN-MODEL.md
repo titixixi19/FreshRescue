@@ -608,7 +608,9 @@ Ghi ra để không ai "sửa giúp" rồi làm hỏng.
    VND sẽ mọc ra hai số lẻ vô nghĩa.
 6. Seed data (`OQ-34`) đặt ở `DbSeeder` chạy lúc khởi động, **không** nhét vào
    `HasData()` — dữ liệu demo có thời gian tương đối (đợt bán "tối nay"), mà `HasData`
-   yêu cầu giá trị tĩnh.
+   yêu cầu giá trị tĩnh. **Mọi bảng ít nhất 20 bản ghi** (`NFR-09`) — kể cả `Category`,
+   `StoreStaff`, `Dispute`, `RefreshToken`. `Brand` 1–1 `BrandManager` nên 20 brand kéo
+   theo 20 tài khoản Brand Manager.
 
 > Điểm số 6 đáng lưu ý: nếu seed đợt bán bằng `HasData` với thời gian cố định, thì tới
 > hôm demo mọi đợt bán đều đã hết hạn từ đời nào. Seed phải tính theo `DateTime.UtcNow`

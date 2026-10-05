@@ -106,6 +106,7 @@ Swagger: `https://localhost:7001/swagger`
 | [`docs/05-TEAM-RULES.md`](docs/05-TEAM-RULES.md) | Luật Git, nhánh, commit, PR, review |
 | [`docs/06-CODING-STANDARDS.md`](docs/06-CODING-STANDARDS.md) | Khuôn mẫu code, cấu trúc thư mục, "một việc — một cách" |
 | [`docs/07-WORK-BREAKDOWN.md`](docs/07-WORK-BREAKDOWN.md) | Phân công 6 người theo tuần, mã việc, đường găng |
+| [`docs/08-REPORT-REQUIREMENTS.md`](docs/08-REPORT-REQUIREMENTS.md) | Khung báo cáo cuối kỳ của giảng viên, ai viết mục nào, checklist trước khi nộp |
 
 **Người mới vào nhóm:** đọc `docs/05-TEAM-RULES.md` §0 và `docs/06-CODING-STANDARDS.md` §4–§7 trước.
 

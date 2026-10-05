@@ -35,22 +35,26 @@ dùng chung** và **quyền ghi chéo lát** — đọc **§12 trước khi bắ
 
 | Người | pd/tuần | T2 | T3 | T4 | T5 | T6 | **Tổng** |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Tùng | 3.5 | 2.0 | 3.75 | 4.5 | 3.0 | 2.0 | **15.25** |
-| Hiếu | 3.0 | 1.0 | 3.0 | 3.0 | 2.75 | 3.0 | **12.75** |
-| TV3 | 2.5 | 1.0 | 2.5 | 2.5 | 2.5 | 2.0 | **10.5** |
+| Tùng | 3.5 | 2.0 | 3.75 | 4.5 | 3.0 | 2.5 | **15.75** |
+| Hiếu | 3.0 | 1.0 | 3.0 | 3.0 | ⚠️ 3.75 | 3.0 | **13.75** |
+| TV3 | 2.5 | 1.0 | 2.5 | ⚠️ 3.0 | ⚠️ 3.5 | 2.0 | **12.0** |
 | TV4 | 2.5 | 1.0 | 2.5 | 2.5 | 2.5 | 2.0 | **10.5** |
-| TV5 | 2.5 | 1.0 | 2.5 | 2.5 | 2.5 | 2.0 | **10.5** |
-| TV6 | 2.0 | 0.5 | 1.5 | 2.0 | 2.0 | 2.5 | **8.5** |
-| | | **6.5** | **15.75** | **17.0** | **15.25** | **13.5** | **68.0** |
+| TV5 | 2.5 | 1.0 | 2.5 | 2.5 | ⚠️ 3.0 | 2.0 | **11.0** |
+| TV6 | 2.0 | 0.5 | 1.5 | 2.0 | ⚠️ 3.5 | 2.5 | **10.0** |
+| | | **6.5** | **15.75** | **17.5** | **19.25** | **14.0** | **73.0** |
 
-Phạm vi tính năng là **~61.5 pd** (`00-PLAN.md` §1.2, sau khi bỏ PRM393). Phân công
-**68 pd** — phần chênh ~6.5 pd là quỹ cho sửa lỗi và làm lại, thứ không nằm trong ước
-lượng tính năng.
+Phạm vi tính năng là **~66.5 pd** (`00-PLAN.md` §1.3, sau khi thêm yêu cầu báo cáo ngày
+29/09). Phân công **73 pd** — phần chênh ~6.5 pd là quỹ cho sửa lỗi và làm lại.
+
+> ⚠️ **Tuần 5 vượt sức: 19.25 pd trên ~16 pd/tuần.** Các ô ⚠️ là người bị xếp quá sức
+> tuần đó (Hiếu +0.75, TV3 +0.5 ở T4 và +1.0 ở T5, TV5 +0.5, TV6 +1.5). Việc mới đều phải
+> xong trước phong toả 13/10 nên không đẩy sang T6 được. Cần chốt ở buổi họp Chủ Nhật:
+> cắt theo §11, hoặc Tùng nhận bớt (T5 còn trống ~0.5 pd).
 
 Tùng gánh nhiều nhất vì ôm cả nền móng lẫn phần khó nhất. Bù lại, phần lớn công của Tùng
 dồn vào Tuần 2–4; từ Tuần 5 chuyển sang review và hỗ trợ.
 
-**Tuần 4 là tuần nặng nhất (17 pd).** Đừng xếp thêm gì vào đó.
+**Tuần 5 giờ là tuần nặng nhất (19.25 pd)**, rồi tới Tuần 4 (17.5 pd). Đừng xếp thêm gì vào hai tuần này.
 
 ---
 
@@ -149,7 +153,7 @@ CRUD Store chạy end-to-end.
 
 ---
 
-## 6. Tuần 4 · 30/09–06/10 — Nghiệp vụ lõi *(17 pd — nặng nhất)*
+## 6. Tuần 4 · 30/09–06/10 — Nghiệp vụ lõi *(17.5 pd)*
 
 | Người | Mã | Việc | Liên quan | pd |
 | --- | --- | --- | --- | --- |
@@ -162,6 +166,7 @@ CRUD Store chạy end-to-end.
 | **Hiếu** | `T4-HIEU-03` | `NoShowService` + thứ tự chạy trước khi đóng đợt | `FR-X04`, `01` §6.5 | 1.0 |
 | **TV3** | `T4-TV3-01` | CRUD `OfferTemplate` + validate biên độ giá hai tầng | `FR-B04`, `BR-07` | 1.0 |
 | **TV3** | `T4-TV3-02` | **OData** `/odata/Stores` + `/odata/Offers` | `03` §9 | 1.5 |
+| **TV3** | `T4-TV3-03` | Mở rộng seed pha 1 lên **≥ 20 bản ghi mỗi bảng**: 20 brand + 20 Brand Manager, ≥ 20 chi nhánh, 20 danh mục, ≥ 25 mẫu hàng, ≥ 20 nhân viên | `NFR-09` | 0.5 |
 | **TV4** | `T4-TV4-01` | Storefront nối API thật + lọc + chi tiết offer | `FR-C03` | 1.0 |
 | **TV4** | `T4-TV4-02` | **Quick Checkout: đặt → thanh toán → hiện QR** | `01` §9.3 | 1.5 |
 | **TV5** | `T4-TV5-01` | Màn Staff: tạo đợt bán 4 bước + quản lý offer | `FR-S02`, `FR-S03` | 1.5 |
@@ -175,7 +180,7 @@ không âm. Quét QR lần hai trả `409`.
 
 ---
 
-## 7. Tuần 5 · 07–13/10 — Rubric + phong toả tính năng *(15.25 pd)*
+## 7. Tuần 5 · 07–13/10 — Rubric + phong toả tính năng *(19.25 pd — vượt sức, xem §2)*
 
 | Người | Mã | Việc | Liên quan | pd |
 | --- | --- | --- | --- | --- |
@@ -185,28 +190,32 @@ không âm. Quét QR lần hai trả `409`.
 | **Hiếu** | `T5-HIEU-01` | **SignalR `OfferHub`** + bắn `OfferQuantityChanged` từ luồng đặt hàng | `FR-X06`, `03` §10 | 1.5 |
 | **Hiếu** | `T5-HIEU-02` | `NotificationDispatcher` + bảng `Notification` (thông báo trong ứng dụng, không push) | `FR-X05`, `FR-C13` | 0.75 |
 | **Hiếu** | `T5-HIEU-03` | Yêu thích cửa hàng | `FR-C12` | 0.5 |
+| **Hiếu** | `T5-HIEU-04` | **Export đơn + thống kê ra Excel** cho Brand và Admin (ClosedXML) — chỉ đọc, không ghi `Order` | `FR-B08`, `FR-A07`, `BR-27` | 1.0 |
 | **TV3** | `T5-TV3-01` | Khiếu nại + hoàn tiền: khách gửi, Admin duyệt/từ chối | `FR-C15`, `FR-A04`, `BR-17` | 1.5 |
 | **TV3** | `T5-TV3-02` | Content negotiation JSON + XML | Ch.03 | 0.5 |
 | **TV3** | `T5-TV3-03` | Đánh giá + cập nhật `RatingAverage` bằng một câu SQL | `FR-C11`, `BR-12` | 0.5 |
+| **TV3** | `T5-TV3-04` | **Import `OfferTemplate` từ Excel** + file mẫu tải về (ClosedXML) | `FR-B07`, `BR-26` | 1.0 |
 | **TV4** | `T5-TV4-01` | Lịch sử đơn + trạng thái + huỷ đơn | `FR-C09`, `FR-C10` | 1.0 |
 | **TV4** | `T5-TV4-02` | Gửi đánh giá + khiếu nại kèm ảnh (dùng endpoint upload chung) | `FR-C11`, `FR-C15`, `OQ-09` | 1.5 |
 | **TV5** | `T5-TV5-01` | **Trang demo AJAX + SignalR JS** — realtime số suất còn lại (Ch.07) | `FR-X06` | 1.5 |
 | **TV5** | `T5-TV5-02` | **Quét QR bằng webcam (HTML5-QRCode)** + ô nhập mã thủ công | `OQ-32`, `FR-S06` | 1.0 |
+| **TV5** | `T5-TV5-03` | Nút Import (tải lên + hiện lỗi theo dòng) và Export trên dashboard | `FR-B07`, `FR-B08`, `FR-A07` | 0.5 |
 | **TV6** | `T5-TV6-01` | Endpoint upload ảnh dùng chung | `OQ-09` | 1.0 |
-| **TV6** | `T5-TV6-02` | `DbSeeder` **pha 2 — dữ liệu giao dịch**: đợt bán + đơn hàng, sinh bằng **cách gọi service thật**, nên đồng thời là bài kiểm tra tích hợp (§12.2) | `OQ-34` | 0.5 |
-| **TV6** | `T5-TV6-03` | **Xuất Postman collection** | | 0.5 |
+| **TV6** | `T5-TV6-02` | `DbSeeder` **pha 2 — dữ liệu giao dịch**: đợt bán + đơn hàng, sinh bằng **cách gọi service thật**, nên đồng thời là bài kiểm tra tích hợp (§12.2). **≥ 20 bản ghi mỗi bảng** giao dịch | `OQ-34`, `NFR-09` | 1.0 |
+| **TV6** | `T5-TV6-03` | **Deploy** API + Web Client + QrService (thử HTTP/2 cho gRPC ngay đầu tuần) + xuất Postman collection | `00-PLAN` §1.1 | 1.5 |
 
 **Chốt 13/10: PHONG TOẢ TÍNH NĂNG.** Từ đây chỉ commit `fix`, không `feat`.
 Ai muốn thêm gì thì ghi vào mục "hướng phát triển" của báo cáo.
 
 ---
 
-## 8. Tuần 6 · 14–20/10 — Kiểm thử, tài liệu, nộp *(13.5 pd)*
+## 8. Tuần 6 · 14–20/10 — Kiểm thử, tài liệu, nộp *(14 pd)*
 
 | Người | Mã | Việc | pd |
 | --- | --- | --- | --- |
 | **Tùng** | `T6-TUNG-01` | **Load test** k6/script C# + lấy số liệu so sánh optimistic vs pessimistic | 1.0 |
 | **Tùng** | `T6-TUNG-02` | **Kịch bản demo 10 phút** + chạy thử đủ 2 lần với dữ liệu sạch | 1.0 |
+| **Tùng** | `T6-TUNG-03` | **ERD kiểu Chen** + bảng chuyển ERD → schema theo mẫu của cô + ảnh thiết kế và dữ liệu 17 bảng | 0.5 |
 | **Hiếu** | `T6-HIEU-01` | **Tổng hợp báo cáo** — ghép phần của 6 người, thống nhất giọng văn, mục lục | 2.0 |
 | **Hiếu** | `T6-HIEU-02` | Sửa lỗi phát sinh | 1.0 |
 | **TV3** | `T6-TV3-01` | Viết phần báo cáo của mình + sửa lỗi | 2.0 |
@@ -217,20 +226,8 @@ Ai muốn thêm gì thì ghi vào mục "hướng phát triển" của báo cáo
 
 ### Phân công báo cáo
 
-| Chương | Người |
-| --- | --- |
-| Giới thiệu đề tài, bối cảnh, mô hình kinh doanh | TV4 |
-| Phân tích yêu cầu, use case, sơ đồ vai trò | TV5 |
-| Thiết kế CSDL, ERD, máy trạng thái | Tùng |
-| Kiến trúc hệ thống, N-Tier, Repository/UoW | Tùng |
-| Bảo mật: JWT, Refresh Token, phân quyền đa cấp | Hiếu |
-| **Xử lý đồng thời — optimistic vs pessimistic, có số liệu** | Tùng |
-| Tiến trình nền, SignalR realtime | Hiếu |
-| OData, content negotiation | TV3 |
-| gRPC & hướng microservice | TV6 |
-| Web Client & tích hợp AJAX | TV5 |
-| Kiểm thử & kết quả load test | TV6 |
-| Hạn chế và hướng phát triển | Hiếu tổng hợp |
+Báo cáo viết **bằng tiếng Anh**, theo đúng khung của cô. Ai viết mục nào: xem
+`08-REPORT-REQUIREMENTS.md` §2.
 
 **Chốt 20/10: NỘP.** API đóng băng.
 

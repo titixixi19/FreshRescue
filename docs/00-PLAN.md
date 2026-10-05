@@ -1,7 +1,7 @@
 # FreshRescue — Kế hoạch triển khai PRN232
 
 > Tài liệu gốc ý tưởng: `../PRN232.md`
-> Cập nhật: 2026-09-28 — bỏ PRM393, xem §0
+> Cập nhật: 2026-09-29 — thêm yêu cầu báo cáo cuối kỳ (§1.3); 28/09 bỏ PRM393 (§0)
 > Mục tiêu nộp PRN232: **cuối Tuần 6 — 20/10/2026**
 
 ---
@@ -23,6 +23,7 @@ song song. **Nhóm đã bỏ phương án đó.** Giao diện duy nhất để d
 Hệ quả:
 
 - Không còn nhóm mobile chờ API → **bỏ** deploy bản dev ở Tuần 3 và gói bàn giao ở Tuần 6
+  *(deploy được khôi phục ở Tuần 5–6 ngày 29/09, vì báo cáo có mục "Demo và deploy" — §1.3)*
 - **Bỏ** những hạng mục chỉ tồn tại vì app di động: bảng `DeviceToken`, `/me/devices`
   (`FR-C14`), `?updatedSince=` (đồng bộ `sqflite`), mở vé QR khi mất mạng (`FR-C08`)
 - **Giữ** token QR tự chứa + ký HMAC: lý do bây giờ là `OQ-22` (chỉ `QrService` giữ khoá,
@@ -60,9 +61,10 @@ Web Client.
 | **gRPC làm cực gọn** — 1 proto, 2 RPC, không DB                    | ~2 pd     | Vẫn đủ chấm Ch.09                                         |
 | **VNPay mock**, không tích hợp thật                                | ~3 pd     | Chỉ làm thật nếu Tuần 7 còn dư                            |
 
-> **Deploy cloud: cắt lại (28/09).** Trước đó giữ vì nhóm PRM393 cần một API dev đang
-> chạy; không còn nhóm đó thì không còn lý do. Demo chạy trên máy local. Chỉ deploy nếu
-> Tuần 7 còn dư — và nhớ rằng gRPC cần HTTP/2 xuyên suốt, nhiều hosting giá rẻ không hỗ trợ.
+> **Deploy cloud: khôi phục (29/09), làm ở Tuần 5–6.** Ngày 28/09 đã cắt vì không còn
+> nhóm PRM393, nhưng khung báo cáo cuối kỳ có mục "Demo và deploy dự án" (§1.3). Deploy
+> cả API, Web Client và QrService. Lưu ý gRPC cần HTTP/2 xuyên suốt — nhiều hosting giá
+> rẻ không hỗ trợ, nên thử sớm ngay đầu Tuần 5.
 
 ### 1.2. Ngân sách cập nhật sau khi chốt yêu cầu (17/09)
 
@@ -125,8 +127,37 @@ Lớp quyết định thứ hai (`01-REQUIREMENTS.md` §9.2) làm phạm vi đ�
 | Khả dụng | ~65 |
 | **Dư** | **~3.5** |
 
-Biên an toàn vẫn mỏng, nhưng không còn âm sát. Danh sách cắt tiếp theo giữ nguyên ở dưới,
-dùng khi cuối Tuần 4 chưa đạt chốt.
+Biên an toàn vẫn mỏng, nhưng không còn âm sát.
+
+### 1.3. Yêu cầu báo cáo cuối kỳ của giảng viên (29/09)
+
+Khung báo cáo của cô (chi tiết và phân công từng mục ở `08-REPORT-REQUIREMENTS.md`) đòi
+thêm mấy thứ chưa có trong phạm vi:
+
+| Thêm | Mã | pd |
+| --- | --- | --- |
+| Import `OfferTemplate` từ Excel | `FR-B07`, `BR-26` | +1 |
+| Export đơn + thống kê ra Excel (Brand + Admin) | `FR-B08`, `FR-A07`, `BR-27` | +1 |
+| Nút Import/Export trên dashboard | | +0.5 |
+| Seed **≥ 20 bản ghi mọi bảng** (cả hai pha seeder) | `NFR-09` | +1 |
+| Khôi phục deploy (API + Web Client + QrService) | | +1 |
+| ERD kiểu Chen + bảng chuyển ERD → schema theo mẫu của cô | | +0.5 |
+| **Cộng** | | **+5** |
+
+| | pd |
+| --- | --- |
+| Sau khi thêm yêu cầu báo cáo | **~66.5** |
+| Khả dụng | ~65 |
+| **Dư** | **−1.5** *(âm)* |
+
+**Ngân sách âm trở lại.** Các yêu cầu trên là bắt buộc để không mất điểm báo cáo, nên
+không cắt chúng. Nhóm cần chốt ở buổi họp Chủ Nhật: cắt thêm theo danh sách dưới đây
+(bắt đầu từ `FR-C12`), hoặc chấp nhận dùng một phần Tuần 7.
+
+> **Cần hỏi cô:** khung báo cáo yêu cầu "kế hoạch từ tuần 1 đến tuần 9", trong khi kế
+> hoạch này nhắm nộp cuối Tuần 6 (20/10). Xác nhận lại hạn nộp và ngày thuyết trình thật.
+
+Danh sách cắt tiếp theo giữ nguyên ở dưới, dùng khi cuối Tuần 4 chưa đạt chốt.
 
 **Nếu tới cuối Tuần 4 mà chốt không đạt** (kịch bản 50 request đồng thời chưa chạy
 đúng), cắt tiếp theo đúng thứ tự này — tất cả đều là mục *Nên có*, không mất điểm rubric:
@@ -151,7 +182,8 @@ D:\PRN232\Project\
 │  ├─ 04-OPEN-QUESTIONS.md  ← lý do đằng sau từng quyết định
 │  ├─ 05-TEAM-RULES.md      ← luật hành vi & quy trình Git
 │  ├─ 06-CODING-STANDARDS.md ← chuẩn code, khuôn mẫu, file cấu hình ép đồng nhất
-│  └─ 07-WORK-BREAKDOWN.md  ← phân công theo tuần cho 6 người
+│  ├─ 07-WORK-BREAKDOWN.md  ← phân công theo tuần cho 6 người
+│  └─ 08-REPORT-REQUIREMENTS.md ← khung báo cáo cuối kỳ + ai viết mục nào
 ├─ .editorconfig · .gitattributes · global.json
 ├─ Directory.Build.props · Directory.Packages.props
 ├─ src/
@@ -269,6 +301,9 @@ công, 40 đơn `409`, tồn kho về 0 không âm. Quét QR lần 2 trả `409`
 - [ ] SignalR JS client + trang demo fetch/AJAX (Ch.07) — *TV5*
 - [ ] Exception Middleware tập trung, content negotiation (JSON + XML), chuẩn status code — *TV3*
 - [ ] Swagger XML comment + Postman collection — *TV6*
+- [ ] **Deploy** API + Web Client + QrService — *TV6*
+- [ ] **Import `OfferTemplate` từ Excel** — *TV3*; **Export đơn ra Excel** — *Hiếu*; nút trên dashboard — *TV5*
+- [ ] Seed đủ **≥ 20 bản ghi mọi bảng** — *TV3* (pha 1), *TV6* (pha 2)
 - [ ] Hoàn thiện trang customer + hiển thị QR — *TV4*
 
 **Chốt 13/10: PHONG TOẢ TÍNH NĂNG.** Từ đây chỉ sửa lỗi, không thêm chức năng mới.
@@ -280,7 +315,8 @@ Ai muốn thêm gì thì ghi vào mục "hướng phát triển" của báo cáo
 
 - [ ] Unit test cho đặt hàng + redeem QR — *TV6*
 - [ ] Load test lấy số liệu chứng minh không over-sell — *TV6*
-- [ ] Báo cáo: mỗi người viết phần mình làm, *Hiếu* tổng hợp
+- [ ] Báo cáo **bằng tiếng Anh** theo khung của cô: mỗi người viết phần mình làm, *Hiếu* tổng hợp (`08-REPORT-REQUIREMENTS.md`)
+- [ ] ERD kiểu Chen + bảng chuyển ERD → schema + ảnh thiết kế và dữ liệu của từng bảng — *Tùng*
 - [ ] Slide + kịch bản demo 10 phút trên Web Client, **chạy thử ít nhất 2 lần** — *Tùng*
 
 **Chốt 20/10: NỘP.** API đóng băng — từ đây đổi gì phải version (`/api/v2`).

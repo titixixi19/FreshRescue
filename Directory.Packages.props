@@ -36,6 +36,11 @@
     <PackageVersion Include="FluentValidation.AspNetCore" Version="11.3.0" />
   </ItemGroup>
 
+  <ItemGroup Label="Import/Export Excel (FR-B07, FR-B08, FR-A07)">
+    <!-- Giấy phép MIT. Đã kiểm 29/09: chưa có lỗ hổng được công bố. -->
+    <PackageVersion Include="ClosedXML" Version="0.105.1" />
+  </ItemGroup>
+
   <ItemGroup Label="gRPC">
     <PackageVersion Include="Grpc.AspNetCore" Version="2.66.0" />
     <PackageVersion Include="Grpc.Net.ClientFactory" Version="2.66.0" />

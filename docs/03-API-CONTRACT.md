@@ -1,7 +1,7 @@
 # FreshRescue — API Contract
 
 > Yêu cầu: `01-REQUIREMENTS.md` · Mô hình dữ liệu: `02-DOMAIN-MODEL.md`
-> Cập nhật: 2026-09-28 — bỏ các mục chỉ dành cho app di động · **Phiên bản contract: v1 (chưa đóng băng)**
+> Cập nhật: 2026-09-29 — thêm Import/Export Excel (§7.1, §8) · **Phiên bản contract: v1 (chưa đóng băng)**
 >
 > ## Đây là nguồn sự thật duy nhất
 >
@@ -482,6 +482,9 @@ Yêu cầu role `BrandManager`. Mọi endpoint ngầm lọc theo `brand_id` tron
 | GET / POST | `/brand/staff` | Danh sách / tạo tài khoản nhân viên |
 | DELETE | `/brand/staff/{id}` | Gỡ nhân viên khỏi chi nhánh |
 | GET | `/brand/stats` | 2 biểu đồ (`FR-B06`), số liệu theo `BR-25` |
+| GET | `/brand/offer-templates/import-template` | Tải file Excel mẫu để điền (`FR-B07`) |
+| POST | `/brand/offer-templates/import` | Import mẫu mặt hàng từ `.xlsx` (`FR-B07`, `BR-26`) |
+| GET | `/brand/orders/export` | Export đơn + thống kê ra `.xlsx`, `?from=&to=` (`FR-B08`, `BR-27`) |
 
 ```json
 // POST /brand/offer-templates
@@ -514,6 +517,41 @@ Biên độ của brand phải **nằm trong** biên độ của sàn theo `offe
 }
 ```
 
+### 7.1. Import / Export Excel
+
+**`POST /brand/offer-templates/import`** — `multipart/form-data`, field `file` (`.xlsx`).
+Cột của file theo đúng thứ tự trong file mẫu tải từ `/import-template`: `name`,
+`description`, `imageUrl`, `categorySlug`, `offerType`, `originalPrice`, `suggestedPrice`,
+`brandMinDiscountPercent`, `brandMaxDiscountPercent`.
+
+```json
+// 200 — mọi dòng hợp lệ, đã nhập hết
+{ "importedCount": 25 }
+
+// 400 — có dòng sai, KHÔNG nhập dòng nào (BR-26). Số dòng tính theo Excel, dòng 1 là tiêu đề
+{
+  "status": 400,
+  "errorCode": "VALIDATION_FAILED",
+  "errors": {
+    "rows[4].originalPrice": ["Giá gốc phải lớn hơn 0"],
+    "rows[9].brandMaxDiscountPercent": ["Biên độ vượt khung của sàn cho SurpriseBag (65–75%)"]
+  }
+}
+```
+
+**`GET /brand/orders/export?from=2026-09-01&to=2026-09-30`** và **`GET /admin/orders/export`**
+— trả file, không trả JSON:
+
+| Hạng mục | Giá trị |
+| --- | --- |
+| `Content-Type` | `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet` |
+| `Content-Disposition` | `attachment; filename="orders_2026-09-01_2026-09-30.xlsx"` |
+| Sheet `Orders` | `OrderCode`, `StoreName`, `CreatedAt (UTC+7)`, `Status`, `RefundStatus`, `TotalAmount`, `PlatformFee`, `StorePayoutAmount`, `ItemCount` |
+| Sheet `Summary` | Cùng số liệu với `/brand/stats`, theo `BR-25` |
+
+> Endpoint export trả file nên **không** theo `PagedResponse<T>` (§1.1) — đây là ngoại lệ
+> duy nhất, vì mục đích là lấy trọn khoảng ngày đã chọn.
+
 ---
 
 ## 8. Quản trị sàn — `/admin`
@@ -533,6 +571,7 @@ Yêu cầu role `SystemAdmin`.
 | GET | `/admin/disputes` | Hàng đợi xử lý, lọc `status` |
 | POST | `/admin/disputes/{id}/approve` | **Duyệt → hoàn tiền** (`OQ-25`) |
 | POST | `/admin/disputes/{id}/reject` | Kèm `adminNote` |
+| GET | `/admin/orders/export` | Export đơn toàn sàn ra `.xlsx`, `?from=&to=` (`FR-A07`) — khuôn file ở §7.1 |
 
 > Brand Manager và Staff **không** có endpoint duyệt khiếu nại. Họ chỉ ghi giải trình
 > qua `PATCH /staff/disputes/{id}/merchant-note` — tránh xung đột lợi ích (`OQ-25`).
@@ -661,6 +700,8 @@ chuyển sang CDN thì dữ liệu cũ không hỏng.
 | `FR-B06` thống kê | `GET /brand/stats` |
 | `FR-A01` duyệt thương hiệu | `POST /admin/brands/{id}/approve` |
 | `FR-A04` duyệt khiếu nại | `POST /admin/disputes/{id}/approve` |
+| `FR-B07` import mẫu mặt hàng | `POST /brand/offer-templates/import` |
+| `FR-B08` `FR-A07` export đơn | `GET /brand/orders/export`, `GET /admin/orders/export` |
 | `FR-X06` realtime | Hub `OfferQuantityChanged` |
 
 ---
