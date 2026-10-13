@@ -225,7 +225,7 @@ Hôm nay là **Thứ Tư 16/09/2026, giữa Tuần 2**.
 
 ### 3.1. Mốc ổn định API cho Web Client
 
-TV4 và TV5 dựng giao diện trên `MockApiClient` (`07-WORK-BREAKDOWN.md` §12.3), rồi lật cờ
+Đức Anh và Hoàng Huy dựng giao diện trên `MockApiClient` (`07-WORK-BREAKDOWN.md` §12.3), rồi lật cờ
 sang API thật khi từng phần sẵn sàng.
 
 | Mốc                   | Tuần            | Web Client làm được gì                                   |
@@ -267,11 +267,11 @@ Tuần này gần như không code feature. Đây là tuần quyết định 6 n
 - [ ] `IGenericRepository<T>` + `UnitOfWork` — *Tùng*
 - [ ] Identity + JWT + Refresh Token + **custom claim `brand_id` / `store_id`**
       + policy handler `RequireBrandOwner` / `RequireStoreStaff` — *Tùng*
-- [ ] `DbSeeder`: 4 role, admin, 2 brand, 4 store, ~20 offer mẫu — *TV3*
-- [ ] CRUD Brand / Store / Category — *TV3*
+- [ ] `DbSeeder`: 4 role, admin, 2 brand, 4 store, ~20 offer mẫu — *Đình Đức*
+- [ ] CRUD Brand / Store / Category — *Đình Đức*
 - [ ] SaleSession + Offer (entity → service → controller) — *Hiếu*
-- [ ] Khung Web Client: layout, template admin, `HttpClient` service, trang login — *TV4 + TV5*
-- [ ] Project gRPC + file `.proto`, cấu hình Swagger — *TV6*
+- [ ] Khung Web Client: layout, template admin, `HttpClient` service, trang login — *Đức Anh + Hoàng Huy*
+- [ ] Project gRPC + file `.proto`, cấu hình Swagger — *Quang Huy*
 
 **Chốt 29/09:** login trả JWT có đủ claim, Swagger bấm Authorize dùng được, seed data
 nằm trong DB, CRUD Store chạy end-to-end.
@@ -284,10 +284,10 @@ Tuần nặng nhất. Đừng xếp thêm gì vào đây.
 
 - [ ] **Đặt hàng + transaction + optimistic locking + retry + `409`** — *Tùng*
 - [ ] Cấp QR ticket khi thanh toán thành công — *Tùng*
-- [ ] gRPC QrService + **redeem idempotent**; payment mock — *TV6 (phối hợp Tùng)*
+- [ ] gRPC QrService + **redeem idempotent**; payment mock — *Quang Huy (phối hợp Tùng)*
 - [ ] Lifecycle đợt bán + **4 BackgroundService** (scheduler, expiry, no-show, nhắc giờ) — *Hiếu*
-- [ ] **OData** endpoints cho `Stores` / `Offers` — *TV3*
-- [ ] Web Client nối API thật: browse, đặt hàng, dashboard CRUD — *TV4 + TV5*
+- [ ] **OData** endpoints cho `Stores` / `Offers` — *Đình Đức*
+- [ ] Web Client nối API thật: browse, đặt hàng, dashboard CRUD — *Đức Anh + Hoàng Huy*
 - [ ] **Hoàn tất checklist §4.4** — *Tùng + Hiếu duyệt*
 
 **Chốt 06/10 — kịch bản demo:** 50 request đồng thời mua 10 túi → đúng 10 đơn thành
@@ -298,13 +298,13 @@ công, 40 đơn `409`, tồn kho về 0 không âm. Quét QR lần 2 trả `409`
 ### Tuần 5 (07–13/10) — Tính năng rubric + Feature freeze
 
 - [ ] **SignalR** `OfferHub` — realtime số lượng còn lại + sự kiện mở đợt bán — *Hiếu*
-- [ ] SignalR JS client + trang demo fetch/AJAX (Ch.07) — *TV5*
-- [ ] Exception Middleware tập trung, content negotiation (JSON + XML), chuẩn status code — *TV3*
-- [ ] Swagger XML comment + Postman collection — *TV6*
-- [ ] **Deploy** API + Web Client + QrService — *TV6*
-- [ ] **Import `OfferTemplate` từ Excel** — *TV3*; **Export đơn ra Excel** — *Hiếu*; nút trên dashboard — *TV5*
-- [ ] Seed đủ **≥ 20 bản ghi mọi bảng** — *TV3* (pha 1), *TV6* (pha 2)
-- [ ] Hoàn thiện trang customer + hiển thị QR — *TV4*
+- [ ] SignalR JS client + trang demo fetch/AJAX (Ch.07) — *Hoàng Huy*
+- [ ] Exception Middleware tập trung, content negotiation (JSON + XML), chuẩn status code — *Đình Đức*
+- [ ] Swagger XML comment + Postman collection — *Quang Huy*
+- [ ] **Deploy** API + Web Client + QrService — *Quang Huy*
+- [ ] **Import `OfferTemplate` từ Excel** — *Đình Đức*; **Export đơn ra Excel** — *Hiếu*; nút trên dashboard — *Hoàng Huy*
+- [ ] Seed đủ **≥ 20 bản ghi mọi bảng** — *Đình Đức* (pha 1), *Quang Huy* (pha 2)
+- [ ] Hoàn thiện trang customer + hiển thị QR — *Đức Anh*
 
 **Chốt 13/10: PHONG TOẢ TÍNH NĂNG.** Từ đây chỉ sửa lỗi, không thêm chức năng mới.
 Ai muốn thêm gì thì ghi vào mục "hướng phát triển" của báo cáo.
@@ -313,8 +313,8 @@ Ai muốn thêm gì thì ghi vào mục "hướng phát triển" của báo cáo
 
 ### Tuần 6 (14–20/10) — Test, tài liệu, nộp
 
-- [ ] Unit test cho đặt hàng + redeem QR — *TV6*
-- [ ] Load test lấy số liệu chứng minh không over-sell — *TV6*
+- [ ] Unit test cho đặt hàng + redeem QR — *Quang Huy*
+- [ ] Load test lấy số liệu chứng minh không over-sell — *Quang Huy*
 - [ ] Báo cáo **bằng tiếng Anh** theo khung của cô: mỗi người viết phần mình làm, *Hiếu* tổng hợp (`08-REPORT-REQUIREMENTS.md`)
 - [ ] ERD kiểu Chen + bảng chuyển ERD → schema + ảnh thiết kế và dữ liệu của từng bảng — *Tùng*
 - [ ] Slide + kịch bản demo 10 phút trên Web Client, **chạy thử ít nhất 2 lần** — *Tùng*
@@ -387,16 +387,16 @@ Cả 6 người đều làm backend/web.
 
 > **Phân công chi tiết theo tuần, có mã việc và ước lượng pd: `07-WORK-BREAKDOWN.md`.**
 > Bảng dưới đây chỉ là bản tóm tắt. Nơi hai tài liệu khác nhau thì `07` thắng — xem §1 của nó
-> về việc đổi chủ sở hữu giữa Hiếu và TV6.
+> về việc đổi chủ sở hữu giữa Hiếu và Quang Huy.
 
-| Người        | Phụ trách                                                                                                       |
-| ------------ | --------------------------------------------------------------------------------------------------------------- |
-| **Tùng**     | Lead. Scaffold, Entities/DbContext, **giữ quyền tạo Migration**, Repo/UoW, Auth/JWT/Claims, **đặt hàng + concurrency**, cấp QR, kịch bản demo |
-| **Hiếu**     | SaleSession + Offer, 4 BackgroundService, SignalR Hub, tổng hợp báo cáo                                          |
-| **TV3**      | CRUD Brand/Store/Category, **OData**, DbSeeder, Exception Middleware + content negotiation                        |
-| **TV4**      | Web Client — trang public + customer (browse, đặt hàng, xem QR)                                                   |
-| **TV5**      | Web Client — dashboard chung (Admin + Brand Manager), trang demo AJAX + SignalR JS                                |
-| **TV6**      | gRPC QrService, redeem idempotent, payment mock, Swagger/Postman, unit test + load test                           |
+| Người         | Phụ trách                                                                                                       |
+| ------------- | --------------------------------------------------------------------------------------------------------------- |
+| **Tùng**      | Lead. Scaffold, Entities/DbContext, **giữ quyền tạo Migration**, Repo/UoW, Auth/JWT/Claims, **đặt hàng + concurrency**, cấp QR, kịch bản demo |
+| **Hiếu**      | SaleSession + Offer, 4 BackgroundService, SignalR Hub, tổng hợp báo cáo                                          |
+| **Đình Đức**  | CRUD Brand/Store/Category, **OData**, DbSeeder, Exception Middleware + content negotiation                        |
+| **Đức Anh**   | Web Client — trang public + customer (browse, đặt hàng, xem QR)                                                   |
+| **Hoàng Huy** | Web Client — dashboard chung (Admin + Brand Manager), trang demo AJAX + SignalR JS                                |
+| **Quang Huy** | gRPC QrService, redeem idempotent, payment mock, Swagger/Postman, unit test + load test                           |
 
 Tùng + Hiếu review PR để giữ contract nhất quán.
 
@@ -417,7 +417,7 @@ một người làm hết controller) sẽ khiến ai cũng sửa cùng file và
 | Rủi ro                                                                | Mức        | Xử lý                                                                                                              |
 | --------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------ |
 | **Tuần 2 không chốt được thiết kế**                                   | **Cao**    | Điều kiện sống còn để 6 người chạy song song. Trượt mốc 22/09 là trượt cả kế hoạch                                  |
-| Web Client (~13 pd) và báo cáo (~5 pd) bị dồn tới tuần cuối           | **Cao**    | TV4 + TV5 bắt đầu từ Tuần 3 với API giả. Báo cáo viết dần từng tuần, không để tới Tuần 6                            |
+| Web Client (~13 pd) và báo cáo (~5 pd) bị dồn tới tuần cuối           | **Cao**    | Đức Anh + Hoàng Huy bắt đầu từ Tuần 3 với API giả. Báo cáo viết dần từng tuần, không để tới Tuần 6                            |
 | Ôm đồm quá nhiều (gRPC + OData + SignalR)                             | Trung bình | Nếu hụt, cắt từ cuối lên theo thứ tự ngược: gRPC → SignalR → BackgroundService → OData                              |
 | Concurrency khó debug                                                 | Trung bình | Làm ở Tuần 4, viết test tự động ngay, đừng để sát deadline                                                          |
 | Đóng góp lệch — 2 người gánh cả nhóm                                  | Trung bình | Mỗi lát dọc có một chủ sở hữu rõ ràng và mốc chốt cuối tuần. Phát hiện chậm ở mốc tuần, không phải ở tuần cuối      |
