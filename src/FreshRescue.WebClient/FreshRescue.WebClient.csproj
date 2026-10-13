@@ -2,7 +2,7 @@
 
   <!--
     Chỉ gọi API qua HTTP — KHÔNG tham chiếu DataAccess hay Business (00-PLAN.md §2).
-    Chủ sở hữu hạ tầng: TV4. Areas/Customer: TV4 · Areas/Dashboard: TV5 (07-WORK-BREAKDOWN.md §12.3).
+    Chủ sở hữu hạ tầng: Đức Anh. Areas/Customer: Đức Anh · Areas/Dashboard: Hoàng Huy (07-WORK-BREAKDOWN.md §12.3).
   -->
 
 </Project>
