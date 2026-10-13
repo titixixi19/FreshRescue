@@ -4,6 +4,9 @@
 > Cập nhật: 2026-09-28 — bỏ việc phục vụ PRM393 (`00-PLAN.md` §0) · Nộp **20/10/2026** (cuối Tuần 6)
 >
 > Mã việc dạng `T<tuần>-<người>-<số>`. Dùng mã này trong tên nhánh và mô tả PR.
+>
+> Mã việc vẫn giữ `TV3`–`TV6` để khớp các tài liệu khác: **TV3 = Đình Đức · TV4 = Đức Anh ·
+> TV5 = Hoàng Huy · TV6 = Quang Huy**. Ví dụ `T3-TV3-01` là việc của Đình Đức.
 
 ---
 
@@ -17,12 +20,12 @@ sửa cùng một file.
 | --- | --- | --- |
 | **Tùng** *(lead)* | **Nền móng** (Entities, DbContext, Migrations, Repository/UoW, Middleware) + **Đặt hàng & Đối soát** (order, payment, cancel, cấp & quét QR) | `Entities/`, `DataAccess/`, `Business/Features/Ordering/` |
 | **Hiếu** | **Xác thực** (Identity, JWT, claims, policy) + **Tiến trình nền** + **SignalR** + Thông báo | `Business/Features/Auth/`, `API/BackgroundServices/`, `API/Hubs/` |
-| **TV3** | **Danh mục & Quản trị** (Brand, Store, Category, OfferTemplate, duyệt brand, người dùng, khiếu nại) + **OData** + Seeder | `Business/Features/Catalog/`, `Features/Admin/` |
-| **TV4** | **Web Client — phía khách** (storefront, Quick Checkout, màn QR, lịch sử đơn, đánh giá) **+ hạ tầng WebClient dùng chung** | `WebClient/Areas/Customer/`, `WebClient/Services/` |
-| **TV5** | **Web Client — bảng điều khiển** (Admin/Brand/Staff) + AJAX/SignalR JS + quét QR webcam | `WebClient/Areas/Dashboard/` |
-| **TV6** | **Đợt bán** (SaleBatch, Offer) + **gRPC QrService** + Swagger/Postman + Load test | `Business/Features/Sales/`, `QrService/` |
+| **Đình Đức** | **Danh mục & Quản trị** (Brand, Store, Category, OfferTemplate, duyệt brand, người dùng, khiếu nại) + **OData** + Seeder | `Business/Features/Catalog/`, `Features/Admin/` |
+| **Đức Anh** | **Web Client — phía khách** (storefront, Quick Checkout, màn QR, lịch sử đơn, đánh giá) **+ hạ tầng WebClient dùng chung** | `WebClient/Areas/Customer/`, `WebClient/Services/` |
+| **Hoàng Huy** | **Web Client — bảng điều khiển** (Admin/Brand/Staff) + AJAX/SignalR JS + quét QR webcam | `WebClient/Areas/Dashboard/` |
+| **Quang Huy** | **Đợt bán** (SaleBatch, Offer) + **gRPC QrService** + Swagger/Postman + Load test | `Business/Features/Sales/`, `QrService/` |
 
-> **Thay đổi so với `00-PLAN.md` §5:** Hiếu chuyển từ *Đợt bán* sang *Xác thực*, TV6 nhận
+> **Thay đổi so với `00-PLAN.md` §5:** Hiếu chuyển từ *Đợt bán* sang *Xác thực*, Quang Huy nhận
 > *Đợt bán*. Lý do: Tùng không thể vừa làm nền móng vừa làm xác thực trong Tuần 3 —
 > hai việc đó cộng lại vượt xa sức một người trong một tuần, và cả hai đều chặn người khác.
 
@@ -37,17 +40,17 @@ dùng chung** và **quyền ghi chéo lát** — đọc **§12 trước khi bắ
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Tùng | 3.5 | 2.0 | 3.75 | 4.5 | 3.0 | 2.5 | **15.75** |
 | Hiếu | 3.0 | 1.0 | 3.0 | 3.0 | ⚠️ 3.75 | 3.0 | **13.75** |
-| TV3 | 2.5 | 1.0 | 2.5 | ⚠️ 3.0 | ⚠️ 3.5 | 2.0 | **12.0** |
-| TV4 | 2.5 | 1.0 | 2.5 | 2.5 | 2.5 | 2.0 | **10.5** |
-| TV5 | 2.5 | 1.0 | 2.5 | 2.5 | ⚠️ 3.0 | 2.0 | **11.0** |
-| TV6 | 2.0 | 0.5 | 1.5 | 2.0 | ⚠️ 3.5 | 2.5 | **10.0** |
+| Đình Đức | 2.5 | 1.0 | 2.5 | ⚠️ 3.0 | ⚠️ 3.5 | 2.0 | **12.0** |
+| Đức Anh | 2.5 | 1.0 | 2.5 | 2.5 | 2.5 | 2.0 | **10.5** |
+| Hoàng Huy | 2.5 | 1.0 | 2.5 | 2.5 | ⚠️ 3.0 | 2.0 | **11.0** |
+| Quang Huy | 2.0 | 0.5 | 1.5 | 2.0 | ⚠️ 3.5 | 2.5 | **10.0** |
 | | | **6.5** | **15.75** | **17.5** | **19.25** | **14.0** | **73.0** |
 
 Phạm vi tính năng là **~66.5 pd** (`00-PLAN.md` §1.3, sau khi thêm yêu cầu báo cáo ngày
 29/09). Phân công **73 pd** — phần chênh ~6.5 pd là quỹ cho sửa lỗi và làm lại.
 
 > ⚠️ **Tuần 5 vượt sức: 19.25 pd trên ~16 pd/tuần.** Các ô ⚠️ là người bị xếp quá sức
-> tuần đó (Hiếu +0.75, TV3 +0.5 ở T4 và +1.0 ở T5, TV5 +0.5, TV6 +1.5). Việc mới đều phải
+> tuần đó (Hiếu +0.75, Đình Đức +0.5 ở T4 và +1.0 ở T5, Hoàng Huy +0.5, Quang Huy +1.5). Việc mới đều phải
 > xong trước phong toả 13/10 nên không đẩy sang T6 được. Cần chốt ở buổi họp Chủ Nhật:
 > cắt theo §11, hoặc Tùng nhận bớt (T5 còn trống ~0.5 pd).
 
@@ -61,22 +64,22 @@ dồn vào Tuần 2–4; từ Tuần 5 chuyển sang review và hỗ trợ.
 ## 3. Đường găng — ai chặn ai
 
 ```
-Tùng: Entities theo 4 cụm ───┬──► Hiếu: Auth          (mở khoá sáng 23/09)
-       (23–24/09, xem §3.1)  ├──► TV3:  Catalog       (mở khoá chiều 23/09)
-                             ├──► TV6:  SaleBatch     (mở khoá sáng 24/09)
-                             └──► Tùng: Ordering (T4)
+Tùng: Entities theo 4 cụm ───┬──► Hiếu:      Auth       (mở khoá sáng 23/09)
+       (23–24/09, xem §3.1)  ├──► Đình Đức:  Catalog    (mở khoá chiều 23/09)
+                             ├──► Quang Huy: SaleBatch  (mở khoá sáng 24/09)
+                             └──► Tùng:      Ordering (T4)
 
 Hiếu: Auth + JWT claims ─────────► mọi endpoint có phân quyền
        (HẠN: 29/09)
 
-TV6: SaleBatch + Offer ──────────► Tùng: Ordering (T4)
+Quang Huy: SaleBatch + Offer ────► Tùng: Ordering (T4)
        (HẠN: 29/09)
 
 Tùng: Ordering + QR ─────────────► Hiếu: SignalR, BackgroundService
        (HẠN: 06/10)
 
-TV4 ─┐
-TV5 ─┴──► KHÔNG phụ thuộc ai — chạy trên MockApiClient, ghép API khi sẵn (§12.3)
+Đức Anh   ─┐
+Hoàng Huy ─┴──► KHÔNG phụ thuộc ai — chạy trên MockApiClient, ghép API khi sẵn (§12.3)
 ```
 
 **Hạn chặn người khác — trượt một ngày là nhiều người đứng im:**
@@ -85,7 +88,7 @@ TV5 ─┴──► KHÔNG phụ thuộc ai — chạy trên MockApiClient, ghé
 | --- | --- | --- |
 | **23–24/09** | Tùng | Entity **theo 4 cụm**, xem lịch dưới |
 | **Chủ Nhật 29/09** | Hiếu | Login trả JWT có `brand_id` / `store_id` |
-| **Chủ Nhật 29/09** | TV6 | `SaleBatch` + `Offer` CRUD chạy được |
+| **Chủ Nhật 29/09** | Quang Huy | `SaleBatch` + `Offer` CRUD chạy được |
 | **Thứ Hai 06/10** | Tùng | Đặt hàng + cấp/quét QR |
 
 ### 3.1. Giao entity theo cụm — không ai chờ quá nửa ngày
@@ -96,14 +99,14 @@ TV5 ─┴──► KHÔNG phụ thuộc ai — chạy trên MockApiClient, ghé
 | Khi nào | Cụm entity | Mở khoá cho ai |
 | --- | --- | --- |
 | **Sáng T3 23/09** | `AppUser`, `AppRole`, `RefreshToken` | **Hiếu** — bắt đầu Auth ngay ngày đầu |
-| **Chiều T3 23/09** | `Brand`, `Store`, `StoreStaff`, `Category`, `OfferTemplate` | **TV3** |
-| **Sáng T4 24/09** | `SaleBatch`, `Offer` | **TV6** |
+| **Chiều T3 23/09** | `Brand`, `Store`, `StoreStaff`, `Category`, `OfferTemplate` | **Đình Đức** |
+| **Sáng T4 24/09** | `SaleBatch`, `Offer` | **Quang Huy** |
 | **Chiều T4 24/09** | `Order`, `OrderItem`, `QrTicket`, `Payment`, `Review`, `Dispute`, `FavoriteStore`, `Notification` | Tùng tự dùng ở Tuần 4 |
 
 Migration #1 chạy **một lần duy nhất sau cụm 4**, không chạy từng cụm — tránh 4 migration
 cho cùng một lần dựng schema.
 
-> **TV4 và TV5 không nằm trong đường găng.** Họ làm trên `MockApiClient` (§12.3), nên
+> **Đức Anh và Hoàng Huy không nằm trong đường găng.** Họ làm trên `MockApiClient` (§12.3), nên
 > không phụ thuộc entity, không phụ thuộc endpoint, không bao giờ bị chặn.
 
 ---
@@ -117,11 +120,11 @@ cho cùng một lần dựng schema.
 | Tùng | `T2-TUNG-03` | **`Program.cs` hoàn chỉnh + 3 file `DependencyInjection.cs` rỗng** — sau mốc này không ai được sửa `Program.cs` (§12.1) | 0.5 |
 | Hiếu | `T2-HIEU-01` | Đọc toàn bộ `docs/`, dựng khung `Features/Auth/` (interface rỗng) | 0.5 |
 | Hiếu | `T2-HIEU-02` | Dựng cấu hình Swagger + Serilog cơ bản trong `Program.cs` | 0.5 |
-| TV3 | `T2-TV3-01` | Chuẩn bị dữ liệu seed thật: 3 brand, 8 chi nhánh TP.HCM **có toạ độ thật**, 25 mẫu hàng | 0.5 |
-| TV3 | `T2-TV3-02` | Dựng khung `Features/Catalog/` | 0.5 |
-| TV4 | `T2-TV4-01` | Chọn template miễn phí, tạo **`Areas/Customer`** + layout riêng | 1.0 |
-| TV5 | `T2-TV5-01` | Tạo **`Areas/Dashboard`** + layout riêng + menu theo vai trò | 1.0 |
-| TV6 | `T2-TV6-01` | Tạo project gRPC + file `.proto` theo `03-API-CONTRACT.md` §11 | 0.5 |
+| Đình Đức | `T2-TV3-01` | Chuẩn bị dữ liệu seed thật: 3 brand, 8 chi nhánh TP.HCM **có toạ độ thật**, 25 mẫu hàng | 0.5 |
+| Đình Đức | `T2-TV3-02` | Dựng khung `Features/Catalog/` | 0.5 |
+| Đức Anh | `T2-TV4-01` | Chọn template miễn phí, tạo **`Areas/Customer`** + layout riêng | 1.0 |
+| Hoàng Huy | `T2-TV5-01` | Tạo **`Areas/Dashboard`** + layout riêng + menu theo vai trò | 1.0 |
+| Quang Huy | `T2-TV6-01` | Tạo project gRPC + file `.proto` theo `03-API-CONTRACT.md` §11 | 0.5 |
 | **Cả 6** | `T2-ALL-01` | Đọc `README.md`, `05-TEAM-RULES.md` §0, chạy `06-CODING-STANDARDS.md` §2 | — |
 
 **Chốt 22/09:** ai cũng clone và `dotnet build` chạy được. Ai cũng đọc xong tài liệu.
@@ -140,13 +143,13 @@ cho cùng một lần dựng schema.
 | **Hiếu** | `T3-HIEU-01` | Identity + 4 role + `AppUser` | `FR-C01` | 0.5 |
 | **Hiếu** | `T3-HIEU-02` | JWT + Refresh Token xoay vòng + `/auth/*` (8 endpoint) | `03` §2 | 1.5 |
 | **Hiếu** | `T3-HIEU-03` | **Custom claim `brand_id`/`store_id`** + `RequireBrandOwner` / `RequireStoreStaff` | `BR-10`, `BR-11` | 1.0 |
-| **TV3** | `T3-TV3-01` | CRUD `Category` + `Brand` + `Store` (kèm toạ độ) | `FR-B01`, `FR-B02`, `FR-A03` | 1.5 |
-| **TV3** | `T3-TV3-02` | `DbSeeder` **pha 1 — dữ liệu tĩnh**: role, user, brand, store, category, template. Thời gian tính theo `UtcNow`, không `HasData` (§12.2) | `OQ-34`, `02` §8 | 1.0 |
-| **TV4** | `T3-TV4-01` | **Hạ tầng WebClient dùng chung**: `IApiClient` + `HttpApiClient` + `MockApiClient` + xử lý token (§12.3). TV4 sở hữu, đóng băng sau Tuần 3 | | 1.5 |
-| **TV4** | `T3-TV4-02` | Trang đăng nhập + storefront chạy trên `MockApiClient` | `FR-C03` | 1.0 |
-| **TV5** | `T3-TV5-01` | Dashboard + điều hướng theo vai trò + quản lý chi nhánh — **chỉ trong `Areas/Dashboard`**, dùng `IApiClient` của TV4 | `FR-B02` | 1.5 |
-| **TV5** | `T3-TV5-02` | Màn quản lý người dùng + duyệt thương hiệu (Admin) | `FR-A01`, `FR-A02` | 1.0 |
-| **TV6** | `T3-TV6-01` | `SaleBatch` service + controller: tạo `Draft`, kích hoạt, **chặn chồng khung giờ** | `FR-S02`, `BR-15`, `OQ-11` | 1.5 |
+| **Đình Đức** | `T3-TV3-01` | CRUD `Category` + `Brand` + `Store` (kèm toạ độ) | `FR-B01`, `FR-B02`, `FR-A03` | 1.5 |
+| **Đình Đức** | `T3-TV3-02` | `DbSeeder` **pha 1 — dữ liệu tĩnh**: role, user, brand, store, category, template. Thời gian tính theo `UtcNow`, không `HasData` (§12.2) | `OQ-34`, `02` §8 | 1.0 |
+| **Đức Anh** | `T3-TV4-01` | **Hạ tầng WebClient dùng chung**: `IApiClient` + `HttpApiClient` + `MockApiClient` + xử lý token (§12.3). Đức Anh sở hữu, đóng băng sau Tuần 3 | | 1.5 |
+| **Đức Anh** | `T3-TV4-02` | Trang đăng nhập + storefront chạy trên `MockApiClient` | `FR-C03` | 1.0 |
+| **Hoàng Huy** | `T3-TV5-01` | Dashboard + điều hướng theo vai trò + quản lý chi nhánh — **chỉ trong `Areas/Dashboard`**, dùng `IApiClient` của Đức Anh | `FR-B02` | 1.5 |
+| **Hoàng Huy** | `T3-TV5-02` | Màn quản lý người dùng + duyệt thương hiệu (Admin) | `FR-A01`, `FR-A02` | 1.0 |
+| **Quang Huy** | `T3-TV6-01` | `SaleBatch` service + controller: tạo `Draft`, kích hoạt, **chặn chồng khung giờ** | `FR-S02`, `BR-15`, `OQ-11` | 1.5 |
 
 **Chốt 29/09:** login trả JWT đủ claim · Swagger bấm Authorize được · seed data trong DB ·
 CRUD Store chạy end-to-end.
@@ -164,15 +167,15 @@ CRUD Store chạy end-to-end.
 | **Hiếu** | `T4-HIEU-01` | `SaleBatchSchedulerService` (`FR-X01`, `FR-X02`) | `02` §4.1 | 1.0 |
 | **Hiếu** | `T4-HIEU-02` | `OrderExpiryService` — **hoàn tồn kho có chốt chặn** | `FR-X03`, `02` §6.4 | 1.0 |
 | **Hiếu** | `T4-HIEU-03` | `NoShowService` + thứ tự chạy trước khi đóng đợt | `FR-X04`, `01` §6.5 | 1.0 |
-| **TV3** | `T4-TV3-01` | CRUD `OfferTemplate` + validate biên độ giá hai tầng | `FR-B04`, `BR-07` | 1.0 |
-| **TV3** | `T4-TV3-02` | **OData** `/odata/Stores` + `/odata/Offers` | `03` §9 | 1.5 |
-| **TV3** | `T4-TV3-03` | Mở rộng seed pha 1 lên **≥ 20 bản ghi mỗi bảng**: 20 brand + 20 Brand Manager, ≥ 20 chi nhánh, 20 danh mục, ≥ 25 mẫu hàng, ≥ 20 nhân viên | `NFR-09` | 0.5 |
-| **TV4** | `T4-TV4-01` | Storefront nối API thật + lọc + chi tiết offer | `FR-C03` | 1.0 |
-| **TV4** | `T4-TV4-02` | **Quick Checkout: đặt → thanh toán → hiện QR** | `01` §9.3 | 1.5 |
-| **TV5** | `T4-TV5-01` | Màn Staff: tạo đợt bán 4 bước + quản lý offer | `FR-S02`, `FR-S03` | 1.5 |
-| **TV5** | `T4-TV5-02` | Màn "đơn phải trả trong đợt" | `FR-S04` | 1.0 |
-| **TV6** | `T4-TV6-01` | **gRPC QrService**: `IssueTicket` + `VerifyTicket`, ký HMAC, **không chạm DB** | `03` §11, `OQ-22` | 1.5 |
-| **TV6** | `T4-TV6-02` | Đăng ký gRPC client ở API | | 0.5 |
+| **Đình Đức** | `T4-TV3-01` | CRUD `OfferTemplate` + validate biên độ giá hai tầng | `FR-B04`, `BR-07` | 1.0 |
+| **Đình Đức** | `T4-TV3-02` | **OData** `/odata/Stores` + `/odata/Offers` | `03` §9 | 1.5 |
+| **Đình Đức** | `T4-TV3-03` | Mở rộng seed pha 1 lên **≥ 20 bản ghi mỗi bảng**: 20 brand + 20 Brand Manager, ≥ 20 chi nhánh, 20 danh mục, ≥ 25 mẫu hàng, ≥ 20 nhân viên | `NFR-09` | 0.5 |
+| **Đức Anh** | `T4-TV4-01` | Storefront nối API thật + lọc + chi tiết offer | `FR-C03` | 1.0 |
+| **Đức Anh** | `T4-TV4-02` | **Quick Checkout: đặt → thanh toán → hiện QR** | `01` §9.3 | 1.5 |
+| **Hoàng Huy** | `T4-TV5-01` | Màn Staff: tạo đợt bán 4 bước + quản lý offer | `FR-S02`, `FR-S03` | 1.5 |
+| **Hoàng Huy** | `T4-TV5-02` | Màn "đơn phải trả trong đợt" | `FR-S04` | 1.0 |
+| **Quang Huy** | `T4-TV6-01` | **gRPC QrService**: `IssueTicket` + `VerifyTicket`, ký HMAC, **không chạm DB** | `03` §11, `OQ-22` | 1.5 |
+| **Quang Huy** | `T4-TV6-02` | Đăng ký gRPC client ở API | | 0.5 |
 
 **Chốt 06/10 — kịch bản bắt buộc chạy được:**
 50 request đồng thời mua 10 suất → **đúng 10 đơn thành công, 40 đơn `409`**, tồn kho về 0
@@ -191,18 +194,18 @@ không âm. Quét QR lần hai trả `409`.
 | **Hiếu** | `T5-HIEU-02` | `NotificationDispatcher` + bảng `Notification` (thông báo trong ứng dụng, không push) | `FR-X05`, `FR-C13` | 0.75 |
 | **Hiếu** | `T5-HIEU-03` | Yêu thích cửa hàng | `FR-C12` | 0.5 |
 | **Hiếu** | `T5-HIEU-04` | **Export đơn + thống kê ra Excel** cho Brand và Admin (ClosedXML) — chỉ đọc, không ghi `Order` | `FR-B08`, `FR-A07`, `BR-27` | 1.0 |
-| **TV3** | `T5-TV3-01` | Khiếu nại + hoàn tiền: khách gửi, Admin duyệt/từ chối | `FR-C15`, `FR-A04`, `BR-17` | 1.5 |
-| **TV3** | `T5-TV3-02` | Content negotiation JSON + XML | Ch.03 | 0.5 |
-| **TV3** | `T5-TV3-03` | Đánh giá + cập nhật `RatingAverage` bằng một câu SQL | `FR-C11`, `BR-12` | 0.5 |
-| **TV3** | `T5-TV3-04` | **Import `OfferTemplate` từ Excel** + file mẫu tải về (ClosedXML) | `FR-B07`, `BR-26` | 1.0 |
-| **TV4** | `T5-TV4-01` | Lịch sử đơn + trạng thái + huỷ đơn | `FR-C09`, `FR-C10` | 1.0 |
-| **TV4** | `T5-TV4-02` | Gửi đánh giá + khiếu nại kèm ảnh (dùng endpoint upload chung) | `FR-C11`, `FR-C15`, `OQ-09` | 1.5 |
-| **TV5** | `T5-TV5-01` | **Trang demo AJAX + SignalR JS** — realtime số suất còn lại (Ch.07) | `FR-X06` | 1.5 |
-| **TV5** | `T5-TV5-02` | **Quét QR bằng webcam (HTML5-QRCode)** + ô nhập mã thủ công | `OQ-32`, `FR-S06` | 1.0 |
-| **TV5** | `T5-TV5-03` | Nút Import (tải lên + hiện lỗi theo dòng) và Export trên dashboard | `FR-B07`, `FR-B08`, `FR-A07` | 0.5 |
-| **TV6** | `T5-TV6-01` | Endpoint upload ảnh dùng chung | `OQ-09` | 1.0 |
-| **TV6** | `T5-TV6-02` | `DbSeeder` **pha 2 — dữ liệu giao dịch**: đợt bán + đơn hàng, sinh bằng **cách gọi service thật**, nên đồng thời là bài kiểm tra tích hợp (§12.2). **≥ 20 bản ghi mỗi bảng** giao dịch | `OQ-34`, `NFR-09` | 1.0 |
-| **TV6** | `T5-TV6-03` | **Deploy** API + Web Client + QrService (thử HTTP/2 cho gRPC ngay đầu tuần) + xuất Postman collection | `00-PLAN` §1.1 | 1.5 |
+| **Đình Đức** | `T5-TV3-01` | Khiếu nại + hoàn tiền: khách gửi, Admin duyệt/từ chối | `FR-C15`, `FR-A04`, `BR-17` | 1.5 |
+| **Đình Đức** | `T5-TV3-02` | Content negotiation JSON + XML | Ch.03 | 0.5 |
+| **Đình Đức** | `T5-TV3-03` | Đánh giá + cập nhật `RatingAverage` bằng một câu SQL | `FR-C11`, `BR-12` | 0.5 |
+| **Đình Đức** | `T5-TV3-04` | **Import `OfferTemplate` từ Excel** + file mẫu tải về (ClosedXML) | `FR-B07`, `BR-26` | 1.0 |
+| **Đức Anh** | `T5-TV4-01` | Lịch sử đơn + trạng thái + huỷ đơn | `FR-C09`, `FR-C10` | 1.0 |
+| **Đức Anh** | `T5-TV4-02` | Gửi đánh giá + khiếu nại kèm ảnh (dùng endpoint upload chung) | `FR-C11`, `FR-C15`, `OQ-09` | 1.5 |
+| **Hoàng Huy** | `T5-TV5-01` | **Trang demo AJAX + SignalR JS** — realtime số suất còn lại (Ch.07) | `FR-X06` | 1.5 |
+| **Hoàng Huy** | `T5-TV5-02` | **Quét QR bằng webcam (HTML5-QRCode)** + ô nhập mã thủ công | `OQ-32`, `FR-S06` | 1.0 |
+| **Hoàng Huy** | `T5-TV5-03` | Nút Import (tải lên + hiện lỗi theo dòng) và Export trên dashboard | `FR-B07`, `FR-B08`, `FR-A07` | 0.5 |
+| **Quang Huy** | `T5-TV6-01` | Endpoint upload ảnh dùng chung | `OQ-09` | 1.0 |
+| **Quang Huy** | `T5-TV6-02` | `DbSeeder` **pha 2 — dữ liệu giao dịch**: đợt bán + đơn hàng, sinh bằng **cách gọi service thật**, nên đồng thời là bài kiểm tra tích hợp (§12.2). **≥ 20 bản ghi mỗi bảng** giao dịch | `OQ-34`, `NFR-09` | 1.0 |
+| **Quang Huy** | `T5-TV6-03` | **Deploy** API + Web Client + QrService (thử HTTP/2 cho gRPC ngay đầu tuần) + xuất Postman collection | `00-PLAN` §1.1 | 1.5 |
 
 **Chốt 13/10: PHONG TOẢ TÍNH NĂNG.** Từ đây chỉ commit `fix`, không `feat`.
 Ai muốn thêm gì thì ghi vào mục "hướng phát triển" của báo cáo.
@@ -218,11 +221,11 @@ Ai muốn thêm gì thì ghi vào mục "hướng phát triển" của báo cáo
 | **Tùng** | `T6-TUNG-03` | **ERD kiểu Chen** + bảng chuyển ERD → schema theo mẫu của cô + ảnh thiết kế và dữ liệu 17 bảng | 0.5 |
 | **Hiếu** | `T6-HIEU-01` | **Tổng hợp báo cáo** — ghép phần của 6 người, thống nhất giọng văn, mục lục | 2.0 |
 | **Hiếu** | `T6-HIEU-02` | Sửa lỗi phát sinh | 1.0 |
-| **TV3** | `T6-TV3-01` | Viết phần báo cáo của mình + sửa lỗi | 2.0 |
-| **TV4** | `T6-TV4-01` | Viết phần báo cáo của mình + sửa lỗi | 2.0 |
-| **TV5** | `T6-TV5-01` | Viết phần báo cáo của mình + slide | 2.0 |
-| **TV6** | `T6-TV6-01` | **Unit test** cho đặt hàng + đối soát QR (dùng `FakeTimeProvider`) | 1.5 |
-| **TV6** | `T6-TV6-02` | Viết phần báo cáo của mình | 1.0 |
+| **Đình Đức** | `T6-TV3-01` | Viết phần báo cáo của mình + sửa lỗi | 2.0 |
+| **Đức Anh** | `T6-TV4-01` | Viết phần báo cáo của mình + sửa lỗi | 2.0 |
+| **Hoàng Huy** | `T6-TV5-01` | Viết phần báo cáo của mình + slide | 2.0 |
+| **Quang Huy** | `T6-TV6-01` | **Unit test** cho đặt hàng + đối soát QR (dùng `FakeTimeProvider`) | 1.5 |
+| **Quang Huy** | `T6-TV6-02` | Viết phần báo cáo của mình | 1.0 |
 
 ### Phân công báo cáo
 
@@ -262,9 +265,9 @@ cắt vào mục "hướng phát triển" của báo cáo.
 | Thứ tự | Cắt | Ai đỡ tải |
 | --- | --- | --- |
 | 1 | `FR-C12` yêu thích cửa hàng | Hiếu −0.5 |
-| 2 | `FR-C15` + `FR-A04` khiếu nại | TV3 −1.5, TV4 −0.75 |
-| 3 | `FR-S06` nhập mã đơn thủ công | TV5 −0.25 |
-| 4 | `FR-C11` đánh giá *(cắt cuối — mất luôn `RatingAverage`)* | TV3 −0.5, TV4 −0.75 |
+| 2 | `FR-C15` + `FR-A04` khiếu nại | Đình Đức −1.5, Đức Anh −0.75 |
+| 3 | `FR-S06` nhập mã đơn thủ công | Hoàng Huy −0.25 |
+| 4 | `FR-C11` đánh giá *(cắt cuối — mất luôn `RatingAverage`)* | Đình Đức −0.5, Đức Anh −0.75 |
 
 **Không bao giờ cắt:** đặt hàng + concurrency, đối soát QR, JWT phân quyền đa cấp,
 OData, BackgroundService. Đó là phần ăn điểm rubric và phần bảo vệ trước giảng viên.
@@ -283,10 +286,10 @@ Những file này ai cũng có lý do chính đáng để sửa. Nếu không ch
 
 | File | Ai cũng muốn sửa | **Chủ duy nhất** | Người khác làm gì thay thế |
 | --- | --- | --- | --- |
-| `API/Program.cs` | Hiếu (JWT, Hub, jobs), TV3 (OData, middleware), TV6 (gRPC client), Tùng | **Tùng**, dựng đủ ở Tuần 2 | Chỉ sửa `DependencyInjection.cs` của tầng mình |
-| `DataAccess/FreshRescueDbContext.cs` | TV3, TV6 muốn thêm `DbSet` | **Tùng**, khai đủ 17 `DbSet` ngay Tuần 3 | Configuration nằm file riêng, nạp bằng `ApplyConfigurationsFromAssembly` |
+| `API/Program.cs` | Hiếu (JWT, Hub, jobs), Đình Đức (OData, middleware), Quang Huy (gRPC client), Tùng | **Tùng**, dựng đủ ở Tuần 2 | Chỉ sửa `DependencyInjection.cs` của tầng mình |
+| `DataAccess/FreshRescueDbContext.cs` | Đình Đức, Quang Huy muốn thêm `DbSet` | **Tùng**, khai đủ 17 `DbSet` ngay Tuần 3 | Configuration nằm file riêng, nạp bằng `ApplyConfigurationsFromAssembly` |
 | `Business/Common/ErrorCodes.cs` | Cả 6 | **Tùng**, đủ 28 mã ở Tuần 3 | Thiếu mã ⇒ contract thiếu ⇒ sửa `03-API-CONTRACT.md` trước |
-| `WebClient/` hạ tầng (`IApiClient`, layout gốc, `Program.cs`) | TV4, TV5 | **TV4**, xong Tuần 3 rồi đóng băng | TV5 chỉ làm trong `Areas/Dashboard` |
+| `WebClient/` hạ tầng (`IApiClient`, layout gốc, `Program.cs`) | Đức Anh, Hoàng Huy | **Đức Anh**, xong Tuần 3 rồi đóng băng | Hoàng Huy chỉ làm trong `Areas/Dashboard` |
 | `docs/03-API-CONTRACT.md` | Cả 6 | **Tùng** | Đề xuất qua nhóm chat, Tùng gộp một lần |
 | `Directory.Packages.props` | Ai thêm package | **Tùng** | Nhắn xin thêm dòng |
 
@@ -302,11 +305,11 @@ khác nhau**. Git không báo gì, lỗi chỉ lộ ra lúc chạy.
 
 | Dữ liệu | Ai được ghi | Ai **không** được |
 | --- | --- | --- |
-| `Offer.RemainingQuantity` | **Chỉ `OrderService`** (Tùng) | `OfferService` (TV6) — muốn đổi số lượng thì gọi `IOrderService.AdjustOfferStockAsync()` do Tùng viết |
-| `Offer.TotalQuantity`, giá, thông tin chụp | **Chỉ `OfferService`** (TV6) | |
+| `Offer.RemainingQuantity` | **Chỉ `OrderService`** (Tùng) | `OfferService` (Quang Huy) — muốn đổi số lượng thì gọi `IOrderService.AdjustOfferStockAsync()` do Tùng viết |
+| `Offer.TotalQuantity`, giá, thông tin chụp | **Chỉ `OfferService`** (Quang Huy) | |
 | `Order.Status` | **Chỉ `OrderService`** (Tùng) | BackgroundService của Hiếu — xem dưới |
-| `SaleBatch.Status` | **Chỉ `SaleBatchService`** (TV6) | |
-| `Store.RatingAverage` | **Chỉ `ReviewService`** (TV3), bằng một câu SQL | |
+| `SaleBatch.Status` | **Chỉ `SaleBatchService`** (Quang Huy) | |
+| `Store.RatingAverage` | **Chỉ `ReviewService`** (Đình Đức), bằng một câu SQL | |
 
 **BackgroundService không chứa logic nghiệp vụ.** Hiếu sở hữu vòng lặp và vòng đời;
 chủ lát dọc sở hữu nội dung:
@@ -317,37 +320,37 @@ using var scope = _scopeFactory.CreateScope();
 await scope.ServiceProvider.GetRequiredService<IOrderService>()
            .ExpireOverdueOrdersAsync(ct);        // Tùng viết phần này
 await scope.ServiceProvider.GetRequiredService<ISaleBatchService>()
-           .CloseDueBatchesAsync(ct);            // TV6 viết phần này
+           .CloseDueBatchesAsync(ct);            // Quang Huy viết phần này
 ```
 
 Không có luật này, Hiếu sẽ phải viết lại logic hoàn tồn kho của Tùng — và hai bản sẽ
 lệch nhau đúng ở chỗ khó nhất (`02-DOMAIN-MODEL.md` §6.4).
 
-**Seeder tách hai pha** vì cùng lý do — TV3 không nên tự sinh đơn hàng:
+**Seeder tách hai pha** vì cùng lý do — Đình Đức không nên tự sinh đơn hàng:
 
 | Pha | Ai | Khi nào | Nội dung |
 | --- | --- | --- | --- |
-| 1 — tĩnh | TV3 | Tuần 3 | Role, user, brand, store, category, template. Ghi thẳng qua `DbContext` |
-| 2 — giao dịch | TV6 | Tuần 5 | Đợt bán + đơn hàng, sinh bằng **cách gọi service thật** |
+| 1 — tĩnh | Đình Đức | Tuần 3 | Role, user, brand, store, category, template. Ghi thẳng qua `DbContext` |
+| 2 — giao dịch | Quang Huy | Tuần 5 | Đợt bán + đơn hàng, sinh bằng **cách gọi service thật** |
 
 Pha 2 gọi service thật nên vừa tạo dữ liệu demo, vừa là **bài kiểm tra tích hợp chạy mỗi
 lần khởi động** — sai luồng đặt hàng là seed nổ ngay, không đợi tới lúc demo.
 
 ### 12.3. WebClient — tách đôi và không bao giờ bị chặn
 
-Hai vấn đề: TV4 và TV5 chung một project, và cả hai phụ thuộc API chưa có.
+Hai vấn đề: Đức Anh và Hoàng Huy chung một project, và cả hai phụ thuộc API chưa có.
 
 **Tách không gian:**
 
 ```
 WebClient/
-├─ Areas/Customer/     ← TV4 sở hữu trọn
-├─ Areas/Dashboard/    ← TV5 sở hữu trọn
-├─ Services/           ← TV4 sở hữu, ĐÓNG BĂNG sau Tuần 3
+├─ Areas/Customer/     ← Đức Anh sở hữu trọn
+├─ Areas/Dashboard/    ← Hoàng Huy sở hữu trọn
+├─ Services/           ← Đức Anh sở hữu, ĐÓNG BĂNG sau Tuần 3
 │   ├─ IApiClient.cs
 │   ├─ HttpApiClient.cs
 │   └─ MockApiClient.cs
-└─ Program.cs          ← TV4 sở hữu
+└─ Program.cs          ← Đức Anh sở hữu
 ```
 
 **Cắt phụ thuộc bằng `IApiClient` hai bản cài đặt:**
@@ -361,7 +364,7 @@ else
 ```
 
 `MockApiClient` trả thẳng các ví dụ JSON có sẵn trong `03-API-CONTRACT.md`. Nhờ vậy
-TV4 và TV5 **không nằm trong đường găng**: họ dựng xong toàn bộ giao diện trong khi
+Đức Anh và Hoàng Huy **không nằm trong đường găng**: họ dựng xong toàn bộ giao diện trong khi
 backend còn chưa có endpoint, rồi chỉ việc lật cờ cấu hình.
 
 Tốn thêm ~0.5 pd để viết `MockApiClient`, đổi lại **2 người không bao giờ phải ngồi chờ**
@@ -369,8 +372,8 @@ trong suốt 4 tuần. Và nó ép việc dùng đúng tên trường trong cont
 
 ### 12.4. Đóng băng schema sau 29/09
 
-Luật "chỉ Tùng tạo migration" đúng, nhưng tạo hàng đợi: TV3 cần thêm một cột ở Tuần 4
-trong khi Tùng đang ngập trong concurrency thì TV3 đứng im.
+Luật "chỉ Tùng tạo migration" đúng, nhưng tạo hàng đợi: Đình Đức cần thêm một cột ở Tuần 4
+trong khi Tùng đang ngập trong concurrency thì Đình Đức đứng im.
 
 **Từ 29/09, schema đóng băng.** Cả 17 bảng đã có đủ cột trong `02-DOMAIN-MODEL.md` §3 —
 đó chính là lý do bỏ công vẽ ERD trước khi code. Sau mốc này, đổi schema là ngoại lệ, cần
@@ -380,8 +383,8 @@ lý do và được ghi vào nhật ký nhóm.
 
 | Tuần | Số người chạy song song *(trước)* | *(sau)* |
 | --- | --- | --- |
-| T3 | 3 — Hiếu, TV3, TV6 chờ entity tới nửa tuần | **6 từ ngày đầu** |
-| T4 | 5 — TV4 chờ endpoint đặt hàng | **6** |
+| T3 | 3 — Hiếu, Đình Đức, Quang Huy chờ entity tới nửa tuần | **6 từ ngày đầu** |
+| T4 | 5 — Đức Anh chờ endpoint đặt hàng | **6** |
 | T5 | 6 | 6 |
 
 Nói thẳng: với 6 người trên **một** backend, song song hoàn hảo là không thể. Mục tiêu
