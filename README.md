@@ -39,8 +39,8 @@ Nhóm 6 thành viên · Nộp **20/10/2026**.
 | --- | --- |
 | Tùng | `API/Extensions/ApiLayerExtensions.cs`, `DataAccess/DependencyInjection.cs` |
 | Hiếu | `API/Extensions/AuthExtensions.cs`, `SwaggerExtensions.cs`, `RealtimeExtensions.cs`, `BackgroundJobExtensions.cs` |
-| TV3 | `API/Extensions/ODataExtensions.cs` |
-| TV6 | `API/Extensions/QrServiceClientExtensions.cs` |
+| Đình Đức | `API/Extensions/ODataExtensions.cs` |
+| Quang Huy | `API/Extensions/QrServiceClientExtensions.cs` |
 | Tất cả | `Business/DependencyInjection.cs` — thêm dòng vào đúng nhóm của mình |
 
 ---
