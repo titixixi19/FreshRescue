@@ -14,6 +14,8 @@ public static class DependencyInjection
         // Giữ thứ tự nhóm cố định để hai PR cùng sửa file này ít xung đột.
 
         // --- Auth (Hiếu) ---
+        services.AddScoped<Features.Auth.Services.ITokenService, Features.Auth.Services.TokenService>();
+        services.AddScoped<Features.Auth.Services.IAuthService, Features.Auth.Services.AuthService>();
 
         // --- Catalog + Admin (TV3) ---
 
