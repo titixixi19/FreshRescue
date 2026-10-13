@@ -11,7 +11,8 @@
     <LangVersion>12.0</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <InvariantGlobalization>true</InvariantGlobalization>
+    <!-- Phải tắt: Microsoft.Data.SqlClient cần culture thật, bật lên là không kết nối được SQL Server. -->
+    <InvariantGlobalization>false</InvariantGlobalization>
 
     <!--
       Ghim mức phân tích mã theo 8.0.

@@ -119,7 +119,7 @@ Mỗi mã gắn với một quy tắc nghiệp vụ — tra ngược về `01-RE
 
 ### 1.5. Claims trong JWT
 
-Web Client (TV4, TV5) đọc kỹ phần này.
+Web Client (Đức Anh, Hoàng Huy) đọc kỹ phần này.
 
 ```json
 {

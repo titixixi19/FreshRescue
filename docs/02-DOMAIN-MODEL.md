@@ -25,16 +25,19 @@
 ### 1.1. Các interface dùng chung
 
 ```csharp
-public interface IAuditable   { DateTime CreatedAt { get; set; }
-                                DateTime? UpdatedAt { get; set; } }
+public interface IHasCreatedAt { DateTime CreatedAt { get; set; } }
+
+public interface IAuditable : IHasCreatedAt { DateTime? UpdatedAt { get; set; } }
 
 public interface ISoftDelete  { bool IsDeleted { get; set; }
                                 DateTime? DeletedAt { get; set; } }
 ```
 
 Áp `ISoftDelete` cho: `Brand`, `Store`, `Category`, `OfferTemplate`, `Offer`.
-Áp `IAuditable` cho hầu hết bảng nghiệp vụ. Cài đặt tập trung trong
-`SaveChangesAsync()` override — **không** để mỗi service tự gán tay.
+Áp `IAuditable` cho hầu hết bảng nghiệp vụ. Bảng chỉ có `CreatedAt` (không bao giờ sửa
+hoặc không cần vết sửa) áp `IHasCreatedAt`: `AppUser`, `Payment`, `Review`,
+`FavoriteStore`, `Notification`. Cài đặt tập trung trong `SaveChangesAsync()` override —
+**không** để mỗi service tự gán tay. *(Chốt 05/10.)*
 
 ---
 
@@ -126,6 +129,7 @@ Một user **được mang nhiều role** (`OQ-03`).
 | OwnerUserId 🔗⭐ | `Guid` | → `AppUser`. **Unique** vì `Brand 1—1 BrandManager` |
 | Status 📇 | `tinyint` | `PendingApproval=0, Approved=1, Rejected=2, Suspended=3` |
 | ApprovedAt / ApprovedByUserId | `datetime2?` / `Guid?` | Vết duyệt của Admin (`OQ-01`) |
+| StatusReason | `nvarchar(500)?` | Lý do của lần từ chối / khoá gần nhất — lần sau ghi đè lần trước *(chốt 05/10)* |
 
 `BR-14`: chỉ `Approved` mới mở được đợt bán.
 
@@ -214,12 +218,14 @@ khai một khoảng nằm ngoài khoảng của sàn → chặn ngay lúc lưu `
 | CreatedByUserId 🔗 | `Guid` | Staff hoặc Brand Manager (`OQ-01`) |
 | ActivatedAt / ClosedAt | `datetime2?` | |
 | TotalUnsoldQuantity | `int?` | Chốt lúc đóng đợt, phục vụ số liệu ESG (`OQ-15`) |
+| CancelReason | `nvarchar(500)?` | Bắt buộc khi huỷ cả đợt (`BR-23`) *(chốt 05/10)* |
 
 **Ràng buộc `BR-15`** (kiểm ở tầng service, kèm `CHECK` constraint ở DB):
 
 ```
 SaleStartTime < SaleEndTime <= PickupEndTime
 PickupStartTime < PickupEndTime
+SaleStartTime <= PickupStartTime
 ```
 
 **Ràng buộc `OQ-11`** — không chồng khung giờ bán trong cùng chi nhánh. Không diễn đạt
@@ -287,7 +293,7 @@ WHERE StoreId = @storeId AND Id <> @id AND Status <> Cancelled
 | TotalAmount | `decimal(18,0)` | Khách trả |
 | PlatformFee | `decimal(18,0)` | 10% (`BR-20`) |
 | StorePayoutAmount | `decimal(18,0)` | 90% |
-| PaymentDeadline 📇 | `datetime2` | `min(now+10', SaleEndTime)` — `BR-05` |
+| PaymentDeadline 📇 | `datetime2` | `min(now+10', PickupEndTime)` — `BR-05` |
 | PaidAt / RedeemedAt / CancelledAt | `datetime2?` | |
 | RowVersion | `rowversion` | Chống tranh chấp giữa "khách huỷ" và "nhân viên quét" |
 
@@ -343,7 +349,9 @@ WHERE StoreId = @storeId AND Id <> @id AND Status <> Cancelled
 
 `BR-12`: chỉ đơn `Redeemed`, mỗi đơn đúng một đánh giá → `OrderId` unique.
 
-#### `Dispute`
+#### `Dispute` — *IAuditable*
+
+`CreatedAt` để Admin xếp hàng đợi khiếu nại theo thời gian *(chốt 05/10)*.
 
 | Cột | Kiểu | Ghi chú |
 | --- | --- | --- |
@@ -365,6 +373,8 @@ WHERE StoreId = @storeId AND Id <> @id AND Status <> Cancelled
 | --- | --- |
 | `FavoriteStore` | 🔑 tổ hợp (`CustomerUserId`, `StoreId`) · `CreatedAt` · 📇 trên `StoreId` để bắn thông báo (`OQ-29`) |
 | `Notification` | `Id` · `UserId 🔗📇` · `Title` · `Body` · `Type tinyint` · `RelatedEntityId Guid?` · `IsRead bit` · `CreatedAt` |
+
+`Notification.Type`: `NewSaleBatch=1, PickupReminder=2, OrderCancelledByStore=3` *(chốt 05/10)*.
 
 ---
 
@@ -598,12 +608,16 @@ Ghi ra để không ai "sửa giúp" rồi làm hỏng.
 1. **Chỉ Tùng chạy `Add-Migration`** (`00-PLAN.md` §5.1).
 2. `RowVersion` khai bằng `[Timestamp]` hoặc
    `.IsRowVersion()` — **đừng** tự tạo cột `int Version` rồi tăng tay.
-3. `CHECK (RemainingQuantity >= 0)` thêm qua
-   `migrationBuilder.Sql("ALTER TABLE ... ADD CONSTRAINT ...")`, vì Fluent API không
-   diễn đạt được.
-4. Global Query Filter phải khai **nhất quán**: nếu `Store` có filter mà `Order` không
-   có, EF sẽ cảnh báo về navigation bắt buộc. Truy vấn lịch sử dùng
-   `IgnoreQueryFilters()` (`BR-22`).
+3. `CHECK` khai bằng Fluent API trong file Configuration —
+   `builder.ToTable(t => t.HasCheckConstraint(...))` (EF Core 7 trở lên). Migration tự
+   sinh, **không** viết `migrationBuilder.Sql` tay. Hiện có hai: `CK_Offers_RemainingQuantity`
+   (`BR-01`) và `CK_SaleBatches_TimeOrder` (`BR-15`). *(Sửa 05/10.)*
+4. Global Query Filter **chỉ** khai trên 5 bảng `ISoftDelete` (`BR-22`), **không** lọc theo
+   dây chuyền xuống `Order`, `OrderItem`, `SaleBatch`, `StoreStaff`, `Review`,
+   `FavoriteStore` — đơn của chi nhánh đã xoá vẫn phải còn. EF sẽ cảnh báo 10622 về
+   navigation bắt buộc trỏ tới bảng có filter; cảnh báo này đã được tắt có chủ đích trong
+   `FreshRescueDbContext`. Hệ quả cần nhớ: `Include` tới bản ghi đã xoá mềm sẽ làm mất
+   luôn dòng cha, nên truy vấn lịch sử **bắt buộc** `IgnoreQueryFilters()`. *(Chốt 05/10.)*
 5. `decimal` phải khai rõ độ chính xác, nếu không EF mặc định `decimal(18,2)` và tiền
    VND sẽ mọc ra hai số lẻ vô nghĩa.
 6. Seed data (`OQ-34`) đặt ở `DbSeeder` chạy lúc khởi động, **không** nhét vào

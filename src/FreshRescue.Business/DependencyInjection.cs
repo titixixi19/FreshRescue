@@ -15,9 +15,9 @@ public static class DependencyInjection
 
         // --- Auth (Hiếu) ---
 
-        // --- Catalog + Admin (TV3) ---
+        // --- Catalog + Admin (Đình Đức) ---
 
-        // --- Sales (TV6) ---
+        // --- Sales (Quang Huy) ---
 
         // --- Ordering + Redemption (Tùng) ---
 
