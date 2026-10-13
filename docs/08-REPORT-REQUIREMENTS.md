@@ -33,23 +33,23 @@ Thứ tự mục theo đúng khung của cô. **Hiếu** tổng hợp, thống n
 | Mục 6 | Danh mục hình ảnh | Hiếu | Chèn caption cho mọi ảnh để Word tự sinh |
 | Mục 7 | Danh mục bảng | Hiếu | Như trên |
 | **Phần 1** | | | |
-| 1.1 | Giới thiệu bài toán; danh sách chức năng: CRUD, đăng nhập / đăng ký / reset password, Import/Export, search, sort, bảo mật | TV4 (bài toán) + TV5 (chức năng) | `01-REQUIREMENTS.md` §1–§6 |
+| 1.1 | Giới thiệu bài toán; danh sách chức năng: CRUD, đăng nhập / đăng ký / reset password, Import/Export, search, sort, bảo mật | Đức Anh (bài toán) + Hoàng Huy (chức năng) | `01-REQUIREMENTS.md` §1–§6 |
 | 1.2.1 | **ERD** — ảnh + entity mạnh / yếu + thuộc tính từng entity + danh sách quan hệ | Tùng | `02-DOMAIN-MODEL.md` §2–§3. **Phải vẽ lại theo kiểu Chen** — xem §3 dưới đây |
 | 1.2.2 | **Chuyển ERD → database schema** theo quy tắc, trình bày giống mẫu Slot 6 | Tùng | §3 dưới đây |
-| 1.2.3 | Liệt kê các bảng + **ảnh thiết kế và ảnh dữ liệu** từng bảng (≥ 20 bản ghi) | TV3 | Chụp từ SSMS sau khi seed |
+| 1.2.3 | Liệt kê các bảng + **ảnh thiết kế và ảnh dữ liệu** từng bảng (≥ 20 bản ghi) | Đình Đức | Chụp từ SSMS sau khi seed |
 | **Phần 2** | | | |
 | 2.x | **Mỗi nhóm API một mục**: URL, method, tham số, kiểu trả về, ảnh Swagger (xem §4) | Chủ lát dọc tự viết API của mình | `03-API-CONTRACT.md` |
 | 2.x | — Xác thực (`/auth`) | Hiếu | `03` §2 |
-| 2.x | — Danh mục, thương hiệu, quản trị, OData, Import mẫu hàng | TV3 | `03` §3, §7, §8, §9 |
-| 2.x | — Đợt bán, gRPC QrService | TV6 | `03` §6, §11 |
+| 2.x | — Danh mục, thương hiệu, quản trị, OData, Import mẫu hàng | Đình Đức | `03` §3, §7, §8, §9 |
+| 2.x | — Đợt bán, gRPC QrService | Quang Huy | `03` §6, §11 |
 | 2.x | — Đặt hàng, thanh toán, đối soát QR — **kèm phần chống over-selling có số liệu load test** | Tùng | `03` §4, §6.3; `02` §6 |
 | 2.x | — Export Excel, SignalR, tiến trình nền | Hiếu | `03` §7.1, §10 |
-| 2.3.1 | Front-end ASP.NET Core Web: các chức năng | TV4 (khách) + TV5 (dashboard) | |
-| 2.3.2 | Front-end: cách gọi API (HttpClient, fetch/AJAX, SignalR JS) | TV4 + TV5 | |
-| **Phần 10** | Demo và deploy dự án | TV6 (deploy) + Tùng (kịch bản demo) | |
+| 2.3.1 | Front-end ASP.NET Core Web: các chức năng | Đức Anh (khách) + Hoàng Huy (dashboard) | |
+| 2.3.2 | Front-end: cách gọi API (HttpClient, fetch/AJAX, SignalR JS) | Đức Anh + Hoàng Huy | |
+| **Phần 10** | Demo và deploy dự án | Quang Huy (deploy) + Tùng (kịch bản demo) | |
 | **Phần 11** | Đánh giá: hạn chế + hướng phát triển | Hiếu | `01-REQUIREMENTS.md` §10, `00-PLAN.md` §1.1 (những gì đã cắt) |
 | **Phần 12** | Tài liệu tham khảo: đường link, tài liệu đã dùng | Hiếu | Mỗi người gửi Hiếu link mình đã dùng |
-| **Slide** | Tóm tắt toàn bộ báo cáo Word | TV5 | |
+| **Slide** | Tóm tắt toàn bộ báo cáo Word | Hoàng Huy | |
 
 > Khung của cô không có chương riêng cho concurrency, gRPC hay SignalR — nhưng đó là phần ăn
 > điểm nhất (`00-PLAN.md` §4). Đặt chúng **bên trong** mục API tương ứng ở Phần 2, và cho
