@@ -24,4 +24,27 @@ public class OrderRepository : GenericRepository<Order>, IOrderRepository
                 cancellationToken);
         return affected == 1;
     }
+
+    public async Task<bool> TryCancelAsync(
+        Guid orderId,
+        OrderStatus expectedStatus,
+        CancelledBy cancelledBy,
+        string? cancelReason,
+        RefundStatus refundStatus,
+        DateTime cancelledAt,
+        CancellationToken cancellationToken)
+    {
+        var affected = await Set
+            .Where(o => o.Id == orderId && o.Status == expectedStatus)
+            .ExecuteUpdateAsync(
+                s => s
+                    .SetProperty(o => o.Status, OrderStatus.Cancelled)
+                    .SetProperty(o => o.CancelledBy, cancelledBy)
+                    .SetProperty(o => o.CancelReason, cancelReason)
+                    .SetProperty(o => o.RefundStatus, refundStatus)
+                    .SetProperty(o => o.CancelledAt, cancelledAt)
+                    .SetProperty(o => o.UpdatedAt, cancelledAt),
+                cancellationToken);
+        return affected == 1;
+    }
 }

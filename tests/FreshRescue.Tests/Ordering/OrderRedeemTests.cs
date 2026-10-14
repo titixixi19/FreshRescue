@@ -5,7 +5,6 @@ using FreshRescue.Business.Features.Ordering;
 using FreshRescue.Business.Features.Ordering.Dtos;
 using FreshRescue.Business.Features.Ordering.Validators;
 using FreshRescue.DataAccess;
-using FreshRescue.DataAccess.Repositories;
 using FreshRescue.DataAccess.UnitOfWork;
 using FreshRescue.Entities.Catalog;
 using FreshRescue.Entities.Constants;
@@ -22,8 +21,7 @@ using Moq;
 namespace FreshRescue.Tests.Ordering;
 
 /// <summary>
-/// Đối soát QR (FR-S05, BR-08, BR-09, BR-10). Câu UPDATE có điều kiện chạy bằng ExecuteUpdate mà
-/// InMemory không hỗ trợ, nên repository đơn được thay bằng bản mô phỏng cùng điều kiện WHERE.
+/// Đối soát QR (FR-S05, BR-08, BR-09, BR-10).
 /// </summary>
 public class OrderRedeemTests
 {
@@ -37,7 +35,7 @@ public class OrderRedeemTests
     private readonly Store _store;
     private readonly Order _order;
     private readonly Mock<IQrTicketClient> _qrTicketClient = new();
-    private readonly FakeOrderRepository _orders;
+    private readonly InMemoryOrderRepository _orders;
 
     public OrderRedeemTests()
     {
@@ -46,7 +44,7 @@ public class OrderRedeemTests
             .ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning))
             .Options;
         _context = new FreshRescueDbContext(options, new FixedTimeProvider(_now));
-        _orders = new FakeOrderRepository(_context);
+        _orders = new InMemoryOrderRepository(_context);
 
         _store = new Store { BrandId = _brandId, Name = "Chi nhánh Nguyễn Huệ", AddressLine = "12 Nguyễn Huệ", Ward = "Bến Nghé", District = "Quận 1", City = "TP.HCM" };
         var batch = new SaleBatch
@@ -277,33 +275,6 @@ public class OrderRedeemTests
             new FixedTimeProvider(now ?? _now),
             NullLogger<OrderService>.Instance,
             Options.Create(new OrderingOptions()));
-    }
-
-    /// <summary>Cùng điều kiện WHERE Id = @id AND Status = Paid với OrderRepository thật.</summary>
-    private sealed class FakeOrderRepository(FreshRescueDbContext context)
-        : GenericRepository<Order>(context), IOrderRepository
-    {
-        /// <summary>Chen một thay đổi vào giữa lúc service đọc và lúc ghi.</summary>
-        public Func<Task>? BeforeUpdate { get; set; }
-
-        public async Task<bool> TryMarkRedeemedAsync(Guid orderId, DateTime redeemedAt, CancellationToken cancellationToken)
-        {
-            if (BeforeUpdate is not null)
-            {
-                await BeforeUpdate();
-            }
-
-            var order = await Set.SingleOrDefaultAsync(o => o.Id == orderId && o.Status == OrderStatus.Paid, cancellationToken);
-            if (order is null)
-            {
-                return false;
-            }
-
-            order.Status = OrderStatus.Redeemed;
-            order.RedeemedAt = redeemedAt;
-            await Context.SaveChangesAsync(cancellationToken);
-            return true;
-        }
     }
 
     private sealed class FixedTimeProvider(DateTime utcNow) : TimeProvider

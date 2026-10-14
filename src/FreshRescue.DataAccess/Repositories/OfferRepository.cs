@@ -1,3 +1,4 @@
+using System.Data.SqlTypes;
 using FreshRescue.Entities.Sales;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,5 +22,25 @@ public class OfferRepository : GenericRepository<Offer>, IOfferRepository
         return Set
             .FromSqlRaw(sql, ids.Cast<object>().ToArray())
             .ToListAsync(cancellationToken);
+    }
+
+    public async Task RestockAsync(IReadOnlyDictionary<Guid, int> quantities, CancellationToken cancellationToken)
+    {
+        // 02 §6.2: khoá các dòng offer cùng thứ tự với lúc đặt hàng — SQL Server xếp uniqueidentifier
+        // khác Guid.CompareTo của .NET, nên sắp theo SqlGuid cho khớp thứ tự khoá của GetForUpdateAsync.
+        foreach (var (offerId, quantity) in quantities.OrderBy(q => new SqlGuid(q.Key)))
+        {
+            // Offer có thể đã bị xoá mềm sau khi khách đặt; vẫn phải trả về cho đúng sổ sách.
+            await Set
+                .IgnoreQueryFilters()
+                .Where(o => o.Id == offerId)
+                .ExecuteUpdateAsync(
+                    s => s.SetProperty(
+                        o => o.RemainingQuantity,
+                        o => o.RemainingQuantity + quantity > o.TotalQuantity
+                            ? o.TotalQuantity
+                            : o.RemainingQuantity + quantity),
+                    cancellationToken);
+        }
     }
 }

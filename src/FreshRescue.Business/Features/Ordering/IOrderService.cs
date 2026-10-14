@@ -17,4 +17,24 @@ public interface IOrderService
     /// service riêng vì chỉ OrderService được ghi <c>Order.Status</c> (07-WORK-BREAKDOWN.md §12.2).
     /// </summary>
     Task<RedemptionDto> RedeemAsync(RedeemOrderRequest request, CancellationToken cancellationToken);
+
+    /// <summary>Khách huỷ đơn (FR-C10, BR-13).</summary>
+    Task<OrderDto> CancelByCustomerAsync(Guid orderId, CancellationToken cancellationToken);
+
+    /// <summary>Cửa hàng huỷ đơn đã thanh toán do sự cố, hoàn 100% và báo khách (FR-S07, BR-16).</summary>
+    Task<OrderDto> CancelByStoreAsync(Guid orderId, CancelOrderByStoreRequest request, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Phần đơn hàng của việc huỷ cả đợt (BR-23): huỷ mọi đơn <c>PendingPayment</c> và <c>Paid</c>
+    /// theo đúng luồng BR-16. <c>SaleBatchService</c> gọi hàm này <b>bên trong giao dịch của mình</b>,
+    /// cùng giao dịch với việc đổi <c>SaleBatch.Status</c> — hàm không tự mở giao dịch.
+    /// Ném <c>BATCH_HAS_REDEEMED_ORDERS</c> nếu đợt đã có đơn trao hàng. Trả về số đơn đã huỷ.
+    /// </summary>
+    Task<int> CancelBatchOrdersAsync(Guid saleBatchId, string reason, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// FR-X03: huỷ đơn quá hạn thanh toán và trả tồn kho. BackgroundService gọi mỗi phút
+    /// (07-WORK-BREAKDOWN.md §12.2). Chạy lại nhiều lần trên cùng đơn vẫn an toàn. Trả về số đơn đã huỷ.
+    /// </summary>
+    Task<int> ExpireOverdueOrdersAsync(CancellationToken cancellationToken);
 }
