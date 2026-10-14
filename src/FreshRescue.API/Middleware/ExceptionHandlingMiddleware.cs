@@ -72,6 +72,7 @@ public class ExceptionHandlingMiddleware
     private static string TitleFor(int status) => status switch
     {
         StatusCodes.Status400BadRequest => "Yêu cầu không hợp lệ",
+        StatusCodes.Status401Unauthorized => "Chưa xác thực",
         StatusCodes.Status403Forbidden => "Không có quyền thực hiện",
         StatusCodes.Status404NotFound => "Không tìm thấy",
         StatusCodes.Status409Conflict => "Xung đột dữ liệu",
