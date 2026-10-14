@@ -33,6 +33,15 @@ public record OrderDto
     /// <summary>Chỉ có khi đã thanh toán (03-API-CONTRACT.md §4.2).</summary>
     public DateTime? PaidAt { get; init; }
 
+    /// <summary>Bốn trường dưới chỉ có nghĩa khi đơn <c>Cancelled</c> (02-DOMAIN-MODEL.md §4.3).</summary>
+    public CancelledBy? CancelledBy { get; init; }
+
+    public string? CancelReason { get; init; }
+
+    public DateTime? CancelledAt { get; init; }
+
+    public RefundStatus RefundStatus { get; init; }
+
     public List<OrderItemDto> Items { get; init; } = [];
 
     public DateTime CreatedAt { get; init; }

@@ -3,6 +3,7 @@ using FreshRescue.Business.Common;
 using FreshRescue.Business.Features.Ordering.Dtos;
 using FreshRescue.DataAccess.UnitOfWork;
 using FreshRescue.Entities.Constants;
+using FreshRescue.Entities.Engagement;
 using FreshRescue.Entities.Enums;
 using FreshRescue.Entities.Ordering;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +23,12 @@ public class OrderService : IOrderService
 
     // BR-08: được trao hàng sớm 5 phút trước PickupStartTime.
     private static readonly TimeSpan _earlyRedeem = TimeSpan.FromMinutes(5);
+
+    // BR-13: khách huỷ đơn đã trả tiền trong 15 phút sau khi thanh toán.
+    private static readonly TimeSpan _customerCancelWindow = TimeSpan.FromMinutes(15);
+
+    // FR-X03: mỗi lượt job xử lý tối đa chừng này đơn, phần còn lại để lượt sau (mỗi phút một lượt).
+    private const int ExpireBatchSize = 100;
 
     // BR-06: đếm cả Redeemed — khung bán và khung nhận chồng nhau, khách có thể nhận xong rồi đặt tiếp.
     private static readonly OrderStatus[] _purchaseLimitStatuses =
@@ -345,15 +352,8 @@ public class OrderService : IOrderService
             .SingleOrDefaultAsync(cancellationToken)
             ?? throw AppException.NotFound(ErrorCodes.NotFound, "Không tìm thấy đơn hàng.");
 
-        // Bước 2 — BR-10: Staff chỉ trao đơn của chi nhánh mình; Brand Manager mọi chi nhánh của thương hiệu.
-        var inScope = (_currentUser.IsInRole(AppRoles.StoreStaff) && _currentUser.StoreId == order.StoreId)
-            || (_currentUser.IsInRole(AppRoles.BrandManager) && _currentUser.BrandId == order.Store.BrandId);
-        if (!inScope)
-        {
-            throw AppException.Forbidden(
-                ErrorCodes.ForbiddenScope,
-                $"Đơn {order.OrderCode} thuộc chi nhánh '{order.Store.Name}', không phải chi nhánh của bạn.");
-        }
+        // Bước 2
+        EnsureInStoreScope(order);
 
         // Chỉ để báo lỗi dễ hiểu cho nhân viên — thứ chặn quét hai lần là WHERE ở bước 4.
         EnsureRedeemable(order.Status, order.OrderCode);
@@ -402,6 +402,272 @@ public class OrderService : IOrderService
             order.Id, order.OrderCode, staffUserId);
 
         return _mapper.Map<RedemptionDto>(order) with { RedeemedAt = now };
+    }
+
+    public async Task<OrderDto> CancelByCustomerAsync(Guid orderId, CancellationToken cancellationToken)
+    {
+        var customerId = RequireCustomerId();
+
+        var order = await QueryOrdersForCancel()
+            .SingleOrDefaultAsync(o => o.Id == orderId && o.CustomerUserId == customerId, cancellationToken)
+            ?? throw AppException.NotFound(ErrorCodes.NotFound, "Không tìm thấy đơn hàng.");
+
+        var now = _clock.GetUtcNow().UtcDateTime;
+
+        EnsureCancellable(order.Status, order.OrderCode, allowPendingPayment: true);
+
+        // BR-13: mốc −5' khớp với BR-08 để cửa sổ huỷ và cửa sổ trao hàng không bao giờ giao nhau —
+        // nếu chồng lên, khách có thể nhận bánh rồi bấm huỷ vẫn được hoàn tiền.
+        if (order.Status == OrderStatus.Paid
+            && now > Min(order.PaidAt!.Value + _customerCancelWindow, order.SaleBatch.PickupStartTime - _earlyRedeem))
+        {
+            throw AppException.Conflict(
+                ErrorCodes.CancelWindowPassed,
+                "Đã quá hạn huỷ: đơn đã thanh toán chỉ huỷ được trong 15 phút sau khi trả tiền và trước giờ nhận hàng 5 phút.");
+        }
+
+        await CancelOneAsync(order, CancelledBy.Customer, cancelReason: null, now, allowPendingPayment: true, cancellationToken);
+
+        _logger.LogInformation(
+            "Khách huỷ đơn. OrderId={OrderId}, OrderCode={OrderCode}, RefundStatus={RefundStatus}",
+            order.Id, order.OrderCode, order.RefundStatus);
+
+        return _mapper.Map<OrderDto>(order);
+    }
+
+    public async Task<OrderDto> CancelByStoreAsync(Guid orderId, CancelOrderByStoreRequest request, CancellationToken cancellationToken)
+    {
+        var staffUserId = _currentUser.UserId
+            ?? throw new InvalidOperationException("POST /staff/orders/{id}/cancel phải yêu cầu đăng nhập.");
+
+        var order = await QueryOrdersForCancel()
+            .SingleOrDefaultAsync(o => o.Id == orderId, cancellationToken)
+            ?? throw AppException.NotFound(ErrorCodes.NotFound, "Không tìm thấy đơn hàng.");
+
+        EnsureInStoreScope(order);
+
+        // BR-16: chỉ đơn Paid chưa trao. Đơn chưa trả tiền để job FR-X03 tự thu hồi.
+        EnsureCancellable(order.Status, order.OrderCode, allowPendingPayment: false);
+
+        var now = _clock.GetUtcNow().UtcDateTime;
+        await CancelOneAsync(order, CancelledBy.Store, request.Reason.Trim(), now, allowPendingPayment: false, cancellationToken);
+
+        _logger.LogInformation(
+            "Cửa hàng huỷ đơn. OrderId={OrderId}, OrderCode={OrderCode}, StaffUserId={StaffUserId}",
+            order.Id, order.OrderCode, staffUserId);
+
+        return _mapper.Map<OrderDto>(order);
+    }
+
+    public async Task<int> CancelBatchOrdersAsync(Guid saleBatchId, string reason, CancellationToken cancellationToken)
+    {
+        // BR-23
+        if (await _uow.Orders.Query().AnyAsync(o => o.SaleBatchId == saleBatchId && o.Status == OrderStatus.Redeemed, cancellationToken))
+        {
+            throw AppException.Conflict(
+                ErrorCodes.BatchHasRedeemedOrders,
+                "Đợt bán đã có đơn được trao hàng, không huỷ cả đợt được nữa.");
+        }
+
+        var orders = await QueryOrdersForCancel()
+            .Where(o => o.SaleBatchId == saleBatchId
+                && (o.Status == OrderStatus.PendingPayment || o.Status == OrderStatus.Paid))
+            .ToListAsync(cancellationToken);
+
+        var now = _clock.GetUtcNow().UtcDateTime;
+        var restock = new Dictionary<Guid, int>();
+        var cancelled = 0;
+
+        foreach (var order in orders)
+        {
+            // Đơn vừa đổi trạng thái giữa lúc đọc và lúc ghi (khách vừa huỷ, job vừa thu hồi) thì bỏ qua.
+            if (await TryCancelAsync(order, CancelledBy.Store, reason.Trim(), now, restock, cancellationToken))
+            {
+                cancelled++;
+            }
+        }
+
+        // Gộp hoàn tồn kho của cả đợt vào một lượt để khoá offer đúng một thứ tự (02 §6.2).
+        await _uow.Offers.RestockAsync(restock, cancellationToken);
+        await _uow.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation(
+            "Huỷ cả đợt bán. SaleBatchId={SaleBatchId}, SoDonHuy={CancelledCount}",
+            saleBatchId, cancelled);
+
+        return cancelled;
+    }
+
+    public async Task<int> ExpireOverdueOrdersAsync(CancellationToken cancellationToken)
+    {
+        var now = _clock.GetUtcNow().UtcDateTime;
+
+        var overdue = await QueryOrdersForCancel()
+            .Where(o => o.Status == OrderStatus.PendingPayment && o.PaymentDeadline < now)
+            .OrderBy(o => o.PaymentDeadline)
+            .Take(ExpireBatchSize)
+            .ToListAsync(cancellationToken);
+
+        var expired = 0;
+        foreach (var order in overdue)
+        {
+            // Mỗi đơn một giao dịch ngắn: không giữ khoá offer của cả lô trong lúc khách khác đang đặt hàng.
+            await using var transaction = await _uow.BeginTransactionAsync(cancellationToken);
+
+            var restock = new Dictionary<Guid, int>();
+            if (!await TryCancelAsync(order, CancelledBy.System, cancelReason: null, now, restock, cancellationToken))
+            {
+                // Khách vừa thanh toán kịp, hoặc job chạy chồng lượt — đơn đã được xử lý.
+                continue;
+            }
+
+            await _uow.Offers.RestockAsync(restock, cancellationToken);
+            await _uow.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+            expired++;
+        }
+
+        if (expired > 0)
+        {
+            _logger.LogInformation("Đã huỷ {ExpiredCount} đơn quá hạn thanh toán (FR-X03).", expired);
+        }
+
+        return expired;
+    }
+
+    private IQueryable<Order> QueryOrdersForCancel()
+        => _uow.Orders.Query()
+            .AsNoTracking()
+            // BR-22: chi nhánh bị xoá mềm sau khi khách đặt vẫn phải huỷ và hoàn được.
+            .IgnoreQueryFilters()
+            .Include(o => o.Store)
+            .Include(o => o.SaleBatch)
+            .Include(o => o.Items);
+
+    /// <summary>Huỷ một đơn trong giao dịch riêng; báo lỗi theo trạng thái mới nếu bị chen ngang.</summary>
+    private async Task CancelOneAsync(
+        Order order,
+        CancelledBy cancelledBy,
+        string? cancelReason,
+        DateTime now,
+        bool allowPendingPayment,
+        CancellationToken cancellationToken)
+    {
+        await using var transaction = await _uow.BeginTransactionAsync(cancellationToken);
+
+        var restock = new Dictionary<Guid, int>();
+        if (!await TryCancelAsync(order, cancelledBy, cancelReason, now, restock, cancellationToken))
+        {
+            var current = await _uow.Orders.Query()
+                .Where(o => o.Id == order.Id)
+                .Select(o => o.Status)
+                .SingleAsync(cancellationToken);
+            EnsureCancellable(current, order.OrderCode, allowPendingPayment);
+
+            // Trạng thái vẫn huỷ được nghĩa là đơn vừa chuyển PendingPayment → Paid: hoàn tiền khác hẳn
+            // chỉ trả tồn kho, nên để khách xem lại đơn rồi bấm lại.
+            throw AppException.Conflict(ErrorCodes.ConcurrencyConflict, $"Đơn {order.OrderCode} vừa đổi trạng thái, vui lòng tải lại rồi thử lại.");
+        }
+
+        await _uow.Offers.RestockAsync(restock, cancellationToken);
+        await _uow.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Bước chung của BR-13, BR-16, BR-23, FR-X03. Không lưu, không hoàn tồn kho ngay — dồn số cần
+    /// hoàn vào <paramref name="restock"/> để người gọi hoàn một lượt.
+    /// </summary>
+    private async Task<bool> TryCancelAsync(
+        Order order,
+        CancelledBy cancelledBy,
+        string? cancelReason,
+        DateTime now,
+        Dictionary<Guid, int> restock,
+        CancellationToken cancellationToken)
+    {
+        var wasPaid = order.Status == OrderStatus.Paid;
+
+        // 02 §4.3: đã trả tiền thì huỷ là hoàn 100%; chưa trả thì chỉ trả tồn kho.
+        var refundStatus = wasPaid ? RefundStatus.Refunded : RefundStatus.None;
+
+        // 02 §6.4: chỉ hoàn tồn kho khi chính lệnh UPDATE này đổi đúng một dòng — chạy hai lần
+        // trên cùng đơn thì lần sau không khớp WHERE và không cộng thêm gì.
+        if (!await _uow.Orders.TryCancelAsync(order.Id, order.Status, cancelledBy, cancelReason, refundStatus, now, cancellationToken))
+        {
+            return false;
+        }
+
+        foreach (var item in order.Items)
+        {
+            restock[item.OfferId] = restock.GetValueOrDefault(item.OfferId) + item.Quantity;
+        }
+
+        if (wasPaid)
+        {
+            var ticket = await _uow.QrTickets.Query().SingleOrDefaultAsync(t => t.OrderId == order.Id, cancellationToken);
+            if (ticket is not null)
+            {
+                ticket.Status = QrTicketStatus.Revoked;
+            }
+
+            // BR-16: cửa hàng huỷ đơn đã trả tiền thì phải báo khách.
+            if (cancelledBy == CancelledBy.Store)
+            {
+                await _uow.Notifications.AddAsync(
+                    new Notification
+                    {
+                        UserId = order.CustomerUserId,
+                        Type = NotificationType.OrderCancelledByStore,
+                        Title = $"Đơn {order.OrderCode} đã bị cửa hàng huỷ",
+                        Body = $"{order.Store.Name} đã huỷ đơn của bạn. Lý do: {cancelReason}. Bạn được hoàn 100% số tiền đã trả.",
+                        RelatedEntityId = order.Id,
+                    },
+                    cancellationToken);
+            }
+        }
+
+        // Bản đọc AsNoTracking — cập nhật để trả về đúng trạng thái mới, không ảnh hưởng SaveChanges.
+        order.Status = OrderStatus.Cancelled;
+        order.CancelledBy = cancelledBy;
+        order.CancelReason = cancelReason;
+        order.RefundStatus = refundStatus;
+        order.CancelledAt = now;
+        return true;
+    }
+
+    private static void EnsureCancellable(OrderStatus status, string orderCode, bool allowPendingPayment)
+    {
+        switch (status)
+        {
+            case OrderStatus.Paid:
+                return;
+            case OrderStatus.PendingPayment when allowPendingPayment:
+                return;
+            case OrderStatus.PendingPayment:
+                throw AppException.Conflict(
+                    ErrorCodes.CancelWindowPassed,
+                    $"Đơn {orderCode} chưa thanh toán — hệ thống sẽ tự huỷ khi quá hạn thanh toán.");
+            case OrderStatus.Redeemed:
+                throw AppException.Conflict(ErrorCodes.OrderAlreadyRedeemed, $"Đơn {orderCode} đã trao hàng, không huỷ được nữa.");
+            case OrderStatus.Cancelled:
+                throw AppException.Conflict(ErrorCodes.CancelWindowPassed, $"Đơn {orderCode} đã bị huỷ trước đó.");
+            default:
+                throw AppException.Conflict(ErrorCodes.CancelWindowPassed, $"Đơn {orderCode} đã quá giờ nhận hàng, không huỷ được nữa.");
+        }
+    }
+
+    /// <summary>BR-10: Staff chỉ chi nhánh mình; Brand Manager mọi chi nhánh của thương hiệu mình.</summary>
+    private void EnsureInStoreScope(Order order)
+    {
+        var inScope = (_currentUser.IsInRole(AppRoles.StoreStaff) && _currentUser.StoreId == order.StoreId)
+            || (_currentUser.IsInRole(AppRoles.BrandManager) && _currentUser.BrandId == order.Store.BrandId);
+        if (!inScope)
+        {
+            throw AppException.Forbidden(
+                ErrorCodes.ForbiddenScope,
+                $"Đơn {order.OrderCode} thuộc chi nhánh '{order.Store.Name}', không phải chi nhánh của bạn.");
+        }
     }
 
     private static void EnsureRedeemable(OrderStatus status, string orderCode)

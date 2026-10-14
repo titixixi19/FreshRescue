@@ -58,6 +58,20 @@ public class OrdersController : ControllerBase
         return await _orderService.PayAsync(id, request, cancellationToken);
     }
 
+    /// <summary>Khách huỷ đơn (FR-C10, BR-13). Đơn đã thanh toán được hoàn 100%.</summary>
+    /// <response code="200">Đã huỷ — đơn Cancelled, tồn kho được trả lại</response>
+    /// <response code="404">Không tìm thấy đơn của bạn</response>
+    /// <response code="409">Quá hạn huỷ, đơn đã trao hàng / đã huỷ, hoặc đơn vừa đổi trạng thái</response>
+    [HttpPost("{id:guid}/cancel")]
+    [Authorize(Roles = AppRoles.Customer)]
+    [ProducesResponseType(typeof(OrderDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<OrderDto>> CancelAsync(Guid id, CancellationToken cancellationToken)
+    {
+        return await _orderService.CancelByCustomerAsync(id, cancellationToken);
+    }
+
     /// <summary>Lấy vé QR của đơn đã thanh toán (FR-C07).</summary>
     /// <response code="200">Vé QR — vẽ token thành ảnh, không cắt hay định dạng lại chuỗi</response>
     /// <response code="404">Không tìm thấy đơn, hoặc đơn chưa thanh toán nên chưa có vé</response>
