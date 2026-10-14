@@ -26,6 +26,7 @@ public class OrderService : IOrderService
     private readonly IUnitOfWork _uow;
     private readonly IMapper _mapper;
     private readonly ICurrentUser _currentUser;
+    private readonly IQrTicketClient _qrTicketClient;
     private readonly TimeProvider _clock;
     private readonly ILogger<OrderService> _logger;
     private readonly OrderingOptions _options;
@@ -34,6 +35,7 @@ public class OrderService : IOrderService
         IUnitOfWork uow,
         IMapper mapper,
         ICurrentUser currentUser,
+        IQrTicketClient qrTicketClient,
         TimeProvider clock,
         ILogger<OrderService> logger,
         IOptions<OrderingOptions> options)
@@ -41,6 +43,7 @@ public class OrderService : IOrderService
         _uow = uow;
         _mapper = mapper;
         _currentUser = currentUser;
+        _qrTicketClient = qrTicketClient;
         _clock = clock;
         _logger = logger;
         _options = options.Value;
@@ -197,6 +200,113 @@ public class OrderService : IOrderService
 
         return _mapper.Map<OrderDto>(order);
     }
+
+    public async Task<OrderPaymentDto> PayAsync(Guid orderId, PayOrderRequest request, CancellationToken cancellationToken)
+    {
+        var customerId = RequireCustomerId();
+
+        var order = await _uow.Orders.Query()
+            // BR-22: chi nhánh bị xoá mềm sau khi khách đặt vẫn phải hiện được trên đơn.
+            .IgnoreQueryFilters()
+            .Include(o => o.Store)
+            .Include(o => o.SaleBatch)
+            .Include(o => o.Items)
+            .SingleOrDefaultAsync(o => o.Id == orderId && o.CustomerUserId == customerId, cancellationToken)
+            ?? throw AppException.NotFound(ErrorCodes.NotFound, "Không tìm thấy đơn hàng.");
+
+        if (order.Status != OrderStatus.PendingPayment)
+        {
+            throw AppException.Conflict(ErrorCodes.OrderNotPayable, "Đơn này không còn chờ thanh toán.");
+        }
+
+        var now = _clock.GetUtcNow().UtcDateTime;
+
+        // BR-05. Chỉ từ chối, không tự huỷ ở đây — huỷ và hoàn tồn kho là việc của job FR-X03 (02 §6.4).
+        if (now > order.PaymentDeadline)
+        {
+            throw AppException.Conflict(
+                ErrorCodes.PaymentDeadlinePassed,
+                "Đã quá hạn thanh toán, suất giữ chỗ sẽ được trả lại. Vui lòng đặt lại.");
+        }
+
+        // Thêm qua repository, không qua order.Payments: Id đã sinh sẵn trong BaseEntity nên EF sẽ
+        // tưởng bản ghi gắn vào đơn đang theo dõi là bản ghi cũ và sinh UPDATE thay vì INSERT.
+        var payment = new Payment
+        {
+            OrderId = order.Id,
+            Method = PaymentMethod.MockGateway,
+            Amount = order.TotalAmount,
+            TransactionRef = "MOCK-" + Guid.NewGuid().ToString("N")[..12].ToUpperInvariant(),
+        };
+        await _uow.Payments.AddAsync(payment, cancellationToken);
+
+        // OQ-17: thất bại thì đơn vẫn giữ chỗ tới hạn thanh toán, khách được bấm lại.
+        if (request.Outcome == PaymentOutcome.Failure)
+        {
+            payment.Status = PaymentStatus.Failed;
+            await _uow.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation("Thanh toán giả lập thất bại. OrderId={OrderId}", order.Id);
+            return new OrderPaymentDto { Order = _mapper.Map<OrderDto>(order) };
+        }
+
+        // Xin vé trước khi ghi: vé chỉ là một chuỗi đã ký, nên nếu QrService lỗi thì chưa có gì
+        // thay đổi trong CSDL và khách bấm lại được. Vé hết hạn cùng khung nhận hàng.
+        var expiresAt = order.SaleBatch.PickupEndTime;
+        var token = await _qrTicketClient.IssueAsync(order.Id, order.StoreId, expiresAt, cancellationToken);
+
+        payment.Status = PaymentStatus.Succeeded;
+        order.Status = OrderStatus.Paid;
+        order.PaidAt = now;
+        var ticket = new QrTicket
+        {
+            OrderId = order.Id,
+            Token = token,
+            IssuedAt = now,
+            ExpiresAt = expiresAt,
+        };
+        await _uow.QrTickets.AddAsync(ticket, cancellationToken);
+
+        try
+        {
+            await _uow.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            // RowVersion: giữa lúc đọc và lúc ghi, job hết hạn đã huỷ đơn hoặc khách bấm thanh toán
+            // hai lần. Lệnh UPDATE không khớp dòng nào nên không có gì được ghi.
+            _uow.ClearChangeTracker();
+            throw AppException.Conflict(ErrorCodes.OrderNotPayable, "Đơn này vừa thay đổi trạng thái, không còn chờ thanh toán.");
+        }
+
+        _logger.LogInformation(
+            "Thanh toán thành công, đã cấp vé QR. OrderId={OrderId}, OrderCode={OrderCode}",
+            order.Id, order.OrderCode);
+
+        return new OrderPaymentDto
+        {
+            Order = _mapper.Map<OrderDto>(order),
+            QrTicket = _mapper.Map<QrTokenDto>(ticket),
+        };
+    }
+
+    public async Task<QrTicketDto> GetQrTicketAsync(Guid orderId, CancellationToken cancellationToken)
+    {
+        var customerId = RequireCustomerId();
+
+        var ticket = await _uow.QrTickets.Query()
+            .AsNoTracking()
+            .IgnoreQueryFilters()
+            .Include(t => t.Order).ThenInclude(o => o.Store)
+            .Include(t => t.Order).ThenInclude(o => o.SaleBatch)
+            .SingleOrDefaultAsync(t => t.OrderId == orderId && t.Order.CustomerUserId == customerId, cancellationToken)
+            ?? throw AppException.NotFound(ErrorCodes.NotFound, "Đơn chưa có vé QR — vé chỉ được cấp sau khi thanh toán thành công.");
+
+        return _mapper.Map<QrTicketDto>(ticket);
+    }
+
+    private Guid RequireCustomerId()
+        => _currentUser.UserId ?? throw new InvalidOperationException("Endpoint đơn hàng phải yêu cầu đăng nhập.");
 
     private static DateTime Min(DateTime a, DateTime b) => a < b ? a : b;
 }

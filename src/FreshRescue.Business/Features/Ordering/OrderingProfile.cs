@@ -17,5 +17,13 @@ public class OrderingProfile : Profile
 
         CreateMap<OrderItem, OrderItemDto>()
             .ForMember(d => d.OfferName, o => o.MapFrom(s => s.OfferNameSnapshot));
+
+        // Cần nạp kèm QrTicket.Order.Store và QrTicket.Order.SaleBatch.
+        CreateMap<QrTicket, QrTicketDto>()
+            .ForMember(d => d.OrderCode, o => o.MapFrom(s => s.Order.OrderCode))
+            .ForMember(d => d.PickupStartTime, o => o.MapFrom(s => s.Order.SaleBatch.PickupStartTime))
+            .ForMember(d => d.StoreName, o => o.MapFrom(s => s.Order.Store.Name));
+
+        CreateMap<QrTicket, QrTokenDto>();
     }
 }

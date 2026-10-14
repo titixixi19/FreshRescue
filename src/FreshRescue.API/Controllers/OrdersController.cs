@@ -38,4 +38,35 @@ public class OrdersController : ControllerBase
         // Trỏ tới GET /me/orders/{id} (03 §4) — endpoint đó nằm ở controller khác.
         return Created($"/api/v1/me/orders/{order.Id}", order);
     }
+
+    /// <summary>Thanh toán giả lập (FR-C06, OQ-17). Thành công thì trả kèm vé QR (FR-C07).</summary>
+    /// <response code="200">Đã ghi nhận kết quả. Failure: đơn vẫn PendingPayment, không có qrTicket</response>
+    /// <response code="400">outcome không phải Success hoặc Failure</response>
+    /// <response code="404">Không tìm thấy đơn của bạn</response>
+    /// <response code="409">Đơn không còn chờ thanh toán, hoặc đã quá hạn thanh toán</response>
+    [HttpPost("{id:guid}/payment")]
+    [Authorize(Roles = AppRoles.Customer)]
+    [ProducesResponseType(typeof(OrderPaymentDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<OrderPaymentDto>> PayAsync(
+        Guid id,
+        PayOrderRequest request,
+        CancellationToken cancellationToken)
+    {
+        return await _orderService.PayAsync(id, request, cancellationToken);
+    }
+
+    /// <summary>Lấy vé QR của đơn đã thanh toán (FR-C07).</summary>
+    /// <response code="200">Vé QR — vẽ token thành ảnh, không cắt hay định dạng lại chuỗi</response>
+    /// <response code="404">Không tìm thấy đơn, hoặc đơn chưa thanh toán nên chưa có vé</response>
+    [HttpGet("{id:guid}/qr")]
+    [Authorize(Roles = AppRoles.Customer)]
+    [ProducesResponseType(typeof(QrTicketDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<QrTicketDto>> GetQrTicketAsync(Guid id, CancellationToken cancellationToken)
+    {
+        return await _orderService.GetQrTicketAsync(id, cancellationToken);
+    }
 }
