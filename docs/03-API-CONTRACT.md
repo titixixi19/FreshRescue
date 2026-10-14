@@ -381,6 +381,12 @@ Không có body. Trả `200` + `OrderDto` với `status: "Cancelled"` và bốn 
 | `Redeemed` | `409 ORDER_ALREADY_REDEEMED` |
 | Đơn vừa đổi trạng thái giữa lúc đọc và lúc huỷ | `409 CONCURRENCY_CONFLICT` — tải lại đơn rồi thử lại |
 
+### 4.5. `GET /me/orders`, `GET /me/orders/{id}` *(chốt 14/10)*
+
+`GET /me/orders?status=Paid&page=1&pageSize=20` trả `PagedResponse<OrderDto>` (§1.1), mới nhất
+trước; bỏ `status` để lấy mọi trạng thái. `GET /me/orders/{id}` trả một `OrderDto`, `404` nếu
+không phải đơn của mình. Đơn của chi nhánh đã xoá mềm vẫn hiện đủ (`BR-22`).
+
 ---
 
 ## 5. Khách hàng — sau khi nhận hàng & cá nhân
@@ -504,6 +510,24 @@ Trả `200` + `OrderDto` (`cancelledBy: "Store"`, `refundStatus: "Refunded"`). K
 
 **Huỷ cả đợt** (`POST /staff/sale-batches/{id}/cancel`, `BR-23`) dùng cùng body `{ "reason" }`
 và cùng luồng này cho từng đơn `PendingPayment` / `Paid` của đợt.
+
+### 6.5. `GET /staff/sale-batches/{id}/orders` — đơn phải trả *(chốt 14/10)*
+
+`?status=&page=&pageSize=` như §1.1. Bỏ `status` thì trả mọi đơn **trừ `PendingPayment`**;
+sắp đơn `Paid` (chờ trao) lên đầu theo `paidAt`, rồi tới các đơn còn lại. Phạm vi `BR-10`.
+
+```json
+// PagedResponse<StaffOrderDto> — không có số điện thoại hay email của khách
+{ "items": [ {
+    "id": "0c4d...", "orderCode": "FR-8A3K9MQ2", "customerName": "Nguyễn Văn An",
+    "status": "Paid", "totalAmount": 70000,
+    "paidAt": "2026-09-17T13:05:00Z", "redeemedAt": null, "cancelledAt": null,
+    "items": [ { "offerId": "e91b...", "offerName": "Túi mù bánh ngọt",
+                 "quantity": 2, "unitPrice": 35000, "lineTotal": 70000 } ] } ],
+  "page": 1, "pageSize": 20, "totalCount": 1, "totalPages": 1 }
+```
+
+Lỗi: `FORBIDDEN_SCOPE` (đợt của chi nhánh khác), `NOT_FOUND` (không có đợt).
 
 ---
 
