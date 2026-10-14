@@ -71,6 +71,11 @@ public class FreshRescueDbContext : IdentityDbContext<AppUser, AppRole, Guid>
         // Mặc định của EF là decimal(18,2) — tiền VND sẽ mọc hai số lẻ vô nghĩa (02 §8).
         // Toạ độ, điểm đánh giá, phần trăm tự khai lại độ chính xác trong file cấu hình.
         configurationBuilder.Properties<decimal>().HavePrecision(18, 0);
+
+        // SQL Server không lưu Kind: đọc lên là Unspecified, ra JSON thiếu hậu tố Z (OQ-33).
+        // Mọi giá trị trong CSDL đã là UTC, nên chỉ cần gắn lại Kind lúc đọc.
+        configurationBuilder.Properties<DateTime>().HaveConversion<UtcDateTimeConverter>();
+        configurationBuilder.Properties<DateTime?>().HaveConversion<UtcDateTimeConverter>();
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

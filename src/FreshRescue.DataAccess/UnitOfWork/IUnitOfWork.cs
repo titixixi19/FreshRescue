@@ -35,7 +35,7 @@ public interface IUnitOfWork
 
     IGenericRepository<SaleBatch> SaleBatches { get; }
 
-    IGenericRepository<Offer> Offers { get; }
+    IOfferRepository Offers { get; }
 
     IGenericRepository<Order> Orders { get; }
 
@@ -62,4 +62,10 @@ public interface IUnitOfWork
 
     /// <summary>Dùng cho đặt hàng, hoàn tồn kho, đối soát QR (02-DOMAIN-MODEL.md §6).</summary>
     Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Bỏ mọi entity đang theo dõi. Gọi trước khi thử lại sau xung đột đồng thời, để lần sau
+    /// nạp lại dữ liệu mới từ CSDL thay vì dùng bản cũ đã lỗi thời (02-DOMAIN-MODEL.md §6.1).
+    /// </summary>
+    void ClearChangeTracker();
 }
