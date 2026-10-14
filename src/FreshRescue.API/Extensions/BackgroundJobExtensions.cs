@@ -1,3 +1,5 @@
+using FreshRescue.API.BackgroundServices;
+
 namespace FreshRescue.API.Extensions;
 
 /// <summary>
@@ -8,7 +10,9 @@ public static class BackgroundJobExtensions
 {
     public static IServiceCollection AddBackgroundJobs(this IServiceCollection services)
     {
-        // TODO(Hieu, 2026-10-06): AddHostedService<SaleBatchSchedulerService>() v.v.
+        services.AddHostedService<SaleBatchSchedulerService>();
+        services.AddHostedService<OrderExpiryService>();
+        services.AddHostedService<NoShowService>();
         return services;
     }
 }

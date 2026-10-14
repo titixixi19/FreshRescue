@@ -37,4 +37,10 @@ public interface IOrderService
     /// (07-WORK-BREAKDOWN.md §12.2). Chạy lại nhiều lần trên cùng đơn vẫn an toàn. Trả về số đơn đã huỷ.
     /// </summary>
     Task<int> ExpireOverdueOrdersAsync(CancellationToken cancellationToken);
+
+    /// <summary>
+    /// FR-X04: Quét đơn đã thanh toán (Paid) mà khách không tới nhận sau PickupEndTime,
+    /// chuyển thành NoShow (BR-19, không hoàn tiền). Trả về số đơn đã đánh dấu NoShow.
+    /// </summary>
+    Task<int> ProcessNoShowsAsync(CancellationToken cancellationToken, Guid? saleBatchId = null);
 }

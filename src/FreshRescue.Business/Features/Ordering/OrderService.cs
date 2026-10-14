@@ -535,6 +535,46 @@ public class OrderService : IOrderService
         return expired;
     }
 
+    /// <summary>
+    /// FR-X04: Quét đơn đã thanh toán (Paid) mà khách không tới nhận sau PickupEndTime,
+    /// chuyển thành NoShow (BR-19, không hoàn tiền).
+    /// </summary>
+    public async Task<int> ProcessNoShowsAsync(CancellationToken cancellationToken, Guid? saleBatchId = null)
+    {
+        var now = _clock.GetUtcNow().UtcDateTime;
+
+        var query = _uow.Orders.Query()
+            .IgnoreQueryFilters()
+            .Include(o => o.SaleBatch)
+            .Where(o => o.Status == OrderStatus.Paid && o.SaleBatch.PickupEndTime <= now);
+
+        if (saleBatchId.HasValue)
+        {
+            query = query.Where(o => o.SaleBatchId == saleBatchId.Value);
+        }
+
+        var dueOrders = await query.ToListAsync(cancellationToken);
+        if (dueOrders.Count == 0)
+        {
+            return 0;
+        }
+
+        foreach (var order in dueOrders)
+        {
+            order.Status = OrderStatus.NoShow;
+            order.RefundStatus = RefundStatus.None;
+            order.UpdatedAt = now;
+
+            _logger.LogInformation(
+                "Đơn {OrderCode} (Id={OrderId}) chuyển sang NoShow tại {Now}. PickupEndTime={PickupEndTime}",
+                order.OrderCode, order.Id, now, order.SaleBatch.PickupEndTime);
+        }
+
+        await _uow.SaveChangesAsync(cancellationToken);
+        _logger.LogInformation("Đã đánh dấu {NoShowCount} đơn NoShow (FR-X04).", dueOrders.Count);
+        return dueOrders.Count;
+    }
+
     private IQueryable<Order> QueryOrdersForCancel()
         => _uow.Orders.Query()
             .AsNoTracking()
