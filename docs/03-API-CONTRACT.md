@@ -363,6 +363,24 @@ giữ cho tới hết hạn (`OQ-17`).
 > (`FR-S06`, `OQ-32`). `token` tự chứa dữ liệu và đã ký (`NFR-04`) — đừng cắt ngắn hay
 > định dạng lại chuỗi.
 
+### 4.4. `POST /orders/{id}/cancel` — khách huỷ *(chốt 14/10)*
+
+Không có body. Trả `200` + `OrderDto` với `status: "Cancelled"` và bốn trường huỷ:
+
+```json
+{ "...": "OrderDto", "status": "Cancelled",
+  "cancelledBy": "Customer", "cancelReason": null,
+  "cancelledAt": "2026-09-17T13:05:00Z", "refundStatus": "Refunded" }
+```
+
+| Trạng thái đơn | Kết quả |
+| --- | --- |
+| `PendingPayment` | Huỷ, trả tồn kho, `refundStatus: "None"` |
+| `Paid`, `now ≤ min(paidAt + 15', pickupStartTime − 5')` | Huỷ, trả tồn kho, `refundStatus: "Refunded"`, vé QR hết hiệu lực (`BR-13`) |
+| `Paid`, quá hạn trên · `Cancelled` · `NoShow` | `409 CANCEL_WINDOW_PASSED` |
+| `Redeemed` | `409 ORDER_ALREADY_REDEEMED` |
+| Đơn vừa đổi trạng thái giữa lúc đọc và lúc huỷ | `409 CONCURRENCY_CONFLICT` — tải lại đơn rồi thử lại |
+
 ---
 
 ## 5. Khách hàng — sau khi nhận hàng & cá nhân
@@ -466,6 +484,26 @@ Chỉ còn cho phép **tăng** `totalQuantity`. Lý do cấm lùi `PickupEndTime
 | `FORBIDDEN_SCOPE` | Đơn của chi nhánh khác — `detail` nói rõ tên chi nhánh đúng (`BR-10`) |
 | `REDEEM_WINDOW_CLOSED` | Tới quá sớm (`BR-08`) |
 | `ORDER_ALREADY_REDEEMED` | **Đã quét rồi** (`BR-09`) |
+
+### 6.4. `POST /staff/orders/{id}/cancel` — cửa hàng huỷ *(chốt 14/10)*
+
+```json
+// request — lý do bắt buộc, tối đa 500 ký tự (BR-16)
+{ "reason": "Lò hỏng, không đủ bánh" }
+```
+
+Trả `200` + `OrderDto` (`cancelledBy: "Store"`, `refundStatus: "Refunded"`). Khách nhận một
+`Notification` loại `OrderCancelledByStore` kèm lý do. Phạm vi theo `BR-10` như §6.3.
+
+| Lỗi | Nghĩa |
+| --- | --- |
+| `VALIDATION_FAILED` | Thiếu `reason` hoặc quá 500 ký tự |
+| `FORBIDDEN_SCOPE` | Đơn của chi nhánh khác |
+| `CANCEL_WINDOW_PASSED` | Đơn chưa thanh toán (để job `FR-X03` tự thu hồi), đã huỷ, hoặc `NoShow` |
+| `ORDER_ALREADY_REDEEMED` | Đã trao hàng — chỉ còn đường khiếu nại (`BR-17`) |
+
+**Huỷ cả đợt** (`POST /staff/sale-batches/{id}/cancel`, `BR-23`) dùng cùng body `{ "reason" }`
+và cùng luồng này cho từng đơn `PendingPayment` / `Paid` của đợt.
 
 ---
 
