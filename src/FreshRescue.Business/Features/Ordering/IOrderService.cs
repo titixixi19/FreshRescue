@@ -11,4 +11,10 @@ public interface IOrderService
     Task<OrderPaymentDto> PayAsync(Guid orderId, PayOrderRequest request, CancellationToken cancellationToken);
 
     Task<QrTicketDto> GetQrTicketAsync(Guid orderId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Nhân viên quét QR hoặc nhập mã đơn để trao hàng (FR-S05, FR-S06). Nằm ở đây chứ không ở
+    /// service riêng vì chỉ OrderService được ghi <c>Order.Status</c> (07-WORK-BREAKDOWN.md §12.2).
+    /// </summary>
+    Task<RedemptionDto> RedeemAsync(RedeemOrderRequest request, CancellationToken cancellationToken);
 }

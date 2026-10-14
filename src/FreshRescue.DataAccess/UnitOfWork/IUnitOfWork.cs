@@ -37,7 +37,7 @@ public interface IUnitOfWork
 
     IOfferRepository Offers { get; }
 
-    IGenericRepository<Order> Orders { get; }
+    IOrderRepository Orders { get; }
 
     IGenericRepository<OrderItem> OrderItems { get; }
 

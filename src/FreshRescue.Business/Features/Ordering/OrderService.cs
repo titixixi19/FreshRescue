@@ -2,6 +2,7 @@ using AutoMapper;
 using FreshRescue.Business.Common;
 using FreshRescue.Business.Features.Ordering.Dtos;
 using FreshRescue.DataAccess.UnitOfWork;
+using FreshRescue.Entities.Constants;
 using FreshRescue.Entities.Enums;
 using FreshRescue.Entities.Ordering;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +19,9 @@ public class OrderService : IOrderService
     private const int MaxAttempts = 3;
 
     private static readonly TimeSpan _paymentHold = TimeSpan.FromMinutes(10);
+
+    // BR-08: được trao hàng sớm 5 phút trước PickupStartTime.
+    private static readonly TimeSpan _earlyRedeem = TimeSpan.FromMinutes(5);
 
     // BR-06: đếm cả Redeemed — khung bán và khung nhận chồng nhau, khách có thể nhận xong rồi đặt tiếp.
     private static readonly OrderStatus[] _purchaseLimitStatuses =
@@ -303,6 +307,121 @@ public class OrderService : IOrderService
             ?? throw AppException.NotFound(ErrorCodes.NotFound, "Đơn chưa có vé QR — vé chỉ được cấp sau khi thanh toán thành công.");
 
         return _mapper.Map<QrTicketDto>(ticket);
+    }
+
+    public async Task<RedemptionDto> RedeemAsync(RedeemOrderRequest request, CancellationToken cancellationToken)
+    {
+        var staffUserId = _currentUser.UserId
+            ?? throw new InvalidOperationException("POST /staff/redemptions phải yêu cầu đăng nhập.");
+
+        // Bước 1 (02 §6.5): chữ ký và hạn do QrService kiểm — API không giữ khoá (OQ-22).
+        Guid? scannedOrderId = null;
+        if (!string.IsNullOrWhiteSpace(request.Token))
+        {
+            var verification = await _qrTicketClient.VerifyAsync(request.Token.Trim(), cancellationToken);
+            if (!verification.Valid)
+            {
+                throw verification.ErrorCode == ErrorCodes.QrExpired
+                    ? AppException.BadRequest(ErrorCodes.QrExpired, "Vé QR đã hết hạn — đã quá giờ nhận hàng của đợt bán.")
+                    : AppException.BadRequest(ErrorCodes.QrInvalidSignature, "Mã QR không hợp lệ hoặc đã bị chỉnh sửa.");
+            }
+
+            scannedOrderId = verification.OrderId;
+        }
+
+        var orders = _uow.Orders.Query()
+            .AsNoTracking()
+            // BR-22: chi nhánh hoặc offer bị xoá mềm sau khi khách đặt không được làm mất đơn.
+            .IgnoreQueryFilters()
+            .Include(o => o.Store)
+            .Include(o => o.SaleBatch)
+            .Include(o => o.Customer)
+            .Include(o => o.Items);
+
+        var orderCode = request.OrderCode?.Trim().ToUpperInvariant();
+        var order = await (scannedOrderId is { } id
+                ? orders.Where(o => o.Id == id)
+                : orders.Where(o => o.OrderCode == orderCode))
+            .SingleOrDefaultAsync(cancellationToken)
+            ?? throw AppException.NotFound(ErrorCodes.NotFound, "Không tìm thấy đơn hàng.");
+
+        // Bước 2 — BR-10: Staff chỉ trao đơn của chi nhánh mình; Brand Manager mọi chi nhánh của thương hiệu.
+        var inScope = (_currentUser.IsInRole(AppRoles.StoreStaff) && _currentUser.StoreId == order.StoreId)
+            || (_currentUser.IsInRole(AppRoles.BrandManager) && _currentUser.BrandId == order.Store.BrandId);
+        if (!inScope)
+        {
+            throw AppException.Forbidden(
+                ErrorCodes.ForbiddenScope,
+                $"Đơn {order.OrderCode} thuộc chi nhánh '{order.Store.Name}', không phải chi nhánh của bạn.");
+        }
+
+        // Chỉ để báo lỗi dễ hiểu cho nhân viên — thứ chặn quét hai lần là WHERE ở bước 4.
+        EnsureRedeemable(order.Status, order.OrderCode);
+
+        var now = _clock.GetUtcNow().UtcDateTime;
+
+        // Bước 3 — BR-08: mở sớm 5 phút; mốc này khớp với hạn huỷ ở BR-13 để hai cửa sổ không giao nhau.
+        if (now < order.SaleBatch.PickupStartTime - _earlyRedeem)
+        {
+            throw AppException.BadRequest(
+                ErrorCodes.RedeemWindowClosed,
+                "Chưa tới giờ nhận hàng — chỉ được trao sớm nhất 5 phút trước giờ nhận.");
+        }
+
+        if (now > order.SaleBatch.PickupEndTime)
+        {
+            throw AppException.BadRequest(ErrorCodes.RedeemWindowClosed, "Đã quá giờ nhận hàng của đợt bán.");
+        }
+
+        await using var transaction = await _uow.BeginTransactionAsync(cancellationToken);
+
+        // Bước 4 — BR-09: idempotent nằm ở mệnh đề WHERE Status = Paid, không ở câu if đọc trước —
+        // giữa lúc đọc và lúc ghi luôn có khe hở cho lần quét thứ hai hoặc lệnh huỷ chen vào.
+        if (!await _uow.Orders.TryMarkRedeemedAsync(order.Id, now, cancellationToken))
+        {
+            var current = await _uow.Orders.Query()
+                .Where(o => o.Id == order.Id)
+                .Select(o => o.Status)
+                .SingleAsync(cancellationToken);
+            EnsureRedeemable(current, order.OrderCode);
+            throw new InvalidOperationException($"Đơn {order.OrderCode} vẫn Paid nhưng không cập nhật được.");
+        }
+
+        // Bước 5 — NFR-05: vết đối soát nằm ngay trên vé, không cần bảng nhật ký riêng.
+        var ticket = await _uow.QrTickets.Query()
+            .SingleAsync(t => t.OrderId == order.Id, cancellationToken);
+        ticket.Status = QrTicketStatus.Used;
+        ticket.UsedAt = now;
+        ticket.UsedByStaffUserId = staffUserId;
+
+        await _uow.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+
+        _logger.LogInformation(
+            "Đối soát thành công. OrderId={OrderId}, OrderCode={OrderCode}, StaffUserId={StaffUserId}",
+            order.Id, order.OrderCode, staffUserId);
+
+        return _mapper.Map<RedemptionDto>(order) with { RedeemedAt = now };
+    }
+
+    private static void EnsureRedeemable(OrderStatus status, string orderCode)
+    {
+        switch (status)
+        {
+            case OrderStatus.Paid:
+                return;
+            case OrderStatus.Redeemed:
+                throw AppException.Conflict(ErrorCodes.OrderAlreadyRedeemed, $"Đơn {orderCode} đã được trao hàng rồi.");
+            default:
+                // Contract chưa có mã riêng cho trường hợp này — chốt dùng NOT_FOUND (14/10).
+                var reason = status switch
+                {
+                    OrderStatus.PendingPayment => "chưa thanh toán",
+                    OrderStatus.Cancelled => "đã bị huỷ",
+                    _ => "đã quá hạn nhận hàng",
+                };
+                throw AppException.NotFound(ErrorCodes.NotFound, $"Đơn {orderCode} {reason} — không có vé hợp lệ để trao hàng.");
+        }
     }
 
     private Guid RequireCustomerId()
