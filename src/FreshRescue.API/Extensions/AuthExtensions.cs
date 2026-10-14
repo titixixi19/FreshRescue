@@ -33,8 +33,13 @@ public static class AuthExtensions
 
         // 2. JWT Authentication
         var jwtSection = configuration.GetSection("Jwt");
-        var keyString = jwtSection["Key"]
-            ?? throw new InvalidOperationException("Thiếu cấu hình Jwt:Key trong appsettings.json.");
+        var keyString = jwtSection["Key"];
+        if (string.IsNullOrWhiteSpace(keyString) || keyString.Length < 32)
+        {
+            throw new InvalidOperationException(
+                "Cấu hình Jwt:Key bị thiếu, rỗng hoặc ngắn hơn 32 ký tự. "
+                + "Hãy chép mục 'Jwt' từ appsettings.Development.json.example vào appsettings.Development.json.");
+        }
         var issuer = jwtSection["Issuer"] ?? "FreshRescue.API";
         var audience = jwtSection["Audience"] ?? "FreshRescue.Client";
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyString));

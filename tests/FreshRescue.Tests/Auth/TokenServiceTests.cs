@@ -60,11 +60,13 @@ public class TokenServiceTests
         var claims = jwt.Claims.ToList();
         claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.Sub && c.Value == userId.ToString());
         claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.Email && c.Value == "nguyenvana@example.com");
+        claims.Count(c => c.Type == JwtRegisteredClaimNames.Email || c.Type == ClaimTypes.Email).Should().Be(1);
         claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.Name && c.Value == "Nguyễn Văn A");
 
-        claims.Where(c => c.Type == ClaimTypes.Role || c.Type == "role")
-            .Select(c => c.Value)
-            .Should().Contain(roles);
+        foreach (var role in roles)
+        {
+            claims.Count(c => (c.Type == ClaimTypes.Role || c.Type == "role") && c.Value == role).Should().Be(1);
+        }
 
         claims.Should().Contain(c => c.Type == "brand_id" && c.Value == brandId.ToString());
         claims.Should().Contain(c => c.Type == "store_id" && c.Value == storeId.ToString());
@@ -94,6 +96,26 @@ public class TokenServiceTests
         var expiresAt = tokenService.GetRefreshTokenExpiresAt();
 
         expiresAt.Should().Be(_fixedNow.AddDays(7));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData("short_key_under_32_chars")]
+    public void GenerateAccessToken_NemLoiKhiKeyRongHoacNhoHon32KyTu(string invalidKey)
+    {
+        var settings = new Dictionary<string, string?>
+        {
+            ["Jwt:Key"] = invalidKey,
+        };
+        var config = new ConfigurationBuilder().AddInMemoryCollection(settings).Build();
+        var clock = new FixedTimeProvider(_fixedNow);
+        var tokenService = new TokenService(config, clock);
+
+        var action = () => tokenService.GenerateAccessToken(new AppUser { Id = Guid.NewGuid() }, [], null, null);
+
+        action.Should().Throw<InvalidOperationException>()
+            .WithMessage("*32 ký tự*");
     }
 
     private sealed class FixedTimeProvider(DateTime utcNow) : TimeProvider

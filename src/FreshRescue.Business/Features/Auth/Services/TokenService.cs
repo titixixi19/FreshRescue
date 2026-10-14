@@ -26,8 +26,13 @@ public class TokenService : ITokenService
         Guid? storeId)
     {
         var jwtSection = _configuration.GetSection("Jwt");
-        var keyString = jwtSection["Key"]
-            ?? throw new InvalidOperationException("Thiếu cấu hình Jwt:Key.");
+        var keyString = jwtSection["Key"];
+        if (string.IsNullOrWhiteSpace(keyString) || keyString.Length < 32)
+        {
+            throw new InvalidOperationException(
+                "Cấu hình Jwt:Key bị thiếu, rỗng hoặc ngắn hơn 32 ký tự. "
+                + "Hãy chép mục 'Jwt' từ appsettings.Development.json.example vào appsettings.Development.json.");
+        }
         var issuer = jwtSection["Issuer"] ?? "FreshRescue.API";
         var audience = jwtSection["Audience"] ?? "FreshRescue.Client";
         var expirationMinutes = int.TryParse(jwtSection["AccessTokenExpirationMinutes"], out var expMin) ? expMin : 15;
@@ -41,9 +46,7 @@ public class TokenService : ITokenService
         var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
-            new(ClaimTypes.Email, user.Email ?? string.Empty),
             new(JwtRegisteredClaimNames.Name, user.FullName),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
         };
@@ -51,7 +54,6 @@ public class TokenService : ITokenService
         foreach (var role in roles)
         {
             claims.Add(new Claim(ClaimTypes.Role, role));
-            claims.Add(new Claim("role", role));
         }
 
         if (brandId.HasValue)

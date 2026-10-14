@@ -54,4 +54,27 @@ public class CurrentUserTests
         currentUser.Roles.Should().BeEmpty();
         currentUser.IsInRole(AppRoles.Customer).Should().BeFalse();
     }
+
+    [Fact]
+    public void CurrentUser_DocDungUserIdVaRoles_KhiChiCoSubVaRoleClaim()
+    {
+        var userId = Guid.NewGuid();
+        var claims = new List<Claim>
+        {
+            new("sub", userId.ToString()),
+            new("role", AppRoles.StoreStaff),
+        };
+
+        var identity = new ClaimsIdentity(claims, "TestAuth");
+        var principal = new ClaimsPrincipal(identity);
+
+        var httpContext = new DefaultHttpContext { User = principal };
+        var contextAccessor = new HttpContextAccessor { HttpContext = httpContext };
+
+        var currentUser = new CurrentUser(contextAccessor);
+
+        currentUser.UserId.Should().Be(userId);
+        currentUser.Roles.Should().ContainSingle().Which.Should().Be(AppRoles.StoreStaff);
+        currentUser.IsInRole(AppRoles.StoreStaff).Should().BeTrue();
+    }
 }
