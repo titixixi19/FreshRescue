@@ -29,6 +29,7 @@ public class OrderServiceTests
     private readonly SaleBatch _batch;
     private readonly Offer _bag;
     private readonly Offer _bread;
+    private readonly Mock<IQrTicketClient> _qrTicketClient = new();
 
     public OrderServiceTests()
     {
@@ -46,6 +47,10 @@ public class OrderServiceTests
 
         _context.AddRange(store, _batch, _bag, _bread);
         _context.SaveChanges();
+
+        _qrTicketClient
+            .Setup(c => c.IssueAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync("signed-token");
     }
 
     [Fact]
@@ -147,6 +152,131 @@ public class OrderServiceTests
         result.Items.Single().Quantity.Should().Be(3);
     }
 
+    [Fact]
+    public async Task PayAsync_ThanhCong_ChuyenPaidVaCapVeHetHanCungKhungNhanAsync()
+    {
+        var created = await CreateAsync(new CreateOrderItemRequest(_bag.Id, 2));
+
+        var result = await PayAsync(created.Id, PaymentOutcome.Success);
+
+        result.Order.Status.Should().Be(OrderStatus.Paid);
+        result.Order.PaidAt.Should().Be(_now);
+        result.QrTicket!.Token.Should().Be("signed-token");
+        result.QrTicket.ExpiresAt.Should().Be(_batch.PickupEndTime);
+        _qrTicketClient.Verify(c => c.IssueAsync(created.Id, _batch.StoreId, _batch.PickupEndTime, It.IsAny<CancellationToken>()));
+
+        var payment = await _context.Payments.AsNoTracking().SingleAsync(p => p.OrderId == created.Id);
+        payment.Status.Should().Be(PaymentStatus.Succeeded);
+        payment.Amount.Should().Be(70000);
+    }
+
+    // OQ-17: thất bại thì đơn vẫn giữ chỗ, không cấp vé.
+    [Fact]
+    public async Task PayAsync_ThatBai_DonVanChoThanhToanVaKhongCapVeAsync()
+    {
+        var created = await CreateAsync(new CreateOrderItemRequest(_bag.Id, 1));
+
+        var result = await PayAsync(created.Id, PaymentOutcome.Failure);
+
+        result.Order.Status.Should().Be(OrderStatus.PendingPayment);
+        result.QrTicket.Should().BeNull();
+        _qrTicketClient.Verify(
+            c => c.IssueAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<DateTime>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+        (await _context.Payments.AsNoTracking().SingleAsync(p => p.OrderId == created.Id))
+            .Status.Should().Be(PaymentStatus.Failed);
+    }
+
+    [Fact]
+    public async Task PayAsync_ThatBaiRoiThanhCong_VanThanhToanDuocAsync()
+    {
+        var created = await CreateAsync(new CreateOrderItemRequest(_bag.Id, 1));
+        await PayAsync(created.Id, PaymentOutcome.Failure);
+
+        var result = await PayAsync(created.Id, PaymentOutcome.Success);
+
+        result.Order.Status.Should().Be(OrderStatus.Paid);
+        (await _context.Payments.CountAsync(p => p.OrderId == created.Id)).Should().Be(2);
+    }
+
+    // BR-05
+    [Fact]
+    public async Task PayAsync_QuaHanThanhToan_BaoPaymentDeadlinePassedAsync()
+    {
+        var created = await CreateAsync(new CreateOrderItemRequest(_bag.Id, 1));
+
+        var act = () => CreateService(now: _now.AddMinutes(11))
+            .PayAsync(created.Id, new PayOrderRequest(PaymentOutcome.Success), CancellationToken.None);
+
+        await act.Should().ThrowAsync<AppException>().Where(e => e.ErrorCode == ErrorCodes.PaymentDeadlinePassed);
+    }
+
+    [Fact]
+    public async Task PayAsync_DaThanhToanRoi_BaoOrderNotPayableAsync()
+    {
+        var created = await CreateAsync(new CreateOrderItemRequest(_bag.Id, 1));
+        await PayAsync(created.Id, PaymentOutcome.Success);
+
+        var act = () => PayAsync(created.Id, PaymentOutcome.Success);
+
+        await act.Should().ThrowAsync<AppException>().Where(e => e.ErrorCode == ErrorCodes.OrderNotPayable);
+    }
+
+    [Fact]
+    public async Task PayAsync_DonCuaNguoiKhac_BaoNotFoundAsync()
+    {
+        var created = await CreateAsync(new CreateOrderItemRequest(_bag.Id, 1));
+
+        var act = () => CreateService(customerId: Guid.NewGuid())
+            .PayAsync(created.Id, new PayOrderRequest(PaymentOutcome.Success), CancellationToken.None);
+
+        await act.Should().ThrowAsync<AppException>().Where(e => e.ErrorCode == ErrorCodes.NotFound);
+    }
+
+    // Xin vé trước khi ghi: QrService lỗi thì đơn chưa bị đổi, khách bấm lại được.
+    [Fact]
+    public async Task PayAsync_QrServiceLoi_KhongGhiGiVaoCsdlAsync()
+    {
+        var created = await CreateAsync(new CreateOrderItemRequest(_bag.Id, 1));
+        _qrTicketClient
+            .Setup(c => c.IssueAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("QrService không phản hồi"));
+
+        var act = () => PayAsync(created.Id, PaymentOutcome.Success);
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+        (await _context.Orders.AsNoTracking().SingleAsync(o => o.Id == created.Id))
+            .Status.Should().Be(OrderStatus.PendingPayment);
+        (await _context.Payments.AsNoTracking().AnyAsync(p => p.OrderId == created.Id)).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task GetQrTicketAsync_SauKhiThanhToan_TraVeKemMaDonAsync()
+    {
+        var created = await CreateAsync(new CreateOrderItemRequest(_bag.Id, 1));
+        await PayAsync(created.Id, PaymentOutcome.Success);
+
+        var ticket = await CreateService().GetQrTicketAsync(created.Id, CancellationToken.None);
+
+        ticket.Token.Should().Be("signed-token");
+        ticket.OrderCode.Should().Be(created.OrderCode);
+        ticket.StoreName.Should().Be("Chi nhánh Nguyễn Huệ");
+        ticket.PickupStartTime.Should().Be(_batch.PickupStartTime);
+    }
+
+    [Fact]
+    public async Task GetQrTicketAsync_ChuaThanhToan_BaoNotFoundAsync()
+    {
+        var created = await CreateAsync(new CreateOrderItemRequest(_bag.Id, 1));
+
+        var act = () => CreateService().GetQrTicketAsync(created.Id, CancellationToken.None);
+
+        await act.Should().ThrowAsync<AppException>().Where(e => e.ErrorCode == ErrorCodes.NotFound);
+    }
+
+    private Task<OrderPaymentDto> PayAsync(Guid orderId, PaymentOutcome outcome)
+        => CreateService().PayAsync(orderId, new PayOrderRequest(outcome), CancellationToken.None);
+
     private Task<OrderDto> CreateAsync(params CreateOrderItemRequest[] items)
         => CreateService().CreateAsync(new CreateOrderRequest(_batch.Id, [.. items]), CancellationToken.None);
 
@@ -156,17 +286,18 @@ public class OrderServiceTests
         await act.Should().ThrowAsync<AppException>().Where(e => e.ErrorCode == errorCode);
     }
 
-    private OrderService CreateService()
+    private OrderService CreateService(DateTime? now = null, Guid? customerId = null)
     {
         var currentUser = new Mock<ICurrentUser>();
-        currentUser.Setup(u => u.UserId).Returns(_customerId);
+        currentUser.Setup(u => u.UserId).Returns(customerId ?? _customerId);
         var mapper = new MapperConfiguration(c => c.AddProfile<OrderingProfile>()).CreateMapper();
 
         return new OrderService(
             new FreshRescue.DataAccess.UnitOfWork.UnitOfWork(_context),
             mapper,
             currentUser.Object,
-            new FixedTimeProvider(_now),
+            _qrTicketClient.Object,
+            new FixedTimeProvider(now ?? _now),
             NullLogger<OrderService>.Instance,
             // InMemory không chạy được SQL khoá dòng của chế độ Pessimistic; hai chế độ chỉ khác
             // nhau ở bước nạp offer, phần quy tắc nghiệp vụ dùng chung.

@@ -46,6 +46,9 @@
   <ItemGroup Label="gRPC">
     <PackageVersion Include="Grpc.AspNetCore" Version="2.66.0" />
     <PackageVersion Include="Grpc.Net.ClientFactory" Version="2.66.0" />
+    <!-- Sinh code client từ qr.proto ở API. Cùng phiên bản mà Grpc.AspNetCore 2.66.0 kéo về. -->
+    <PackageVersion Include="Grpc.Tools" Version="2.66.0" />
+    <PackageVersion Include="Google.Protobuf" Version="3.27.0" />
   </ItemGroup>
 
   <ItemGroup Label="Kiểm thử">

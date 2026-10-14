@@ -30,6 +30,9 @@ public record OrderDto
 
     public decimal TotalAmount { get; init; }
 
+    /// <summary>Chỉ có khi đã thanh toán (03-API-CONTRACT.md §4.2).</summary>
+    public DateTime? PaidAt { get; init; }
+
     public List<OrderItemDto> Items { get; init; } = [];
 
     public DateTime CreatedAt { get; init; }
