@@ -439,6 +439,7 @@ Yêu cầu role `StoreStaff` **hoặc** `BrandManager`. Phạm vi kiểm theo `B
 ```json
 {
   "name": "Xả bánh tối thứ Năm",
+  "storeId": "7c0a...",
   "saleStartTime":   "2026-09-17T12:30:00Z",
   "saleEndTime":     "2026-09-17T14:00:00Z",
   "pickupStartTime": "2026-09-17T13:30:00Z",
@@ -450,19 +451,28 @@ Yêu cầu role `StoreStaff` **hoặc** `BrandManager`. Phạm vi kiểm theo `B
 }
 ```
 
+`storeId` chỉ dùng khi **Brand Manager** tạo thay chi nhánh (`BR-11`), bắt buộc với role này;
+Store Staff lấy chi nhánh từ token, trường này bị bỏ qua *(chốt 15/10)*.
+
 Lỗi: `BATCH_TIME_INVALID` (`BR-15`), `BATCH_OVERLAP` (`OQ-11`),
-`PRICE_OUT_OF_BAND` (`BR-07`), `BRAND_NOT_APPROVED` (`BR-14`).
+`PRICE_OUT_OF_BAND` (`BR-07`), `BRAND_NOT_APPROVED` (`BR-14`), `409 BATCH_LOCKED` khi chi nhánh
+đang `Inactive` hoặc kích hoạt đợt không ở trạng thái `Draft`.
 
 ### 6.2. `PUT /staff/sale-batches/{id}` — cái bẫy phân quyền theo thời gian
 
-Sau khi có đơn `Paid` đầu tiên, endpoint này trả `409 BATCH_LOCKED` nếu cố:
+Sau khi có đơn `Paid` đầu tiên, endpoint này (và `PUT /staff/offers/{id}`) trả `409 BATCH_LOCKED`
+nếu cố:
 
-- hạ `totalQuantity` xuống dưới số đã bán
 - đổi `actualPrice`
 - đổi **bất kỳ mốc nào trong 4 mốc thời gian**, kể cả lùi `PickupEndTime` về sau
 
-Chỉ còn cho phép **tăng** `totalQuantity`. Lý do cấm lùi `PickupEndTime`:
-`01-REQUIREMENTS.md` §9.4.
+Lý do cấm lùi `PickupEndTime`: `01-REQUIREMENTS.md` §9.4.
+
+**Số lượng** chỉnh riêng qua `PATCH /staff/offers/{id}/quantity`, body `{ "totalQuantity": 12 }`
+*(chốt 15/10)*. Tăng hay hạ đều được, bất kể đợt đã có đơn `Paid` hay chưa, miễn tổng mới **không
+thấp hơn số đã giữ chỗ / đã bán** — thấp hơn thì `409 OFFER_HAS_ORDERS`. Hạ về đúng số đã bán
+(`remainingQuantity = 0`) chính là cách ngừng bán giữa chừng của `BR-24`. `OfferService` kiểm phạm vi
+và trạng thái đợt rồi gọi `IOrderService.AdjustOfferStockAsync` (`07` §12.2).
 
 ### 6.3. `POST /staff/redemptions` — đối soát
 

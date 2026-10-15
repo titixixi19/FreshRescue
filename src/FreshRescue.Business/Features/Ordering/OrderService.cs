@@ -577,6 +577,31 @@ public class OrderService : IOrderService
         return dueOrders.Count;
     }
 
+    public async Task AdjustOfferStockAsync(Guid offerId, int newTotalQuantity, CancellationToken cancellationToken)
+    {
+        if (newTotalQuantity < 0)
+        {
+            throw AppException.BadRequest(ErrorCodes.ValidationFailed, "Tổng số suất không được âm.");
+        }
+
+        // Một câu UPDATE có điều kiện, không đọc-rồi-ghi: đơn đang đặt cùng lúc không làm kho âm (02 §6.4).
+        if (await _uow.Offers.TryAdjustTotalAsync(offerId, newTotalQuantity, cancellationToken))
+        {
+            _logger.LogInformation("Đặt lại tổng số suất của offer {OfferId} thành {NewTotal}.", offerId, newTotalQuantity);
+            return;
+        }
+
+        var offer = await _uow.Offers.Query()
+            .AsNoTracking()
+            .SingleOrDefaultAsync(o => o.Id == offerId, cancellationToken)
+            ?? throw AppException.NotFound(ErrorCodes.NotFound, "Không tìm thấy mặt hàng.");
+
+        var sold = offer.TotalQuantity - offer.RemainingQuantity;
+        throw AppException.Conflict(
+            ErrorCodes.OfferHasOrders,
+            $"Đã có {sold} suất được giữ chỗ hoặc bán, không đặt tổng thấp hơn mức đó.");
+    }
+
     public Task<PagedResponse<OrderDto>> GetMyOrdersAsync(OrderListQuery query, CancellationToken cancellationToken)
     {
         var customerId = RequireCustomerId();

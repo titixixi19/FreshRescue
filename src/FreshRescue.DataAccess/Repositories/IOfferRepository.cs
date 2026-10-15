@@ -15,4 +15,11 @@ public interface IOfferRepository : IGenericRepository<Offer>
     /// Chỉ gọi sau khi <c>IOrderRepository.TryCancelAsync</c> trả <c>true</c>. Phải gọi trong giao dịch.
     /// </summary>
     Task RestockAsync(IReadOnlyDictionary<Guid, int> quantities, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Đặt lại tổng số suất của một offer (FR-S03) và dịch <c>RemainingQuantity</c> theo cùng một
+    /// lượng, trong một câu UPDATE. Trả <c>false</c> khi tổng mới thấp hơn số đã giữ chỗ / đã bán
+    /// (kho sẽ âm) hoặc không có offer — không ghi gì trong cả hai trường hợp.
+    /// </summary>
+    Task<bool> TryAdjustTotalAsync(Guid offerId, int newTotalQuantity, CancellationToken cancellationToken);
 }

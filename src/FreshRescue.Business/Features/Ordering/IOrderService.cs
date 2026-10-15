@@ -40,6 +40,14 @@ public interface IOrderService
     Task<int> ExpireOverdueOrdersAsync(CancellationToken cancellationToken);
 
     /// <summary>
+    /// Đặt lại tổng số suất của một offer (FR-S03). Nằm ở đây vì chỉ OrderService được ghi
+    /// <c>Offer.RemainingQuantity</c> (07-WORK-BREAKDOWN.md §12.2); <c>OfferService</c> kiểm phạm vi
+    /// và trạng thái đợt rồi gọi hàm này. Không bao giờ hạ dưới số đã giữ chỗ / đã bán:
+    /// ném <c>409 OFFER_HAS_ORDERS</c>. Hạ về đúng số đã bán là cách ngừng bán giữa chừng (BR-24).
+    /// </summary>
+    Task AdjustOfferStockAsync(Guid offerId, int newTotalQuantity, CancellationToken cancellationToken);
+
+    /// <summary>
     /// FR-X04: Quét đơn đã thanh toán (Paid) mà khách không tới nhận sau PickupEndTime,
     /// chuyển thành NoShow (BR-19, không hoàn tiền). Trả về số đơn đã đánh dấu NoShow.
     /// </summary>
