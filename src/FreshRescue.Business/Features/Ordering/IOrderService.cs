@@ -1,3 +1,4 @@
+using FreshRescue.Business.Common;
 using FreshRescue.Business.Features.Ordering.Dtos;
 
 namespace FreshRescue.Business.Features.Ordering;
@@ -43,4 +44,15 @@ public interface IOrderService
     /// chuyển thành NoShow (BR-19, không hoàn tiền). Trả về số đơn đã đánh dấu NoShow.
     /// </summary>
     Task<int> ProcessNoShowsAsync(CancellationToken cancellationToken, Guid? saleBatchId = null);
+
+    /// <summary>Lịch sử đơn của khách, mới nhất trước (FR-C09).</summary>
+    Task<PagedResponse<OrderDto>> GetMyOrdersAsync(OrderListQuery query, CancellationToken cancellationToken);
+
+    Task<OrderDto> GetMyOrderAsync(Guid orderId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Đơn phải trả trong một đợt (FR-S04). Không lọc <c>status</c> thì trả mọi đơn trừ
+    /// <c>PendingPayment</c>; đơn chờ trao lên đầu.
+    /// </summary>
+    Task<PagedResponse<StaffOrderDto>> GetSaleBatchOrdersAsync(Guid saleBatchId, OrderListQuery query, CancellationToken cancellationToken);
 }

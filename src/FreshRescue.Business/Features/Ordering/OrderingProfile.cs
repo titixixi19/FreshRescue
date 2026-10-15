@@ -31,6 +31,9 @@ public class OrderingProfile : Profile
             .ForMember(d => d.OrderId, o => o.MapFrom(s => s.Id))
             .ForMember(d => d.CustomerName, o => o.MapFrom(s => s.Customer.FullName));
 
+        CreateMap<Order, StaffOrderDto>()
+            .ForMember(d => d.CustomerName, o => o.MapFrom(s => s.Customer.FullName));
+
         CreateMap<OrderItem, RedemptionItemDto>()
             .ForMember(d => d.OfferName, o => o.MapFrom(s => s.OfferNameSnapshot));
     }

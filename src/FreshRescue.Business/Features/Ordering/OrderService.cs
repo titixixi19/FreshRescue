@@ -1,7 +1,9 @@
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using FreshRescue.Business.Common;
 using FreshRescue.Business.Features.Ordering.Dtos;
 using FreshRescue.DataAccess.UnitOfWork;
+using FreshRescue.Entities.Catalog;
 using FreshRescue.Entities.Constants;
 using FreshRescue.Entities.Engagement;
 using FreshRescue.Entities.Enums;
@@ -353,7 +355,7 @@ public class OrderService : IOrderService
             ?? throw AppException.NotFound(ErrorCodes.NotFound, "Không tìm thấy đơn hàng.");
 
         // Bước 2
-        EnsureInStoreScope(order);
+        EnsureInStoreScope(order.Store, $"Đơn {order.OrderCode}");
 
         // Chỉ để báo lỗi dễ hiểu cho nhân viên — thứ chặn quét hai lần là WHERE ở bước 4.
         EnsureRedeemable(order.Status, order.OrderCode);
@@ -444,7 +446,7 @@ public class OrderService : IOrderService
             .SingleOrDefaultAsync(o => o.Id == orderId, cancellationToken)
             ?? throw AppException.NotFound(ErrorCodes.NotFound, "Không tìm thấy đơn hàng.");
 
-        EnsureInStoreScope(order);
+        EnsureInStoreScope(order.Store, $"Đơn {order.OrderCode}");
 
         // BR-16: chỉ đơn Paid chưa trao. Đơn chưa trả tiền để job FR-X03 tự thu hồi.
         EnsureCancellable(order.Status, order.OrderCode, allowPendingPayment: false);
@@ -575,6 +577,66 @@ public class OrderService : IOrderService
         return dueOrders.Count;
     }
 
+    public Task<PagedResponse<OrderDto>> GetMyOrdersAsync(OrderListQuery query, CancellationToken cancellationToken)
+    {
+        var customerId = RequireCustomerId();
+
+        var orders = QueryOrderHistory().Where(o => o.CustomerUserId == customerId);
+        if (query.Status is { } status)
+        {
+            orders = orders.Where(o => o.Status == status);
+        }
+
+        return orders
+            .OrderByDescending(o => o.CreatedAt)
+            .ThenBy(o => o.Id)
+            .ToPagedResponseAsync<Order, OrderDto>(query.Page, query.PageSize, _mapper.ConfigurationProvider, cancellationToken);
+    }
+
+    public async Task<OrderDto> GetMyOrderAsync(Guid orderId, CancellationToken cancellationToken)
+    {
+        var customerId = RequireCustomerId();
+
+        return await QueryOrderHistory()
+            .Where(o => o.Id == orderId && o.CustomerUserId == customerId)
+            .ProjectTo<OrderDto>(_mapper.ConfigurationProvider)
+            .SingleOrDefaultAsync(cancellationToken)
+            ?? throw AppException.NotFound(ErrorCodes.NotFound, "Không tìm thấy đơn hàng.");
+    }
+
+    public async Task<PagedResponse<StaffOrderDto>> GetSaleBatchOrdersAsync(
+        Guid saleBatchId,
+        OrderListQuery query,
+        CancellationToken cancellationToken)
+    {
+        var batch = await _uow.SaleBatches.Query()
+            .AsNoTracking()
+            .IgnoreQueryFilters()
+            .Include(b => b.Store)
+            .SingleOrDefaultAsync(b => b.Id == saleBatchId, cancellationToken)
+            ?? throw AppException.NotFound(ErrorCodes.NotFound, "Không tìm thấy đợt bán.");
+
+        EnsureInStoreScope(batch.Store, "Đợt bán này");
+
+        var orders = QueryOrderHistory().Where(o => o.SaleBatchId == saleBatchId);
+
+        // Đơn chưa trả tiền không phải trao — mặc định ẩn để màn quầy chỉ còn việc cần làm.
+        orders = query.Status is { } status
+            ? orders.Where(o => o.Status == status)
+            : orders.Where(o => o.Status != OrderStatus.PendingPayment);
+
+        return await orders
+            // Đơn chờ trao lên đầu; khách trả tiền trước thường tới trước.
+            .OrderBy(o => o.Status == OrderStatus.Paid ? 0 : 1)
+            .ThenBy(o => o.PaidAt)
+            .ThenBy(o => o.Id)
+            .ToPagedResponseAsync<Order, StaffOrderDto>(query.Page, query.PageSize, _mapper.ConfigurationProvider, cancellationToken);
+    }
+
+    // BR-22: chi nhánh hoặc offer bị xoá mềm không được làm mất lịch sử đơn.
+    private IQueryable<Order> QueryOrderHistory()
+        => _uow.Orders.Query().AsNoTracking().IgnoreQueryFilters();
+
     private IQueryable<Order> QueryOrdersForCancel()
         => _uow.Orders.Query()
             .AsNoTracking()
@@ -698,15 +760,15 @@ public class OrderService : IOrderService
     }
 
     /// <summary>BR-10: Staff chỉ chi nhánh mình; Brand Manager mọi chi nhánh của thương hiệu mình.</summary>
-    private void EnsureInStoreScope(Order order)
+    private void EnsureInStoreScope(Store store, string subject)
     {
-        var inScope = (_currentUser.IsInRole(AppRoles.StoreStaff) && _currentUser.StoreId == order.StoreId)
-            || (_currentUser.IsInRole(AppRoles.BrandManager) && _currentUser.BrandId == order.Store.BrandId);
+        var inScope = (_currentUser.IsInRole(AppRoles.StoreStaff) && _currentUser.StoreId == store.Id)
+            || (_currentUser.IsInRole(AppRoles.BrandManager) && _currentUser.BrandId == store.BrandId);
         if (!inScope)
         {
             throw AppException.Forbidden(
                 ErrorCodes.ForbiddenScope,
-                $"Đơn {order.OrderCode} thuộc chi nhánh '{order.Store.Name}', không phải chi nhánh của bạn.");
+                $"{subject} thuộc chi nhánh '{store.Name}', không phải chi nhánh của bạn.");
         }
     }
 
