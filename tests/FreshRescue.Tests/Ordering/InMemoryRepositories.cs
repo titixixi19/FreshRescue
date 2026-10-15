@@ -82,4 +82,18 @@ internal sealed class InMemoryOfferRepository(FreshRescueDbContext context)
 
         await Context.SaveChangesAsync(cancellationToken);
     }
+
+    public async Task<bool> TryAdjustTotalAsync(Guid offerId, int newTotalQuantity, CancellationToken cancellationToken)
+    {
+        var offer = await Set.SingleOrDefaultAsync(o => o.Id == offerId, cancellationToken);
+        if (offer is null || offer.RemainingQuantity + (newTotalQuantity - offer.TotalQuantity) < 0)
+        {
+            return false;
+        }
+
+        offer.RemainingQuantity += newTotalQuantity - offer.TotalQuantity;
+        offer.TotalQuantity = newTotalQuantity;
+        await Context.SaveChangesAsync(cancellationToken);
+        return true;
+    }
 }

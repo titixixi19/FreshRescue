@@ -43,4 +43,18 @@ public class OfferRepository : GenericRepository<Offer>, IOfferRepository
                     cancellationToken);
         }
     }
+
+    public async Task<bool> TryAdjustTotalAsync(Guid offerId, int newTotalQuantity, CancellationToken cancellationToken)
+    {
+        // Điều kiện nằm trong WHERE để đua với đơn đang đặt vẫn không bao giờ làm kho âm (02 §6.4):
+        // RemainingQuantity + (mới − cũ) >= 0  ⇔  mới >= số đã giữ chỗ hoặc đã bán.
+        var affected = await Set
+            .Where(o => o.Id == offerId && o.RemainingQuantity + (newTotalQuantity - o.TotalQuantity) >= 0)
+            .ExecuteUpdateAsync(
+                s => s
+                    .SetProperty(o => o.RemainingQuantity, o => o.RemainingQuantity + (newTotalQuantity - o.TotalQuantity))
+                    .SetProperty(o => o.TotalQuantity, newTotalQuantity),
+                cancellationToken);
+        return affected == 1;
+    }
 }
