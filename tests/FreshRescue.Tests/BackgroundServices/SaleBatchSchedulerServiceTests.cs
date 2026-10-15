@@ -279,6 +279,8 @@ public class SaleBatchSchedulerServiceTests
         return new SaleBatchService(
             uow,
             orderServiceMock.Object,
+            Mock.Of<AutoMapper.IMapper>(),
+            Mock.Of<FreshRescue.Business.Common.ICurrentUser>(),
             new MutableTimeProvider(now),
             NullLogger<SaleBatchService>.Instance);
     }

@@ -178,6 +178,8 @@ public class NoShowServiceTests
         var saleBatchService = new SaleBatchService(
             uow,
             orderService,
+            Mock.Of<AutoMapper.IMapper>(),
+            Mock.Of<FreshRescue.Business.Common.ICurrentUser>(),
             new MutableTimeProvider(_now),
             NullLogger<SaleBatchService>.Instance);
 

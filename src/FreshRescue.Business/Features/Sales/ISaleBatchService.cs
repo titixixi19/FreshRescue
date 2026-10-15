@@ -1,7 +1,32 @@
+using FreshRescue.Business.Common;
+using FreshRescue.Business.Features.Sales.Dtos;
+using FreshRescue.Entities.Enums;
+
 namespace FreshRescue.Business.Features.Sales;
 
 public interface ISaleBatchService
 {
+    /// <summary>Danh sách đợt bán trong phạm vi của người gọi (FR-S02). <paramref name="date"/> lọc theo ngày UTC của SaleStartTime.</summary>
+    Task<PagedResponse<SaleBatchSummaryDto>> ListAsync(
+        SaleBatchStatus? status, DateOnly? date, int page, int pageSize, CancellationToken cancellationToken);
+
+    Task<SaleBatchDto> GetByIdAsync(Guid id, CancellationToken cancellationToken);
+
+    /// <summary>Bước 1–3 của FR-S02: tạo đợt ở trạng thái Draft kèm offer chụp từ template (BR-18).</summary>
+    Task<SaleBatchDto> CreateAsync(CreateSaleBatchRequest request, CancellationToken cancellationToken);
+
+    /// <summary>Sửa tên và bốn mốc thời gian; bị khoá sau đơn Paid đầu tiên (OQ-14).</summary>
+    Task<SaleBatchDto> UpdateAsync(Guid id, UpdateSaleBatchRequest request, CancellationToken cancellationToken);
+
+    /// <summary>Bước 4 của FR-S02: Draft → Scheduled (OQ-12).</summary>
+    Task<SaleBatchDto> ActivateAsync(Guid id, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Huỷ cả đợt (BR-23): chỉ Brand Manager. Huỷ mọi đơn PendingPayment / Paid trong cùng một
+    /// giao dịch với việc đổi trạng thái đợt.
+    /// </summary>
+    Task<SaleBatchDto> CancelAsync(Guid id, CancelSaleBatchRequest request, CancellationToken cancellationToken);
+
     /// <summary>
     /// FR-X01: Quét các đợt bán Scheduled đã tới SaleStartTime và chuyển sang Active.
     /// Trả về số đợt đã kích hoạt.
