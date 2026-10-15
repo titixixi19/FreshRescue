@@ -22,6 +22,7 @@ public static class DependencyInjection
 
         // --- Sales (Quang Huy) ---
         services.AddScoped<Features.Sales.ISaleBatchService, Features.Sales.SaleBatchService>();
+        services.AddScoped<Features.Sales.IOfferService, Features.Sales.OfferService>();
 
         // --- Ordering + Redemption (Tùng) ---
         services.AddOptions<OrderingOptions>().BindConfiguration(OrderingOptions.SectionName);
