@@ -1,7 +1,6 @@
 using FreshRescue.Business.Common;
 using FreshRescue.Business.Features.Sales;
 using FreshRescue.Business.Features.Sales.Dtos;
-using FreshRescue.Entities.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,22 +22,16 @@ public class StaffSaleBatchesController : ControllerBase
     }
 
     /// <summary>Danh sách đợt bán trong phạm vi của mình, mới nhất trước.</summary>
-    /// <param name="status">Lọc theo trạng thái</param>
-    /// <param name="date">Lọc theo ngày (UTC) của SaleStartTime, dạng yyyy-MM-dd</param>
-    /// <param name="page">Trang, bắt đầu từ 1</param>
-    /// <param name="pageSize">Số dòng mỗi trang, tối đa 100</param>
-    /// <param name="cancellationToken">Huỷ yêu cầu</param>
     /// <response code="200">Danh sách phân trang</response>
+    /// <response code="400">status, date, page hoặc pageSize không hợp lệ</response>
     [HttpGet]
     [ProducesResponseType(typeof(PagedResponse<SaleBatchSummaryDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PagedResponse<SaleBatchSummaryDto>>> ListAsync(
-        [FromQuery] SaleBatchStatus? status,
-        [FromQuery] DateOnly? date,
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = PagedResponse<SaleBatchSummaryDto>.DefaultPageSize,
-        CancellationToken cancellationToken = default)
+        [FromQuery] SaleBatchListQuery query,
+        CancellationToken cancellationToken)
     {
-        return await _saleBatchService.ListAsync(status, date, page, pageSize, cancellationToken);
+        return await _saleBatchService.ListAsync(query, cancellationToken);
     }
 
     /// <summary>Chi tiết một đợt bán kèm các offer.</summary>
@@ -97,7 +90,7 @@ public class StaffSaleBatchesController : ControllerBase
     /// <response code="400">Đợt chưa có offer hoặc khung giờ đã qua</response>
     /// <response code="403">Thương hiệu chưa duyệt hoặc sai phạm vi</response>
     /// <response code="404">Không tìm thấy đợt</response>
-    /// <response code="409">Đợt không ở trạng thái Draft hoặc trùng khung giờ</response>
+    /// <response code="409">Đợt không ở trạng thái Draft (BATCH_LOCKED) hoặc trùng khung giờ (BATCH_OVERLAP)</response>
     [HttpPost("{id:guid}/activate")]
     [ProducesResponseType(typeof(SaleBatchDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]

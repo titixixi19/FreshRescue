@@ -148,6 +148,19 @@ public class SaleBatchServiceTests
         await act.Should().ThrowAsync<AppException>().Where(e => e.ErrorCode == ErrorCodes.BrandNotApproved);
     }
 
+    // Chi nhánh Inactive là trạng thái nghiệp vụ, không phải lỗi định dạng: 409 BATCH_LOCKED.
+    [Fact]
+    public async Task Create_ChiNhanhInactive_NemBatchLockedAsync()
+    {
+        var store = await _f.Context.Stores.SingleAsync();
+        store.Status = StoreStatus.Inactive;
+        await _f.Context.SaveChangesAsync();
+
+        var act = () => _f.BatchService(_f.StaffUser()).CreateAsync(ValidRequest(), CancellationToken.None);
+
+        await act.Should().ThrowAsync<AppException>().Where(e => e.ErrorCode == ErrorCodes.BatchLocked);
+    }
+
     [Fact]
     public async Task Create_BrandManagerThieuStoreId_NemValidationFailedAsync()
     {
@@ -378,10 +391,10 @@ public class SaleBatchServiceTests
         });
         await _f.Context.SaveChangesAsync();
 
-        var staffAll = await _f.BatchService(_f.StaffUser()).ListAsync(null, null, 1, 20, CancellationToken.None);
-        var managerAll = await _f.BatchService(_f.ManagerUser()).ListAsync(null, null, 1, 20, CancellationToken.None);
+        var staffAll = await _f.BatchService(_f.StaffUser()).ListAsync(new SaleBatchListQuery(), CancellationToken.None);
+        var managerAll = await _f.BatchService(_f.ManagerUser()).ListAsync(new SaleBatchListQuery(), CancellationToken.None);
         var staffScheduled = await _f.BatchService(_f.StaffUser())
-            .ListAsync(SaleBatchStatus.Scheduled, null, 1, 20, CancellationToken.None);
+            .ListAsync(new SaleBatchListQuery { Status = SaleBatchStatus.Scheduled }, CancellationToken.None);
 
         staffAll.TotalCount.Should().Be(2);
         managerAll.TotalCount.Should().Be(3);

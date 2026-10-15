@@ -37,49 +37,33 @@ public class SaleBatchService : ISaleBatchService
         _logger = logger;
     }
 
-    public async Task<PagedResponse<SaleBatchSummaryDto>> ListAsync(
-        SaleBatchStatus? status, DateOnly? date, int page, int pageSize, CancellationToken cancellationToken)
+    public Task<PagedResponse<SaleBatchSummaryDto>> ListAsync(
+        SaleBatchListQuery query, CancellationToken cancellationToken)
     {
-        page = Math.Max(page, 1);
-        pageSize = pageSize <= 0 ? PagedResponse<SaleBatchSummaryDto>.DefaultPageSize
-            : Math.Min(pageSize, PagedResponse<SaleBatchSummaryDto>.MaxPageSize);
-
         // Người gọi có thể mang cả hai role (OQ-03): lấy hợp của hai phạm vi.
         Guid? storeId = _currentUser.IsInRole(AppRoles.StoreStaff) ? _currentUser.StoreId : null;
         Guid? brandId = _currentUser.IsInRole(AppRoles.BrandManager) ? _currentUser.BrandId : null;
 
-        var query = _uow.SaleBatches.Query()
+        var batches = _uow.SaleBatches.Query()
             .Where(b => (storeId != null && b.StoreId == storeId) || (brandId != null && b.Store.BrandId == brandId));
 
-        if (status.HasValue)
+        if (query.Status is { } status)
         {
-            query = query.Where(b => b.Status == status.Value);
+            batches = batches.Where(b => b.Status == status);
         }
 
-        if (date.HasValue)
+        if (query.Date is { } date)
         {
-            var from = DateTime.SpecifyKind(date.Value.ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc);
+            var from = DateTime.SpecifyKind(date.ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc);
             var to = from.AddDays(1);
-            query = query.Where(b => b.SaleStartTime >= from && b.SaleStartTime < to);
+            batches = batches.Where(b => b.SaleStartTime >= from && b.SaleStartTime < to);
         }
 
-        var total = await query.CountAsync(cancellationToken);
-
-        var items = await query
-            .Include(b => b.Store)
-            .Include(b => b.Offers)
+        return batches
             .OrderByDescending(b => b.SaleStartTime)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync(cancellationToken);
-
-        return new PagedResponse<SaleBatchSummaryDto>
-        {
-            Items = _mapper.Map<List<SaleBatchSummaryDto>>(items),
-            Page = page,
-            PageSize = pageSize,
-            TotalCount = total,
-        };
+            .ThenBy(b => b.Id)
+            .ToPagedResponseAsync<SaleBatch, SaleBatchSummaryDto>(
+                query.Page, query.PageSize, _mapper.ConfigurationProvider, cancellationToken);
     }
 
     public async Task<SaleBatchDto> GetByIdAsync(Guid id, CancellationToken cancellationToken)
@@ -294,7 +278,7 @@ public class SaleBatchService : ISaleBatchService
 
         if (store.Status != StoreStatus.Active)
         {
-            throw AppException.BadRequest(ErrorCodes.ValidationFailed, $"Chi nhánh '{store.Name}' đang tạm ngưng hoạt động.");
+            throw AppException.Conflict(ErrorCodes.BatchLocked, $"Chi nhánh '{store.Name}' đang tạm ngưng hoạt động.");
         }
 
         return store;

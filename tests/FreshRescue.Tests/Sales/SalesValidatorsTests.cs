@@ -84,4 +84,17 @@ public class SalesValidatorsTests
     {
         new AdjustOfferQuantityRequestValidator().Validate(new AdjustOfferQuantityRequest(total)).IsValid.Should().Be(valid);
     }
+
+    [Theory]
+    [InlineData(1, 20, true)]
+    [InlineData(1, 100, true)]
+    [InlineData(0, 20, false)]
+    [InlineData(1, 0, false)]
+    [InlineData(1, 101, false)]
+    public void SaleBatchListQuery_PageVaPageSize(int page, int pageSize, bool valid)
+    {
+        var query = new SaleBatchListQuery { Page = page, PageSize = pageSize };
+
+        new SaleBatchListQueryValidator().Validate(query).IsValid.Should().Be(valid);
+    }
 }

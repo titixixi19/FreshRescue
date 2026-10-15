@@ -60,6 +60,22 @@ internal sealed class SalesFixture
 
         Context.AddRange(Brand, Store, Template);
         Context.SaveChanges();
+
+        // Giả lập OrderService.AdjustOfferStockAsync (một câu UPDATE có điều kiện trong sản phẩm thật).
+        OrderService
+            .Setup(s => s.AdjustOfferStockAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .Returns(async (Guid offerId, int newTotal, CancellationToken ct) =>
+            {
+                var offer = await Context.Offers.SingleAsync(o => o.Id == offerId, ct);
+                if (offer.RemainingQuantity + (newTotal - offer.TotalQuantity) < 0)
+                {
+                    throw AppException.Conflict(ErrorCodes.OfferHasOrders, "Đã có đơn giữ chỗ hoặc bán.");
+                }
+
+                offer.RemainingQuantity += newTotal - offer.TotalQuantity;
+                offer.TotalQuantity = newTotal;
+                await Context.SaveChangesAsync(ct);
+            });
     }
 
     public Mock<ICurrentUser> StaffUser() => User([AppRoles.StoreStaff], storeId: Store.Id);
@@ -76,7 +92,7 @@ internal sealed class SalesFixture
             NullLogger<SaleBatchService>.Instance);
 
     public OfferService OfferService(Mock<ICurrentUser> user)
-        => new(Uow(), Mapper(), user.Object, NullLogger<OfferService>.Instance);
+        => new(Uow(), OrderService.Object, Mapper(), user.Object, NullLogger<OfferService>.Instance);
 
     /// <summary>Đợt bán sẵn trong CSDL, mặc định ở tương lai và không chồng với đợt nào.</summary>
     public async Task<SaleBatch> SeedBatchAsync(

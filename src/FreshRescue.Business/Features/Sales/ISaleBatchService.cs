@@ -1,14 +1,12 @@
 using FreshRescue.Business.Common;
 using FreshRescue.Business.Features.Sales.Dtos;
-using FreshRescue.Entities.Enums;
 
 namespace FreshRescue.Business.Features.Sales;
 
 public interface ISaleBatchService
 {
-    /// <summary>Danh sách đợt bán trong phạm vi của người gọi (FR-S02). <paramref name="date"/> lọc theo ngày UTC của SaleStartTime.</summary>
-    Task<PagedResponse<SaleBatchSummaryDto>> ListAsync(
-        SaleBatchStatus? status, DateOnly? date, int page, int pageSize, CancellationToken cancellationToken);
+    /// <summary>Danh sách đợt bán trong phạm vi của người gọi (FR-S02). <c>Date</c> lọc theo ngày UTC của SaleStartTime.</summary>
+    Task<PagedResponse<SaleBatchSummaryDto>> ListAsync(SaleBatchListQuery query, CancellationToken cancellationToken);
 
     Task<SaleBatchDto> GetByIdAsync(Guid id, CancellationToken cancellationToken);
 

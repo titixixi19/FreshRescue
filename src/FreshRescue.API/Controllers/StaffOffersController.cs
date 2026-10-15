@@ -38,12 +38,12 @@ public class StaffOffersController : ControllerBase
         return await _offerService.UpdateAsync(id, request, cancellationToken);
     }
 
-    /// <summary>Điều chỉnh tổng số suất (FR-S03). Sau đơn Paid đầu tiên chỉ được tăng.</summary>
+    /// <summary>Đặt lại tổng số suất (FR-S03). Không thấp hơn số đã giữ chỗ / đã bán; hạ về đúng số đã bán là ngừng bán (BR-24).</summary>
     /// <response code="200">Đã cập nhật số lượng</response>
     /// <response code="400">Số lượng không hợp lệ</response>
     /// <response code="403">Offer thuộc chi nhánh khác</response>
     /// <response code="404">Không tìm thấy offer</response>
-    /// <response code="409">Hạ dưới mức đã bán hoặc đã có đơn Paid (BATCH_LOCKED), hoặc tranh chấp (CONCURRENCY_CONFLICT)</response>
+    /// <response code="409">Hạ dưới mức đã giữ chỗ / đã bán (OFFER_HAS_ORDERS) hoặc đợt đã đóng/huỷ (BATCH_LOCKED)</response>
     [HttpPatch("{id:guid}/quantity")]
     [ProducesResponseType(typeof(OfferDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]

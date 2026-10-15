@@ -1,5 +1,6 @@
 using AutoMapper;
 using FreshRescue.Business.Common;
+using FreshRescue.Business.Features.Ordering;
 using FreshRescue.Business.Features.Sales.Dtos;
 using FreshRescue.DataAccess.UnitOfWork;
 using FreshRescue.Entities.Enums;
@@ -11,20 +12,21 @@ namespace FreshRescue.Business.Features.Sales;
 
 public class OfferService : IOfferService
 {
-    private const int MaxAttempts = 3;
-
     private readonly IUnitOfWork _uow;
+    private readonly IOrderService _orderService;
     private readonly IMapper _mapper;
     private readonly ICurrentUser _currentUser;
     private readonly ILogger<OfferService> _logger;
 
     public OfferService(
         IUnitOfWork uow,
+        IOrderService orderService,
         IMapper mapper,
         ICurrentUser currentUser,
         ILogger<OfferService> logger)
     {
         _uow = uow;
+        _orderService = orderService;
         _mapper = mapper;
         _currentUser = currentUser;
         _logger = logger;
@@ -97,50 +99,18 @@ public class OfferService : IOfferService
     public async Task<OfferDto> AdjustQuantityAsync(
         Guid offerId, AdjustOfferQuantityRequest request, CancellationToken cancellationToken)
     {
-        // Đọc rồi ghi trên RowVersion: thua cuộc thì nạp lại và tính lại từ số liệu mới (như OrderService).
-        for (var attempt = 1; ; attempt++)
-        {
-            var offer = await LoadOfferAsync(offerId, cancellationToken);
-            OfferRules.EnsureInStoreScope(_currentUser, offer.SaleBatch.Store);
-            EnsureBatchEditable(offer.SaleBatch);
+        var offer = await LoadOfferAsync(offerId, cancellationToken);
+        OfferRules.EnsureInStoreScope(_currentUser, offer.SaleBatch.Store);
+        EnsureBatchEditable(offer.SaleBatch);
 
-            var sold = offer.TotalQuantity - offer.RemainingQuantity;
-            var newTotal = request.TotalQuantity;
+        // Chỉ OrderService được ghi RemainingQuantity (một câu UPDATE có điều kiện). Hạ dưới số đã
+        // giữ chỗ / đã bán thì nó ném 409 OFFER_HAS_ORDERS (BR-01); hạ về đúng số đã bán là ngừng bán (BR-24).
+        await _orderService.AdjustOfferStockAsync(offerId, request.TotalQuantity, cancellationToken);
 
-            // OQ-14: sau đơn Paid đầu tiên chỉ được tăng. BR-01: không bao giờ thấp hơn số đã giữ chỗ / đã bán.
-            if (newTotal < offer.TotalQuantity && await HasPaidOrdersAsync(offer.SaleBatchId, cancellationToken))
-            {
-                throw AppException.Conflict(ErrorCodes.BatchLocked, "Đợt bán đã có đơn thanh toán, chỉ được tăng số lượng.");
-            }
-
-            if (newTotal < sold)
-            {
-                throw AppException.Conflict(
-                    ErrorCodes.BatchLocked,
-                    $"Đã có {sold} suất được giữ chỗ hoặc bán, không đặt tổng thấp hơn mức đó.");
-            }
-
-            offer.RemainingQuantity += newTotal - offer.TotalQuantity;
-            offer.TotalQuantity = newTotal;
-
-            try
-            {
-                await _uow.SaveChangesAsync(cancellationToken);
-                return _mapper.Map<OfferDto>(offer);
-            }
-            catch (DbUpdateConcurrencyException) when (attempt < MaxAttempts)
-            {
-                _logger.LogInformation("Tranh chấp tồn kho khi chỉnh số lượng offer {OfferId}, thử lại lần {Attempt}.", offerId, attempt);
-                _uow.ClearChangeTracker();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                _uow.ClearChangeTracker();
-                throw AppException.Conflict(
-                    ErrorCodes.ConcurrencyConflict,
-                    "Số lượng vừa thay đổi do có đơn mới, vui lòng tải lại và thử lại.");
-            }
-        }
+        // UPDATE ghi thẳng vào CSDL nên bản đang theo dõi đã cũ: nạp lại để trả số liệu mới.
+        _uow.ClearChangeTracker();
+        var updated = await LoadOfferAsync(offerId, cancellationToken);
+        return _mapper.Map<OfferDto>(updated);
     }
 
     public async Task DeleteAsync(Guid offerId, CancellationToken cancellationToken)

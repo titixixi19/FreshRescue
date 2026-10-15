@@ -3,6 +3,7 @@ using FreshRescue.Business.Common;
 using FreshRescue.Business.Features.Sales.Dtos;
 using FreshRescue.Entities.Enums;
 using Microsoft.EntityFrameworkCore;
+using Moq;
 
 namespace FreshRescue.Tests.Sales;
 
@@ -106,6 +107,7 @@ public class OfferServiceTests
 
         result.TotalQuantity.Should().Be(15);
         result.RemainingQuantity.Should().Be(15);
+        _f.OrderService.Verify(s => s.AdjustOfferStockAsync(offer.Id, 15, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -123,7 +125,7 @@ public class OfferServiceTests
 
     // BR-01: đã giữ chỗ 4 suất thì tổng không được thấp hơn 4, kể cả khi chưa có đơn Paid.
     [Fact]
-    public async Task AdjustQuantity_HaDuoiSoDaGiuCho_NemBatchLockedAsync()
+    public async Task AdjustQuantity_HaDuoiSoDaGiuCho_NemOfferHasOrdersAsync()
     {
         var batch = await _f.SeedBatchAsync();
         var tracked = await _f.Context.Offers.SingleAsync();
@@ -133,25 +135,48 @@ public class OfferServiceTests
         var act = () => _f.OfferService(_f.StaffUser())
             .AdjustQuantityAsync(tracked.Id, new AdjustOfferQuantityRequest(3), CancellationToken.None);
 
-        await act.Should().ThrowAsync<AppException>().Where(e => e.ErrorCode == ErrorCodes.BatchLocked);
+        await act.Should().ThrowAsync<AppException>().Where(e => e.ErrorCode == ErrorCodes.OfferHasOrders);
         (await _f.OfferOfAsync(batch.Id)).RemainingQuantity.Should().Be(6);
     }
 
+    // BR-24 / §6.2: đã có đơn Paid vẫn được hạ, miễn không thấp hơn số đã giữ chỗ / đã bán.
     [Fact]
-    public async Task AdjustQuantity_HaSauDonPaid_NemBatchLockedNhungTangVanDuocAsync()
+    public async Task AdjustQuantity_HaSauDonPaid_DuocMienKhongThapHonSoDaBanAsync()
     {
         var batch = await _f.SeedBatchAsync(SaleBatchStatus.Active);
-        var offer = await _f.OfferOfAsync(batch.Id);
-        await _f.SeedOrderAsync(batch.Id, OrderStatus.Paid, paid: true, offer.Id);
+        var tracked = await _f.Context.Offers.SingleAsync();
+        tracked.RemainingQuantity = 6; // đã bán 4
+        await _f.Context.SaveChangesAsync();
+        await _f.SeedOrderAsync(batch.Id, OrderStatus.Paid, paid: true, tracked.Id);
 
-        var down = () => _f.OfferService(_f.StaffUser())
-            .AdjustQuantityAsync(offer.Id, new AdjustOfferQuantityRequest(8), CancellationToken.None);
-        var up = await _f.OfferService(_f.StaffUser())
+        var down = await _f.OfferService(_f.StaffUser())
+            .AdjustQuantityAsync(tracked.Id, new AdjustOfferQuantityRequest(8), CancellationToken.None);
+        var stop = await _f.OfferService(_f.StaffUser())
+            .AdjustQuantityAsync(tracked.Id, new AdjustOfferQuantityRequest(4), CancellationToken.None);
+        var tooLow = () => _f.OfferService(_f.StaffUser())
+            .AdjustQuantityAsync(tracked.Id, new AdjustOfferQuantityRequest(3), CancellationToken.None);
+
+        down.TotalQuantity.Should().Be(8);
+        down.RemainingQuantity.Should().Be(4);
+        stop.TotalQuantity.Should().Be(4);
+        stop.RemainingQuantity.Should().Be(0);
+        await tooLow.Should().ThrowAsync<AppException>().Where(e => e.ErrorCode == ErrorCodes.OfferHasOrders);
+    }
+
+    [Theory]
+    [InlineData(SaleBatchStatus.Closed)]
+    [InlineData(SaleBatchStatus.Cancelled)]
+    public async Task AdjustQuantity_DotDaDongHoacHuy_NemBatchLockedAsync(SaleBatchStatus status)
+    {
+        var batch = await _f.SeedBatchAsync(status);
+        var offer = await _f.OfferOfAsync(batch.Id);
+
+        var act = () => _f.OfferService(_f.StaffUser())
             .AdjustQuantityAsync(offer.Id, new AdjustOfferQuantityRequest(12), CancellationToken.None);
 
-        await down.Should().ThrowAsync<AppException>().Where(e => e.ErrorCode == ErrorCodes.BatchLocked);
-        up.TotalQuantity.Should().Be(12);
-        up.RemainingQuantity.Should().Be(12);
+        await act.Should().ThrowAsync<AppException>().Where(e => e.ErrorCode == ErrorCodes.BatchLocked);
+        _f.OrderService.Verify(
+            s => s.AdjustOfferStockAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
