@@ -476,11 +476,18 @@ WHERE  oi.OfferId = @offerId
 
 Phần quan trọng nhất của cả đồ án. Đọc kỹ trước khi code.
 
-> **Chốt 05/10 — bi quan là mặc định, lạc quan giữ để so sánh.** Đo trên SQL Server, 50
-> request đồng thời tranh 10 suất: chế độ **lạc quan** (§6.1) không bao giờ bán lố nhưng
-> chỉ được **5/10** đơn thành công (thêm chờ ngẫu nhiên giữa các lần thử: 8–10/10) — còn
-> hàng mà vẫn trả `CONCURRENCY_CONFLICT`, không đạt `NFR-01`. Chế độ **bi quan** (§6.3)
-> đạt **đúng 10/10** ở mọi lần chạy và nhanh hơn (~150 ms so với ~400 ms). Chọn bằng
+> **Chốt 05/10 — bi quan là mặc định, lạc quan giữ để so sánh.** Số liệu đo lại ngày 15/10
+> bằng `tools/FreshRescue.LoadTest` (chi tiết trong `README.md` của công cụ), mỗi kịch bản 5
+> lượt trên SQL Server LocalDB. **Không chế độ nào bán lố** ở bất kỳ lượt nào.
+>
+> | Kịch bản | Bi quan (§6.3) | Lạc quan (§6.1, thử lại 3 lần có chờ ngẫu nhiên) |
+> | --- | --- | --- |
+> | 50 khách / 10 suất (`NFR-01`) | **10/10** cả 5 lượt, p50 140 ms | 10/10 cả 5 lượt nhưng p50 655 ms, 552 lần thử lại |
+> | 50 khách / 30 suất | **30/30** cả 5 lượt | **9–24/30**, không lượt nào bán hết — còn hàng vẫn trả `CONCURRENCY_CONFLICT` |
+> | 100 khách / 10 suất | **10/10** cả 5 lượt, p50 224 ms | 9–10/10, p50 716 ms |
+>
+> Càng nhiều người cùng **được** mua, lạc quan càng mất đơn vì các lệnh ghi `RowVersion` đè
+> nhau; bi quan xếp hàng chờ khoá nên bán đúng số suất và nhanh hơn 2–4 lần. Chọn bằng
 > `Ordering:LockingStrategy` trong `appsettings.json` (`Pessimistic` | `Optimistic`).
 > Hai chế độ chỉ khác ở bước nạp offer; mọi bước còn lại của §6.1 dùng chung.
 
