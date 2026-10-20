@@ -1,7 +1,7 @@
 using FluentValidation;
+using FreshRescue.Business.Features.Catalog;
 using FreshRescue.Business.Features.Ordering;
 using Microsoft.Extensions.DependencyInjection;
-using FreshRescue.Business.Features.Catalog;
 
 namespace FreshRescue.Business;
 

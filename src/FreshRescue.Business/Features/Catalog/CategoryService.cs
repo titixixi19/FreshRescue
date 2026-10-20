@@ -86,14 +86,9 @@ public class CategoryService : ICategoryService
             .Query()
             .FirstOrDefaultAsync(
                 x => x.Id == id,
-                cancellationToken);
-
-        if (category == null)
-        {
-            throw AppException.NotFound(
+                cancellationToken) ?? throw AppException.NotFound(
                 ErrorCodes.NotFound,
                 "Khong tim thay danh muc.");
-        }
 
         // 2. Chuan hoa du lieu.
         var newName = request.Name.Trim();
@@ -135,15 +130,9 @@ public class CategoryService : ICategoryService
             .Query()
             .FirstOrDefaultAsync(
                 x => x.Id == id,
-                cancellationToken);
-
-        // 2. Khong tim thay hoac da bi xoa mem.
-        if (category == null)
-        {
-            throw AppException.NotFound(
+                cancellationToken) ?? throw AppException.NotFound(
                 ErrorCodes.NotFound,
                 "Khong tim thay danh muc.");
-        }
 
         // 3. Yeu cau xoa Category.
         _unitOfWork.Categories.Remove(category);
