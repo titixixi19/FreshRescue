@@ -1,0 +1,71 @@
+@model FreshRescue.WebClient.Areas.Dashboard.Models.RedemptionPageViewModel
+@{
+    ViewData["Title"] = "Quét QR & Xác nhận đơn";
+}
+
+<div class="dash-toolbar">
+    <div>
+        <h2>Xác nhận nhận hàng (Redeem QR)</h2>
+        <p class="muted small">Dùng camera quét mã QR trên vé của khách hoặc nhập mã đơn thủ công.</p>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.LastResultMessage))
+{
+    @if (Model.LastSucceeded == true)
+    {
+        <div class="dash-alert dash-alert-ok">
+            <strong>Thành công!</strong> @Model.LastResultMessage
+            @if (!string.IsNullOrEmpty(Model.LastOrderCode))
+            {
+                <text>(Mã: <code>@Model.LastOrderCode</code> — Trạng thái: @Model.LastStatus)</text>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="dash-alert dash-alert-err">
+            <strong>Lỗi:</strong> @Model.LastResultMessage
+        </div>
+    }
+}
+
+<div class="dash-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+    <!-- Cột Webcam Scanner -->
+    <div class="dash-card">
+        <h3>Quét bằng Webcam</h3>
+        <div id="reader" style="width: 100%; min-height: 250px; background: #f8fafc; border-radius: 6px; margin-bottom: 1rem;"></div>
+        <div style="display: flex; gap: 0.5rem;">
+            <button type="button" id="start-camera-btn" class="dash-btn dash-btn-sm">Bật camera</button>
+            <button type="button" id="stop-camera-btn" class="dash-btn-secondary dash-btn-sm" style="display:none;">Tắt camera</button>
+        </div>
+        <span id="camera-status" class="muted small" style="display: block; margin-top: 0.5rem;">Camera đang tắt.</span>
+    </div>
+
+    <!-- Cột Nhập thủ công -->
+    <div class="dash-card">
+        <h3>Nhập mã thủ công</h3>
+        <form asp-action="Redeem" method="post" class="dash-form">
+            @Html.AntiForgeryToken()
+            <div class="dash-field">
+                <label asp-for="ManualCode">Mã đơn / QR Token</label>
+                <input asp-for="ManualCode" class="dash-input" placeholder="VD: ORD-2026-... hoặc Token" autocomplete="off" />
+                <span asp-validation-for="ManualCode" class="field-error"></span>
+            </div>
+            <div class="dash-form-actions" style="margin-top: 1rem;">
+                <button type="submit" class="dash-btn">Xác nhận đổi quà</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Hidden form để JS submit ngầm kết quả quét QR từ webcam lên Controller -->
+<form id="ajax-redeem-form" asp-action="RedeemAjax" method="post" style="display:none;">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="code" id="ajax-code-input" />
+</form>
+
+@section Scripts {
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="~/js/dashboard-qr.js" asp-append-version="true"></script>
+}

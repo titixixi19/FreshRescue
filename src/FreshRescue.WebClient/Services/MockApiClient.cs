@@ -107,6 +107,21 @@ public class MockApiClient : IApiClient
             ("GET", ["me", "orders"]) => _store.GetMyOrders(RequireCustomer(), query),
             ("GET", ["me", "orders", var id]) => _store.GetMyOrder(RequireCustomer(), ParseId(id)),
 
+            // ==========================================
+            // BỔ SUNG MOCK CHO KHU VỰC DASHBOARD (TV5)
+            // ==========================================
+            ("GET", ["brand", "offer-templates"]) => _store.GetBrandOfferTemplates(query),
+            ("GET", ["brand", "stores"]) => _store.GetBrandStores(query),
+            ("GET", ["staff", "sale-batches"]) => _store.GetStaffSaleBatches(query),
+            ("GET", ["staff", "sale-batches", var id]) => _store.GetStaffSaleBatch(ParseId(id)),
+            ("POST", ["staff", "sale-batches"]) => _store.CreateStaffSaleBatch(body),
+            ("POST", ["staff", "sale-batches", var id, "activate"]) => _store.ActivateStaffSaleBatch(ParseId(id)),
+            ("POST", ["staff", "sale-batches", var id, "cancel"]) => _store.CancelStaffSaleBatch(ParseId(id), body),
+            ("GET", ["staff", "sale-batches", var id, "orders"]) => _store.GetStaffSaleBatchOrders(ParseId(id), query),
+            ("POST", ["staff", "redemptions"]) => _store.RedeemOrder(body),
+            ("PATCH", ["staff", "offers", var id, "quantity"]) => _store.UpdateStaffOfferQuantity(ParseId(id), body),
+            ("DELETE", ["staff", "offers", var id]) => _store.DeleteStaffOffer(ParseId(id)),
+
             _ => throw new ApiException(
                 StatusCodes.Status404NotFound,
                 ApiErrorMessages.NotFound,

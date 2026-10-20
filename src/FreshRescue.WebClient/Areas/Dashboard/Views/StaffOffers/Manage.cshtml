@@ -1,0 +1,82 @@
+@model FreshRescue.WebClient.Areas.Dashboard.Controllers.StaffOfferManageViewModel
+@{
+    ViewData["Title"] = "Offer trong đợt";
+}
+
+<div class="dash-toolbar">
+    <div>
+        <h2>Offer — @(Model.BatchName ?? Model.SaleBatchId.ToString())</h2>
+        <p class="muted small">
+            Trạng thái đợt: <span class="badge">@Model.BatchStatus</span> ·
+            Trạng thái Realtime: <span id="signalr-status-badge" class="badge badge-warn">Đang khởi tạo...</span>
+        </p>
+    </div>
+    <a class="dash-btn-secondary" asp-controller="SaleBatches" asp-action="Index">← Đợt bán</a>
+</div>
+
+@if (TempData["Success"] is string ok)
+{
+    <div class="dash-alert dash-alert-ok">@ok</div>
+}
+@if (TempData["Error"] is string err)
+{
+    <div class="dash-alert dash-alert-err">@err</div>
+}
+
+@if (Model.Offers.Count == 0)
+{
+    <div class="dash-empty">
+        <p>Đợt chưa có offer (hoặc API không trả danh sách kèm batch).</p>
+    </div>
+}
+else
+{
+    <div class="dash-table-wrap">
+        <table class="dash-table" id="offers-manage-table">
+            <thead>
+                <tr>
+                    <th>Tên</th>
+                    <th>Giá</th>
+                    <th>Còn / Tổng</th>
+                    <th>Max/khách</th>
+                    <th>Sửa SL</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var o in Model.Offers)
+                {
+                    <tr data-offer-id="@o.Id">
+                        <td><strong>@o.Name</strong></td>
+                        <td>@o.ActualPrice.ToString("N0")</td>
+                        <td><span class="remaining-qty-text">@o.RemainingQuantity</span> / @o.TotalQuantity</td>
+                        <td>@o.MaxPerCustomer</td>
+                        <td>
+                            <form asp-action="AdjustQuantity" method="post" class="reject-form">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="offerId" value="@o.Id" />
+                                <input type="hidden" name="saleBatchId" value="@Model.SaleBatchId" />
+                                <input type="number" name="totalQuantity" value="@o.TotalQuantity" min="1" class="dash-input dash-input-sm" />
+                                <button type="submit" class="link-ok">Lưu SL</button>
+                            </form>
+                        </td>
+                        <td>
+                            <form asp-action="Delete" method="post" class="inline-form"
+                                  onsubmit="return confirm('Xoá offer này khỏi đợt?');">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="offerId" value="@o.Id" />
+                                <input type="hidden" name="saleBatchId" value="@Model.SaleBatchId" />
+                                <button type="submit" class="link-danger">Xoá</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+    <script src="~/js/dashboard-signalr.js" asp-append-version="true"></script>
+}
