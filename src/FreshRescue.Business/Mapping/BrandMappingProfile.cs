@@ -1,7 +1,7 @@
 using AutoMapper;
+using FreshRescue.Business.Features.Admin.Dtos;
 using FreshRescue.Business.Features.Catalog.Dtos;
 using FreshRescue.Entities.Catalog;
-using FreshRescue.Business.Features.Admin.Dtos;
 
 namespace FreshRescue.Business.Mapping;
 

@@ -41,6 +41,6 @@ public class UpdateStoreRequestValidator
             .Must(status =>
                 status.HasValue &&
                 Enum.IsDefined(typeof(StoreStatus), status.Value))
-            .WithMessage("Invalid store status.");
+            .WithMessage("Trạng thái chi nhánh không hợp lệ.");
     }
 }

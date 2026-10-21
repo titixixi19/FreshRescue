@@ -65,6 +65,9 @@ public class AdminBrandsController : ControllerBase
     [ProducesResponseType(
         typeof(ProblemDetails),
         StatusCodes.Status404NotFound)]
+    [ProducesResponseType(
+    typeof(ProblemDetails),
+    StatusCodes.Status409Conflict)]
     public async Task<ActionResult<AdminBrandDto>> ApproveAsync(
         Guid id,
         CancellationToken cancellationToken)
@@ -96,6 +99,9 @@ public class AdminBrandsController : ControllerBase
     [ProducesResponseType(
         typeof(ProblemDetails),
         StatusCodes.Status404NotFound)]
+    [ProducesResponseType(
+    typeof(ProblemDetails),
+    StatusCodes.Status409Conflict)]
     public async Task<ActionResult<AdminBrandDto>> RejectAsync(
         Guid id,
         [FromBody] RejectBrandRequest request,
@@ -129,6 +135,9 @@ public class AdminBrandsController : ControllerBase
     [ProducesResponseType(
         typeof(ProblemDetails),
         StatusCodes.Status404NotFound)]
+    [ProducesResponseType(
+    typeof(ProblemDetails),
+    StatusCodes.Status409Conflict)]
     public async Task<ActionResult<AdminBrandDto>> SuspendAsync(
         Guid id,
         [FromBody] SuspendBrandRequest request,

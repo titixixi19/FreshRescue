@@ -1,3 +1,4 @@
+
 using AutoMapper;
 using FreshRescue.Business.Common;
 using FreshRescue.Business.Features.Catalog.Dtos;
@@ -28,44 +29,17 @@ public class StoreService : IStoreService
         GetBrandStoresRequest request,
         CancellationToken cancellationToken)
     {
-        // 1. Get BrandManager identity from JWT.
-        var brandId = _currentUser.BrandId;
-        var userId = _currentUser.UserId;
+        var brandId = await GetOwnedBrandIdAsync(
+            cancellationToken);
 
-        if (!brandId.HasValue || !userId.HasValue)
-        {
-            throw AppException.Forbidden(
-                ErrorCodes.ForbiddenScope,
-                "Brand scope is missing.");
-        }
-
-        // 2. Verify this user owns the brand.
-        var ownsBrand = await _unitOfWork.Brands
-            .Query()
-            .AsNoTracking()
-            .AnyAsync(
-                x => x.Id == brandId.Value &&
-                     x.OwnerUserId == userId.Value,
-                cancellationToken);
-
-        if (!ownsBrand)
-        {
-            throw AppException.Forbidden(
-                ErrorCodes.ForbiddenScope,
-                "You do not own this brand.");
-        }
-
-        // 3. Query stores belonging to the brand.
         var query = _unitOfWork.Stores
             .Query()
             .AsNoTracking()
-            .Where(x => x.BrandId == brandId.Value);
+            .Where(x => x.BrandId == brandId);
 
-        // 4. Count before pagination.
         var totalCount = await query.CountAsync(
             cancellationToken);
 
-        // 5. Sort and paginate.
         var stores = await query
             .OrderBy(x => x.Name)
             .ThenBy(x => x.Id)
@@ -73,7 +47,6 @@ public class StoreService : IStoreService
             .Take(request.PageSize)
             .ToListAsync(cancellationToken);
 
-        // 6. Return DTOs.
         return new PagedResponse<StoreDto>
         {
             Items = _mapper.Map<List<StoreDto>>(stores),
@@ -82,45 +55,14 @@ public class StoreService : IStoreService
             TotalCount = totalCount
         };
     }
-    private async Task<Guid> GetOwnedBrandIdAsync(
-    CancellationToken cancellationToken)
-    {
-        var brandId = _currentUser.BrandId;
-        var userId = _currentUser.UserId;
 
-        if (!brandId.HasValue || !userId.HasValue)
-        {
-            throw AppException.Forbidden(
-                ErrorCodes.ForbiddenScope,
-                "Brand scope is missing.");
-        }
-
-        var ownsBrand = await _unitOfWork.Brands
-            .Query()
-            .AsNoTracking()
-            .AnyAsync(
-                x => x.Id == brandId.Value &&
-                     x.OwnerUserId == userId.Value,
-                cancellationToken);
-
-        if (!ownsBrand)
-        {
-            throw AppException.Forbidden(
-                ErrorCodes.ForbiddenScope,
-                "You do not own this brand.");
-        }
-
-        return brandId.Value;
-    }
     public async Task<StoreDto> CreateAsync(
-    CreateStoreRequest request,
-    CancellationToken cancellationToken)
+        CreateStoreRequest request,
+        CancellationToken cancellationToken)
     {
-        // 1. Verify brand ownership.
         var brandId = await GetOwnedBrandIdAsync(
             cancellationToken);
 
-        // 2. Create a new store.
         var store = new Store
         {
             BrandId = brandId,
@@ -145,50 +87,40 @@ public class StoreService : IStoreService
             RatingCount = 0
         };
 
-        // 3. Add to repository.
         await _unitOfWork.Stores.AddAsync(
             store,
             cancellationToken);
 
-        // 4. Save changes.
         await _unitOfWork.SaveChangesAsync(
             cancellationToken);
 
-        // 5. Return DTO.
         return _mapper.Map<StoreDto>(store);
     }
+
     public async Task<StoreDto> UpdateAsync(
-    Guid id,
-    UpdateStoreRequest request,
-    CancellationToken cancellationToken)
+        Guid id,
+        UpdateStoreRequest request,
+        CancellationToken cancellationToken)
     {
-        // 1. Verify brand ownership.
         var brandId = await GetOwnedBrandIdAsync(
             cancellationToken);
 
-        // 2. Find the store.
         var store = await _unitOfWork.Stores
             .Query()
             .FirstOrDefaultAsync(
                 x => x.Id == id,
-                cancellationToken);
-
-        if (store == null)
-        {
-            throw AppException.NotFound(
+                cancellationToken)
+            ?? throw AppException.NotFound(
                 ErrorCodes.NotFound,
-                "Store not found.");
-        }
+                "Không tìm thấy chi nhánh.");
 
-        // 3. Check store scope.
         if (store.BrandId != brandId)
         {
             throw AppException.Forbidden(
                 ErrorCodes.ForbiddenScope,
-                "You cannot update another brand's store.");
+                "Bạn không có quyền cập nhật chi nhánh thuộc thương hiệu khác.");
         }
 
-        // 4. Update allowed fields.
         store.Name = request.Name.Trim();
         store.AddressLine = request.AddressLine.Trim();
         store.Ward = request.Ward.Trim();
@@ -205,52 +137,73 @@ public class StoreService : IStoreService
 
         store.Status = request.Status!.Value;
 
-        // Do not update:
-        // BrandId, RatingAverage, RatingCount,
-        // CreatedAt or IsDeleted.
+        // Không cho phép thay đổi BrandId và thông tin đánh giá qua Store CRUD.
 
-        // 5. Save changes.
         await _unitOfWork.SaveChangesAsync(
             cancellationToken);
 
-        // 6. Return DTO.
         return _mapper.Map<StoreDto>(store);
     }
+
     public async Task DeleteAsync(
-    Guid id,
-    CancellationToken cancellationToken)
+        Guid id,
+        CancellationToken cancellationToken)
     {
-        // 1. Verify brand ownership.
         var brandId = await GetOwnedBrandIdAsync(
             cancellationToken);
 
-        // 2. Find the store.
         var store = await _unitOfWork.Stores
             .Query()
             .FirstOrDefaultAsync(
                 x => x.Id == id,
-                cancellationToken);
-
-        if (store == null)
-        {
-            throw AppException.NotFound(
+                cancellationToken)
+            ?? throw AppException.NotFound(
                 ErrorCodes.NotFound,
-                "Store not found.");
-        }
+                "Không tìm thấy chi nhánh.");
 
-        // 3. Check store scope.
         if (store.BrandId != brandId)
         {
             throw AppException.Forbidden(
                 ErrorCodes.ForbiddenScope,
-                "You cannot delete another brand's store.");
+                "Bạn không có quyền xóa chi nhánh thuộc thương hiệu khác.");
         }
 
-        // 4. Mark for deletion.
+        // DbContext chuyển thao tác Remove thành Soft Delete.
+
         _unitOfWork.Stores.Remove(store);
 
-        // 5. DbContext converts deletion into soft delete.
         await _unitOfWork.SaveChangesAsync(
             cancellationToken);
+    }
+
+    private async Task<Guid> GetOwnedBrandIdAsync(
+        CancellationToken cancellationToken)
+    {
+        var brandId = _currentUser.BrandId;
+        var userId = _currentUser.UserId;
+
+        if (!brandId.HasValue || !userId.HasValue)
+        {
+            throw AppException.Forbidden(
+                ErrorCodes.ForbiddenScope,
+                "Không xác định được thương hiệu của tài khoản.");
+        }
+
+        var ownsBrand = await _unitOfWork.Brands
+            .Query()
+            .AsNoTracking()
+            .AnyAsync(
+                x => x.Id == brandId.Value &&
+                     x.OwnerUserId == userId.Value,
+                cancellationToken);
+
+        if (!ownsBrand)
+        {
+            throw AppException.Forbidden(
+                ErrorCodes.ForbiddenScope,
+                "Bạn không có quyền quản lý thương hiệu này.");
+        }
+
+        return brandId.Value;
     }
 }
