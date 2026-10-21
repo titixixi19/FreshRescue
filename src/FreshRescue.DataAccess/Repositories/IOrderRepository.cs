@@ -25,4 +25,11 @@ public interface IOrderRepository : IGenericRepository<Order>
         RefundStatus refundStatus,
         DateTime cancelledAt,
         CancellationToken cancellationToken);
+
+    /// <summary>
+    /// <c>UPDATE Orders SET Status = NoShow … WHERE Id = @id AND Status = Paid</c>, chạy ngay
+    /// không chờ <c>SaveChangesAsync</c>. Trả <c>false</c> khi không khớp dòng nào — đơn đã được
+    /// nhận hoặc đổi trạng thái trước đó (02-DOMAIN-MODEL.md §6.4, BR-19).
+    /// </summary>
+    Task<bool> TryMarkNoShowAsync(Guid orderId, DateTime noShowAt, CancellationToken cancellationToken);
 }

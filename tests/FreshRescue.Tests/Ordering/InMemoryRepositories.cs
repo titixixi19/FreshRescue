@@ -55,6 +55,21 @@ internal sealed class InMemoryOrderRepository(FreshRescueDbContext context)
         return true;
     }
 
+    public async Task<bool> TryMarkNoShowAsync(Guid orderId, DateTime noShowAt, CancellationToken cancellationToken)
+    {
+        var order = await FindForUpdateAsync(orderId, OrderStatus.Paid, cancellationToken);
+        if (order is null)
+        {
+            return false;
+        }
+
+        order.Status = OrderStatus.NoShow;
+        order.RefundStatus = RefundStatus.None;
+        order.UpdatedAt = noShowAt;
+        await Context.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+
     private async Task<Order?> FindForUpdateAsync(Guid orderId, OrderStatus expectedStatus, CancellationToken cancellationToken)
     {
         if (BeforeUpdate is not null)

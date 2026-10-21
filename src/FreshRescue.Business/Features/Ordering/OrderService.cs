@@ -43,6 +43,7 @@ public class OrderService : IOrderService
     private readonly TimeProvider _clock;
     private readonly ILogger<OrderService> _logger;
     private readonly OrderingOptions _options;
+    private readonly IOfferRealtimeNotifier? _realtimeNotifier;
 
     public OrderService(
         IUnitOfWork uow,
@@ -51,7 +52,8 @@ public class OrderService : IOrderService
         IQrTicketClient qrTicketClient,
         TimeProvider clock,
         ILogger<OrderService> logger,
-        IOptions<OrderingOptions> options)
+        IOptions<OrderingOptions> options,
+        IOfferRealtimeNotifier? realtimeNotifier = null)
     {
         _uow = uow;
         _mapper = mapper;
@@ -60,6 +62,7 @@ public class OrderService : IOrderService
         _clock = clock;
         _logger = logger;
         _options = options.Value;
+        _realtimeNotifier = realtimeNotifier;
     }
 
     public async Task<OrderDto> CreateAsync(CreateOrderRequest request, CancellationToken cancellationToken)
@@ -211,6 +214,16 @@ public class OrderService : IOrderService
             "Đặt hàng thành công. OrderId={OrderId}, OrderCode={OrderCode}, SaleBatchId={SaleBatchId}, TotalAmount={TotalAmount}",
             order.Id, order.OrderCode, batch.Id, order.TotalAmount);
 
+        if (_realtimeNotifier is not null)
+        {
+            foreach (var item in order.Items)
+            {
+                var offer = offers.First(o => o.Id == item.OfferId);
+                await _realtimeNotifier.NotifyOfferQuantityChangedAsync(offer.Id, offer.SaleBatchId, offer.RemainingQuantity, cancellationToken);
+            }
+            await _realtimeNotifier.NotifyOrderStatusChangedAsync(order.CustomerUserId, order.Id, order.Status.ToString(), cancellationToken);
+        }
+
         return _mapper.Map<OrderDto>(order);
     }
 
@@ -295,6 +308,11 @@ public class OrderService : IOrderService
         _logger.LogInformation(
             "Thanh toán thành công, đã cấp vé QR. OrderId={OrderId}, OrderCode={OrderCode}",
             order.Id, order.OrderCode);
+
+        if (_realtimeNotifier is not null)
+        {
+            await _realtimeNotifier.NotifyOrderStatusChangedAsync(order.CustomerUserId, order.Id, OrderStatus.Paid.ToString(), cancellationToken);
+        }
 
         return new OrderPaymentDto
         {
@@ -403,6 +421,11 @@ public class OrderService : IOrderService
             "Đối soát thành công. OrderId={OrderId}, OrderCode={OrderCode}, StaffUserId={StaffUserId}",
             order.Id, order.OrderCode, staffUserId);
 
+        if (_realtimeNotifier is not null)
+        {
+            await _realtimeNotifier.NotifyOrderStatusChangedAsync(order.CustomerUserId, order.Id, OrderStatus.Redeemed.ToString(), cancellationToken);
+        }
+
         return _mapper.Map<RedemptionDto>(order) with { RedeemedAt = now };
     }
 
@@ -493,6 +516,23 @@ public class OrderService : IOrderService
         await _uow.Offers.RestockAsync(restock, cancellationToken);
         await _uow.SaveChangesAsync(cancellationToken);
 
+        if (_realtimeNotifier is not null)
+        {
+            foreach (var (offerId, _) in restock)
+            {
+                var offer = await _uow.Offers.Query().AsNoTracking().SingleOrDefaultAsync(o => o.Id == offerId, cancellationToken);
+                if (offer is not null)
+                {
+                    await _realtimeNotifier.NotifyOfferQuantityChangedAsync(offer.Id, offer.SaleBatchId, offer.RemainingQuantity, cancellationToken);
+                }
+            }
+
+            foreach (var order in orders)
+            {
+                await _realtimeNotifier.NotifyOrderStatusChangedAsync(order.CustomerUserId, order.Id, OrderStatus.Cancelled.ToString(), cancellationToken);
+            }
+        }
+
         _logger.LogInformation(
             "Huỷ cả đợt bán. SaleBatchId={SaleBatchId}, SoDonHuy={CancelledCount}",
             saleBatchId, cancelled);
@@ -527,6 +567,19 @@ public class OrderService : IOrderService
             await _uow.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
             expired++;
+
+            if (_realtimeNotifier is not null)
+            {
+                foreach (var (offerId, _) in restock)
+                {
+                    var offer = await _uow.Offers.Query().AsNoTracking().SingleOrDefaultAsync(o => o.Id == offerId, cancellationToken);
+                    if (offer is not null)
+                    {
+                        await _realtimeNotifier.NotifyOfferQuantityChangedAsync(offer.Id, offer.SaleBatchId, offer.RemainingQuantity, cancellationToken);
+                    }
+                }
+                await _realtimeNotifier.NotifyOrderStatusChangedAsync(order.CustomerUserId, order.Id, OrderStatus.Cancelled.ToString(), cancellationToken);
+            }
         }
 
         if (expired > 0)
@@ -561,20 +614,40 @@ public class OrderService : IOrderService
             return 0;
         }
 
+        var processedCount = 0;
         foreach (var order in dueOrders)
         {
-            order.Status = OrderStatus.NoShow;
-            order.RefundStatus = RefundStatus.None;
-            order.UpdatedAt = now;
+            // 02 §6.4: UPDATE ... WHERE Id = @id AND Status = Paid kiểm tra affected == 1.
+            // Tránh race condition khi khách vừa nhận hàng hoặc job chạy trùng lặp.
+            if (!await _uow.Orders.TryMarkNoShowAsync(order.Id, now, cancellationToken))
+            {
+                continue;
+            }
 
+            processedCount++;
             _logger.LogInformation(
                 "Đơn {OrderCode} (Id={OrderId}) chuyển sang NoShow tại {Now}. PickupEndTime={PickupEndTime}",
                 order.OrderCode, order.Id, now, order.SaleBatch.PickupEndTime);
+
+            var ticket = await _uow.QrTickets.Query().SingleOrDefaultAsync(t => t.OrderId == order.Id, cancellationToken);
+            if (ticket is not null)
+            {
+                ticket.Status = QrTicketStatus.Expired;
+            }
+
+            if (_realtimeNotifier is not null)
+            {
+                await _realtimeNotifier.NotifyOrderStatusChangedAsync(order.CustomerUserId, order.Id, OrderStatus.NoShow.ToString(), cancellationToken);
+            }
         }
 
-        await _uow.SaveChangesAsync(cancellationToken);
-        _logger.LogInformation("Đã đánh dấu {NoShowCount} đơn NoShow (FR-X04).", dueOrders.Count);
-        return dueOrders.Count;
+        if (processedCount > 0)
+        {
+            await _uow.SaveChangesAsync(cancellationToken);
+        }
+
+        _logger.LogInformation("Đã đánh dấu {NoShowCount} đơn NoShow (FR-X04).", processedCount);
+        return processedCount;
     }
 
     public async Task AdjustOfferStockAsync(Guid offerId, int newTotalQuantity, CancellationToken cancellationToken)
@@ -588,6 +661,14 @@ public class OrderService : IOrderService
         if (await _uow.Offers.TryAdjustTotalAsync(offerId, newTotalQuantity, cancellationToken))
         {
             _logger.LogInformation("Đặt lại tổng số suất của offer {OfferId} thành {NewTotal}.", offerId, newTotalQuantity);
+            if (_realtimeNotifier is not null)
+            {
+                var updated = await _uow.Offers.Query().AsNoTracking().SingleOrDefaultAsync(o => o.Id == offerId, cancellationToken);
+                if (updated is not null)
+                {
+                    await _realtimeNotifier.NotifyOfferQuantityChangedAsync(updated.Id, updated.SaleBatchId, updated.RemainingQuantity, cancellationToken);
+                }
+            }
             return;
         }
 
@@ -699,6 +780,19 @@ public class OrderService : IOrderService
         await _uow.Offers.RestockAsync(restock, cancellationToken);
         await _uow.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
+
+        if (_realtimeNotifier is not null)
+        {
+            foreach (var (offerId, _) in restock)
+            {
+                var offer = await _uow.Offers.Query().AsNoTracking().SingleOrDefaultAsync(o => o.Id == offerId, cancellationToken);
+                if (offer is not null)
+                {
+                    await _realtimeNotifier.NotifyOfferQuantityChangedAsync(offer.Id, offer.SaleBatchId, offer.RemainingQuantity, cancellationToken);
+                }
+            }
+            await _realtimeNotifier.NotifyOrderStatusChangedAsync(order.CustomerUserId, order.Id, OrderStatus.Cancelled.ToString(), cancellationToken);
+        }
     }
 
     /// <summary>
