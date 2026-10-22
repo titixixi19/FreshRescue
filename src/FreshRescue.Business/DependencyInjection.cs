@@ -1,5 +1,6 @@
 using FluentValidation;
 using FreshRescue.Business.Features.Catalog;
+using FreshRescue.Business.Features.Engagement;
 using FreshRescue.Business.Features.Ordering;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,9 +16,11 @@ public static class DependencyInjection
         // Mỗi người thêm dòng đăng ký service của lát mình vào đúng nhóm dưới đây.
         // Giữ thứ tự nhóm cố định để hai PR cùng sửa file này ít xung đột.
 
-        // --- Auth (Hiếu) ---
+        // --- Auth & Engagement (Hiếu) ---
         services.AddScoped<Features.Auth.Services.ITokenService, Features.Auth.Services.TokenService>();
         services.AddScoped<Features.Auth.Services.IAuthService, Features.Auth.Services.AuthService>();
+        services.AddScoped<IFavoriteService, FavoriteService>();
+        services.AddScoped<INotificationService, NotificationService>();
 
         // --- Catalog + Admin (Đình Đức) ---
         services.AddScoped<ICategoryService, CategoryService>();

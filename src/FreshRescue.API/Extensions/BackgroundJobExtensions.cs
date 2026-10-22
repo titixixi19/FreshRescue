@@ -13,6 +13,7 @@ public static class BackgroundJobExtensions
         services.AddHostedService<SaleBatchSchedulerService>();
         services.AddHostedService<OrderExpiryService>();
         services.AddHostedService<NoShowService>();
+        services.AddHostedService<PickupReminderService>();
         return services;
     }
 }
