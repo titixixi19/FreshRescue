@@ -29,6 +29,7 @@ public static class DependencyInjection
         // --- Ordering + Redemption (Tùng) ---
         services.AddOptions<OrderingOptions>().BindConfiguration(OrderingOptions.SectionName);
         services.AddScoped<IOrderService, OrderService>();
+        services.AddScoped<IOrderExportService, OrderExportService>();
 
         return services;
     }

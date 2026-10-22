@@ -138,6 +138,33 @@ public class NoShowServiceTests
     }
 
     [Fact]
+    public async Task ProcessNoShows_KhiCoTranhChapChenNgang_TryMarkNoShowKhongGhiDeTrangThaiAsync()
+    {
+        // Arrange: đơn ban đầu là Paid, quá hạn nhận hàng
+        var order = await SeedOrderAsync(OrderStatus.Paid);
+        var orderService = CreateOrderService(_now);
+
+        // Giả lập race condition: ngay trước khi TryMarkNoShow chạy, khách vừa quét nhận hàng thành công
+        _orders.BeforeUpdate = async () =>
+        {
+            var dbOrder = await _context.Orders.FindAsync(order.Id);
+            if (dbOrder != null)
+            {
+                dbOrder.Status = OrderStatus.Redeemed;
+                await _context.SaveChangesAsync();
+            }
+        };
+
+        // Act
+        var count = await orderService.ProcessNoShowsAsync(CancellationToken.None);
+
+        // Assert: Không dòng nào bị đổi thành NoShow vì WHERE Status = Paid không khớp (docs 02 §6.4)
+        count.Should().Be(0);
+        var finalOrder = await _context.Orders.FindAsync(order.Id);
+        finalOrder!.Status.Should().Be(OrderStatus.Redeemed, "Không bị đè bởi NoShow do có điều kiện WHERE Status = Paid");
+    }
+
+    [Fact]
     public async Task NoShowService_HostedService_ProcessNoShowsAsync_ChayThanhCongAsync()
     {
         // Arrange
