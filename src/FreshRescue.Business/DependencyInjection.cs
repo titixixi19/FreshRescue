@@ -28,6 +28,7 @@ public static class DependencyInjection
         services.AddScoped<IBrandProfileService, BrandProfileService>();
         services.AddScoped<IAdminBrandService, AdminBrandService>();
         services.AddScoped<IStoreService, StoreService>();
+        services.AddScoped<IOfferTemplateService, OfferTemplateService>();
 
         // --- Sales (Quang Huy) ---
         services.AddScoped<Features.Sales.ISaleBatchService, Features.Sales.SaleBatchService>();
