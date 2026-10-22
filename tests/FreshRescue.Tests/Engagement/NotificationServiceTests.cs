@@ -224,7 +224,7 @@ public class NotificationServiceTests
 
         notifications.Should().HaveCount(1);
         notifications[0].RelatedEntityId.Should().Be(order.Id);
-        notifications[0].Title.Should().Contain("FR-X05");
+        notifications[0].Title.Should().Be("Nhắc nhở nhận hàng");
         notifications[0].Body.Should().Contain(order.OrderCode);
         notifications[0].IsRead.Should().BeFalse();
     }

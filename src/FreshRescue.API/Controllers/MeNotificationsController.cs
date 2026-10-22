@@ -48,17 +48,4 @@ public class MeNotificationsController : ControllerBase
         await _notificationService.MarkAsReadAsync(id, cancellationToken);
         return NoContent();
     }
-
-    /// <summary>Đánh dấu tất cả thông báo của tôi là đã đọc (FR-C13).</summary>
-    /// <response code="204">Đánh dấu tất cả thành công</response>
-    /// <response code="401">Chưa đăng nhập</response>
-    [HttpPatch("read-all")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> MarkAllAsReadAsync(
-        CancellationToken cancellationToken = default)
-    {
-        await _notificationService.MarkAllAsReadAsync(cancellationToken);
-        return NoContent();
-    }
 }

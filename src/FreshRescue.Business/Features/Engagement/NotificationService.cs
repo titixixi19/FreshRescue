@@ -98,6 +98,7 @@ public class NotificationService : INotificationService
     public async Task<int> CreatePickupRemindersAsync(CancellationToken cancellationToken)
     {
         var now = _clock.GetUtcNow().UtcDateTime;
+        var threshold = now + _reminderWindow;
 
         // Quét các đơn đã thanh toán (Paid) mà thời gian nhận hàng còn lại <= 30 phút và chưa hết giờ
         var dueOrders = await _uow.Orders.Query()
@@ -105,8 +106,8 @@ public class NotificationService : INotificationService
             .Include(o => o.Store)
             .Include(o => o.SaleBatch)
             .Where(o => o.Status == OrderStatus.Paid
-                        && o.SaleBatch.PickupEndTime - _reminderWindow <= now
-                        && now < o.SaleBatch.PickupEndTime)
+                        && o.SaleBatch.PickupEndTime <= threshold
+                        && o.SaleBatch.PickupEndTime > now)
             .ToListAsync(cancellationToken);
 
         if (dueOrders.Count == 0)
@@ -136,7 +137,7 @@ public class NotificationService : INotificationService
             var notification = new Notification
             {
                 UserId = order.CustomerUserId,
-                Title = "Nhắc nhở nhận hàng (FR-X05)",
+                Title = "Nhắc nhở nhận hàng",
                 Body = $"Đơn hàng {order.OrderCode} tại {storeName} sắp hết hạn nhận hàng. Vui lòng đến nhận trước {pickupEndVn:HH:mm}.",
                 Type = NotificationType.PickupReminder,
                 RelatedEntityId = order.Id,
@@ -151,7 +152,7 @@ public class NotificationService : INotificationService
         if (createdCount > 0)
         {
             await _uow.SaveChangesAsync(cancellationToken);
-            _logger.LogInformation("Đã tạo {Count} thông báo nhắc nhận hàng (FR-X05).", createdCount);
+            _logger.LogInformation("Đã tạo {Count} thông báo nhắc nhận hàng.", createdCount);
         }
 
         return createdCount;
