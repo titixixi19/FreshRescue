@@ -1,4 +1,5 @@
 using FluentValidation;
+using FreshRescue.Business.Features.Admin;
 using FreshRescue.Business.Features.Catalog;
 using FreshRescue.Business.Features.Ordering;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,6 +22,9 @@ public static class DependencyInjection
 
         // --- Catalog + Admin (Đình Đức) ---
         services.AddScoped<ICategoryService, CategoryService>();
+        services.AddScoped<IBrandProfileService, BrandProfileService>();
+        services.AddScoped<IAdminBrandService, AdminBrandService>();
+        services.AddScoped<IStoreService, StoreService>();
 
         // --- Sales (Quang Huy) ---
         services.AddScoped<Features.Sales.ISaleBatchService, Features.Sales.SaleBatchService>();
