@@ -1,0 +1,86 @@
+@model FreshRescue.WebClient.Areas.Dashboard.Models.SaleBatchWizardViewModel
+@{
+    ViewData["Title"] = "Tạo đợt bán — Bước 4";
+}
+
+<div class="dash-toolbar">
+    <div>
+        <h2>Bước 4 / 4 — Xác nhận &amp; lưu</h2>
+        <p class="muted small">Gửi <code>POST staff/sale-batches</code>. Có thể kích hoạt ngay (<code>.../activate</code>).</p>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="dash-alert dash-alert-err" role="alert">@Model.ErrorMessage</div>
+}
+
+<div class="dash-card" style="margin-bottom:1rem;max-width:720px;">
+    <h3>Tóm tắt</h3>
+    <p class="muted small">
+        Tên: <strong>@(string.IsNullOrWhiteSpace(Model.Name) ? "(không đặt)" : Model.Name)</strong><br />
+        @if (Model.IsBrandManager)
+        {
+            <text>StoreId: <code>@Model.StoreId</code><br /></text>
+        }
+        Bán: @Model.SaleStartTime → @Model.SaleEndTime<br />
+        Nhận: @Model.PickupStartTime → @Model.PickupEndTime
+    </p>
+
+    <div class="dash-table-wrap">
+        <table class="dash-table">
+            <thead>
+                <tr>
+                    <th>Mẫu</th>
+                    <th>Giá bán</th>
+                    <th>SL</th>
+                    <th>Max/khách</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var o in Model.Offers)
+                {
+                    <tr>
+                        <td>@o.TemplateName</td>
+                        <td>@o.ActualPrice.ToString("N0")</td>
+                        <td>@o.TotalQuantity</td>
+                        <td>@o.MaxPerCustomer</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<form asp-action="CreateStep4" method="post" class="dash-form" style="max-width:720px;">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Step" />
+    <input type="hidden" asp-for="IsBrandManager" />
+    <input type="hidden" asp-for="StoreId" />
+    <input type="hidden" asp-for="Name" />
+    <input type="hidden" asp-for="SaleStartTime" />
+    <input type="hidden" asp-for="SaleEndTime" />
+    <input type="hidden" asp-for="PickupStartTime" />
+    <input type="hidden" asp-for="PickupEndTime" />
+
+    @for (var i = 0; i < Model.Offers.Count; i++)
+    {
+        <input type="hidden" asp-for="Offers[i].OfferTemplateId" />
+        <input type="hidden" asp-for="Offers[i].TemplateName" />
+        <input type="hidden" asp-for="Offers[i].OriginalPrice" />
+        <input type="hidden" asp-for="Offers[i].SuggestedPrice" />
+        <input type="hidden" asp-for="Offers[i].ActualPrice" />
+        <input type="hidden" asp-for="Offers[i].TotalQuantity" />
+        <input type="hidden" asp-for="Offers[i].MaxPerCustomer" />
+    }
+
+    <label class="muted small" style="display:flex;gap:0.5rem;align-items:center;margin-bottom:1rem;">
+        <input type="checkbox" name="activateAfterCreate" value="true" />
+        Kích hoạt ngay sau khi tạo (Draft → Scheduled)
+    </label>
+
+    <div class="dash-form-actions">
+        <button type="submit" name="nav" value="back" class="dash-btn-secondary">← Bước 3</button>
+        <button type="submit" name="nav" value="save" class="dash-btn">Lưu đợt bán</button>
+    </div>
+</form>

@@ -1,0 +1,66 @@
+@model FreshRescue.WebClient.Areas.Dashboard.Models.SaleBatchWizardViewModel
+@{
+    ViewData["Title"] = "Tạo đợt bán — Bước 3";
+}
+
+<div class="dash-toolbar">
+    <div>
+        <h2>Bước 3 / 4 — Khung giờ bán &amp; nhận hàng</h2>
+        <p class="muted small">
+            BR-15: SaleStart &lt; SaleEnd ≤ PickupEnd; PickupStart &lt; PickupEnd; SaleStart ≤ PickupStart.
+            API nhận ISO-8601 UTC.
+        </p>
+    </div>
+</div>
+
+<div asp-validation-summary="ModelOnly" class="dash-alert dash-alert-err"></div>
+
+<form asp-action="CreateStep3" method="post" class="dash-form">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Step" />
+    <input type="hidden" asp-for="IsBrandManager" />
+    <input type="hidden" asp-for="StoreId" />
+
+    @for (var i = 0; i < Model.Offers.Count; i++)
+    {
+        <input type="hidden" asp-for="Offers[i].OfferTemplateId" />
+        <input type="hidden" asp-for="Offers[i].TemplateName" />
+        <input type="hidden" asp-for="Offers[i].OriginalPrice" />
+        <input type="hidden" asp-for="Offers[i].SuggestedPrice" />
+        <input type="hidden" asp-for="Offers[i].ActualPrice" />
+        <input type="hidden" asp-for="Offers[i].TotalQuantity" />
+        <input type="hidden" asp-for="Offers[i].MaxPerCustomer" />
+    }
+
+    <div class="dash-form-grid">
+        <div class="dash-field dash-field-full">
+            <label asp-for="Name">Tên đợt (tuỳ chọn)</label>
+            <input asp-for="Name" class="dash-input" maxlength="150" placeholder="VD: Flash tối thứ 6" />
+        </div>
+        <div class="dash-field">
+            <label asp-for="SaleStartTime">Sale start *</label>
+            <input asp-for="SaleStartTime" class="dash-input" type="datetime-local" />
+            <span asp-validation-for="SaleStartTime" class="field-error"></span>
+        </div>
+        <div class="dash-field">
+            <label asp-for="SaleEndTime">Sale end *</label>
+            <input asp-for="SaleEndTime" class="dash-input" type="datetime-local" />
+            <span asp-validation-for="SaleEndTime" class="field-error"></span>
+        </div>
+        <div class="dash-field">
+            <label asp-for="PickupStartTime">Pickup start *</label>
+            <input asp-for="PickupStartTime" class="dash-input" type="datetime-local" />
+            <span asp-validation-for="PickupStartTime" class="field-error"></span>
+        </div>
+        <div class="dash-field">
+            <label asp-for="PickupEndTime">Pickup end *</label>
+            <input asp-for="PickupEndTime" class="dash-input" type="datetime-local" />
+            <span asp-validation-for="PickupEndTime" class="field-error"></span>
+        </div>
+    </div>
+
+    <div class="dash-form-actions">
+        <button type="submit" name="nav" value="back" class="dash-btn-secondary">← Bước 2</button>
+        <button type="submit" name="nav" value="next" class="dash-btn">Tiếp — Bước 4</button>
+    </div>
+</form>

@@ -1,0 +1,75 @@
+@model OrdersIndexViewModel
+@{
+    ViewData["Title"] = "Đơn của tôi";
+    OrderStatus?[] tabs = [null, OrderStatus.PendingPayment, OrderStatus.Paid, OrderStatus.Redeemed, OrderStatus.Cancelled, OrderStatus.NoShow];
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h1 class="h4 mb-0">Đơn của tôi</h1>
+    <a class="btn btn-outline-success btn-sm" asp-controller="Storefront" asp-action="Index">+ Săn thêm món</a>
+</div>
+
+<ul class="nav nav-pills fr-tabs mb-3">
+    @foreach (var tab in tabs)
+    {
+        <li class="nav-item">
+            <a class="nav-link @(tab == Model.Status ? "active" : "")" asp-action="Index" asp-route-status="@tab">
+                @(tab is null ? "Tất cả" : Display.Status(tab.Value).Label)
+            </a>
+        </li>
+    }
+</ul>
+
+@if (Model.Orders.Items.Count == 0)
+{
+    <div class="fr-empty my-5">
+        <div class="fr-empty-icon">🧾</div>
+        <h2 class="h5">Chưa có đơn nào@(Model.Status is null ? "" : " ở trạng thái này")</h2>
+        <p class="text-muted">Giải cứu bữa tối giá tốt đầu tiên của bạn ngay hôm nay.</p>
+        <a class="btn btn-success" asp-controller="Storefront" asp-action="Index">Săn đồ ăn</a>
+    </div>
+}
+else
+{
+    <div class="vstack gap-3">
+        @foreach (var order in Model.Orders.Items)
+        {
+            <article class="card fr-order-row">
+                <div class="card-body">
+                    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+                        <div>
+                            <a class="fw-semibold fr-mono" asp-action="Details" asp-route-id="@order.Id">@order.OrderCode</a>
+                            <partial name="_OrderStatusBadge" model="order.Status" />
+                            <div class="small text-muted mt-1">🏪 @order.StoreName · đặt lúc @Display.DateAndTime(order.CreatedAt)</div>
+                        </div>
+                        <div class="text-end">
+                            <div class="fw-bold">@Display.Money(order.TotalAmount)</div>
+                            @if (order.RefundStatus == RefundStatus.Refunded)
+                            {
+                                <div class="small text-success">Đã hoàn tiền</div>
+                            }
+                        </div>
+                    </div>
+                    <div class="small mt-2 text-truncate">
+                        @string.Join(", ", order.Items.Select(i => $"{i.OfferName} × {i.Quantity}"))
+                    </div>
+                    <div class="d-flex flex-wrap align-items-center gap-2 mt-3">
+                        @if (order.Status == OrderStatus.PendingPayment)
+                        {
+                            <a class="btn btn-success btn-sm" asp-controller="Checkout" asp-action="Pay" asp-route-id="@order.Id">Thanh toán</a>
+                            <span class="small text-muted">còn <strong data-countdown="@Display.Iso(order.PaymentDeadline)"></strong></span>
+                        }
+                        else if (order.Status == OrderStatus.Paid)
+                        {
+                            <a class="btn btn-success btn-sm" asp-action="Ticket" asp-route-id="@order.Id">Xem vé QR</a>
+                            <span class="small text-muted">Nhận @Display.Window(order.PickupStartTime, order.PickupEndTime)</span>
+                        }
+                        <a class="btn btn-outline-secondary btn-sm ms-auto" asp-action="Details" asp-route-id="@order.Id">Chi tiết</a>
+                    </div>
+                </div>
+            </article>
+        }
+    </div>
+
+    <partial name="_Pager" model="@(new PagerModel(Model.Orders.Page, Model.Orders.TotalPages, page => Url.Action("Index", new { status = Model.Status, page })))" />
+}

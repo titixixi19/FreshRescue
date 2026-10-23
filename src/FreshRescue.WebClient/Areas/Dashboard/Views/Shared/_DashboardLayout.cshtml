@@ -1,0 +1,125 @@
+@using FreshRescue.WebClient.Models.Api
+@{
+    var isAdmin = User.IsInRole(AppRoles.Admin);
+    var isBrand = User.IsInRole(AppRoles.BrandManager);
+    var isStaff = User.IsInRole(AppRoles.StoreStaff);
+    var displayName = User.FindFirst("name")?.Value
+        ?? User.Identity?.Name
+        ?? "Người dùng";
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    var isAuthenticated = User.Identity?.IsAuthenticated == true;
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — FreshRescue Dashboard</title>
+    <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true" />
+</head>
+<body class="dash-body">
+    <div class="dash-shell">
+        <aside class="dash-sidebar" id="dashSidebar">
+            <div class="dash-brand">
+                <span class="dash-brand-mark">FR</span>
+                <span class="dash-brand-text">FreshRescue</span>
+            </div>
+
+            <nav class="dash-nav" aria-label="Menu Dashboard">
+                <a class="dash-nav-item @(currentController == "Home" && currentAction == "Index" ? "active" : null)"
+                   asp-area="Dashboard" asp-controller="Home" asp-action="Index">
+                    <span class="dash-nav-icon">⌂</span> Tổng quan
+                </a>
+
+                @if (isAdmin || isBrand)
+                {
+                    <div class="dash-nav-section">Thương hiệu</div>
+                    <a class="dash-nav-item @(currentController == "Stores" ? "active" : null)"
+                       asp-area="Dashboard" asp-controller="Stores" asp-action="Index">
+                        <span class="dash-nav-icon">🏪</span> Chi nhánh
+                    </a>
+                }
+
+                @if (isAdmin)
+                {
+                    <div class="dash-nav-section">Quản trị sàn</div>
+                    <a class="dash-nav-item @(currentController == "Brands" ? "active" : null)"
+                       asp-area="Dashboard" asp-controller="Brands" asp-action="Index">
+                        <span class="dash-nav-icon">🏷</span> Duyệt thương hiệu
+                    </a>
+                    <a class="dash-nav-item @(currentController == "Users" ? "active" : null)"
+                       asp-area="Dashboard" asp-controller="Users" asp-action="Index">
+                        <span class="dash-nav-icon">👤</span> Người dùng
+                    </a>
+                }
+
+                @if (isStaff || isBrand)
+                {
+                    <div class="dash-nav-section">Vận hành</div>
+                    <a class="dash-nav-item @(currentController == "SaleBatches" ? "active" : null)"
+                       asp-area="Dashboard" asp-controller="SaleBatches" asp-action="Index">
+                        <span class="dash-nav-icon">📦</span> Đợt bán
+                    </a>
+                    <a class="dash-nav-item @(currentController == "Redemptions" ? "active" : null)"
+                       asp-area="Dashboard" asp-controller="Redemptions" asp-action="Index">
+                        <span class="dash-nav-icon">📷</span> Quét QR
+                    </a>
+                    @if (isBrand || User.IsInRole(AppRoles.Admin))
+                    {
+                        <a class="dash-nav-item @(currentController == "ImportExport" ? "active" : null)"
+                           asp-area="Dashboard" asp-controller="ImportExport" asp-action="Index">
+                            <span class="dash-nav-icon">📊</span> Import / Export
+                        </a>
+                    }
+                }
+            </nav>
+
+            <div class="dash-sidebar-foot">
+                @if (isAuthenticated)
+                {
+                    <div class="dash-user">
+                        <div class="dash-user-name">@displayName</div>
+                        <div class="dash-user-roles">
+                            @if (isAdmin)
+                            {
+                                <span class="badge">Admin</span>
+                            }
+                            @if (isBrand)
+                            {
+                                <span class="badge">BrandManager</span>
+                            }
+                            @if (isStaff)
+                            {
+                                <span class="badge">StoreStaff</span>
+                            }
+                        </div>
+                    </div>
+                    <form asp-area="" asp-controller="Account" asp-action="Logout" method="post">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="dash-btn-logout">Đăng xuất</button>
+                    </form>
+                }
+                else
+                {
+                    <p class="muted small">Chưa đăng nhập</p>
+                    <a class="dash-btn dash-btn-sm" asp-area="" asp-controller="Account" asp-action="Login">Đăng nhập</a>
+                }
+            </div>
+        </aside>
+
+        <div class="dash-main">
+            <header class="dash-header">
+                <button type="button" class="dash-menu-toggle" id="sidebarToggle" aria-label="Mở menu">☰</button>
+                <h1 class="dash-page-title">@(ViewData["Title"] ?? "Dashboard")</h1>
+            </header>
+            <main class="dash-content">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <script src="~/js/dashboard.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

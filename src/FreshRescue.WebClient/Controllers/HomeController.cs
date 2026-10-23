@@ -1,31 +1,49 @@
-using System.Diagnostics;
-using FreshRescue.WebClient.Models;
+using System.Security.Claims;
+using FreshRescue.WebClient.Models.Api;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace FreshRescue.WebClient.Controllers;
+namespace FreshRescue.WebClient.Areas.Dashboard.Controllers;
 
+/// <summary>
+/// Tổng quan Dashboard (TV5). Phân quyền bằng role — không chỉ ẩn menu.
+/// </summary>
+[Area("Dashboard")]
+[Authorize(Roles = AppRoles.Admin + "," + AppRoles.BrandManager + "," + AppRoles.StoreStaff)]
 public class HomeController : Controller
 {
-    private readonly ILogger<HomeController> _logger;
-
-    public HomeController(ILogger<HomeController> logger)
-    {
-        _logger = logger;
-    }
-
+    [HttpGet]
     public IActionResult Index()
     {
-        return View();
+        var vm = new DashboardHomeViewModel
+        {
+            DisplayName = User.FindFirst("name")?.Value
+                ?? User.FindFirst(ClaimTypes.Name)?.Value
+                ?? User.Identity?.Name
+                ?? "Người dùng",
+            IsAdmin = User.IsInRole(AppRoles.Admin),
+            IsBrandManager = User.IsInRole(AppRoles.BrandManager),
+            IsStoreStaff = User.IsInRole(AppRoles.StoreStaff),
+            BrandId = ParseGuidClaim("brand_id"),
+            StoreId = ParseGuidClaim("store_id")
+        };
+
+        return View(vm);
     }
 
-    public IActionResult Privacy()
+    private Guid? ParseGuidClaim(string type)
     {
-        return View();
+        var raw = User.FindFirst(type)?.Value;
+        return Guid.TryParse(raw, out var id) ? id : null;
     }
+}
 
-    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public IActionResult Error()
-    {
-        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-    }
+public class DashboardHomeViewModel
+{
+    public string DisplayName { get; set; } = "";
+    public bool IsAdmin { get; set; }
+    public bool IsBrandManager { get; set; }
+    public bool IsStoreStaff { get; set; }
+    public Guid? BrandId { get; set; }
+    public Guid? StoreId { get; set; }
 }

@@ -1,0 +1,84 @@
+@model FreshRescue.WebClient.Areas.Dashboard.Models.SaleBatchWizardViewModel
+@{
+    ViewData["Title"] = "Tạo đợt bán — Bước 1";
+}
+
+<div class="dash-toolbar">
+    <div>
+        <h2>Bước 1 / 4 — Chọn mẫu mặt hàng</h2>
+        <p class="muted small">Chọn một hoặc nhiều OfferTemplate của thương hiệu.</p>
+    </div>
+    <a class="dash-btn-secondary" asp-action="Index">← Danh sách</a>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="dash-alert dash-alert-err" role="alert">@Model.ErrorMessage</div>
+}
+
+<div asp-validation-summary="ModelOnly" class="dash-alert dash-alert-err"></div>
+
+<form asp-action="CreateStep1" method="post" class="dash-form" style="max-width: 900px;">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Step" />
+    <input type="hidden" asp-for="IsBrandManager" />
+
+    @if (Model.IsBrandManager)
+    {
+        <div class="dash-field" style="margin-bottom: 1.5rem;">
+            <label asp-for="StoreId">Chi nhánh *</label>
+            <select asp-for="StoreId" class="dash-input" asp-items="@(new SelectList(Model.AvailableStores, "Id", "Name"))">
+                <option value="">— Chọn chi nhánh —</option>
+            </select>
+            <span asp-validation-for="StoreId" class="field-error"></span>
+            <span class="muted small">BrandManager bắt buộc gửi storeId theo contract §6.1.</span>
+        </div>
+    }
+
+    <h3>Danh sách mẫu mặt hàng</h3>
+
+    @if (Model.AvailableTemplates is null || Model.AvailableTemplates.Count == 0)
+    {
+        <div class="dash-empty">
+            <p>Không có mẫu mặt hàng nào khả dụng.</p>
+        </div>
+    }
+    else
+    {
+        <div class="dash-table-wrap" style="margin-bottom: 1.5rem;">
+            <table class="dash-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50px; text-align: center;">Chọn</th>
+                        <th>Tên mẫu</th>
+                        <th>Giá gốc</th>
+                        <th>Giá gợi ý</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.AvailableTemplates.Count; i++)
+                    {
+                        <tr>
+                            <td style="text-align: center;">
+                                <input type="checkbox" name="SelectedTemplateIds" value="@Model.AvailableTemplates[i].Id"
+                                @(Model.SelectedTemplateIds != null && Model.SelectedTemplateIds.Contains(Model.AvailableTemplates[i].Id) ? "checked" : "") />
+                                <input type="hidden" asp-for="AvailableTemplates[i].Id" />
+                                <input type="hidden" asp-for="AvailableTemplates[i].Name" />
+                                <input type="hidden" asp-for="AvailableTemplates[i].OriginalPrice" />
+                                <input type="hidden" asp-for="AvailableTemplates[i].SuggestedPrice" />
+                            </td>
+                            <td><strong>@Model.AvailableTemplates[i].Name</strong></td>
+                            <td class="muted">@Model.AvailableTemplates[i].OriginalPrice.ToString("N0") đ</td>
+                            <td class="muted">@Model.AvailableTemplates[i].SuggestedPrice.ToString("N0") đ</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    <div class="dash-form-actions">
+        <button type="submit" class="dash-btn">Tiếp — Bước 2</button>
+        <a asp-action="Index" class="dash-btn-secondary">Huỷ</a>
+    </div>
+</form>

@@ -1,0 +1,189 @@
+@model OrderDetailsViewModel
+@{
+    var order = Model.Order;
+    ViewData["Title"] = $"Đơn {order.OrderCode}";
+}
+
+<a asp-action="Index" class="small">‹ Đơn của tôi</a>
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-2 mb-3">
+    <h1 class="h4 mb-0">Đơn <span class="fr-mono">@order.OrderCode</span></h1>
+    <partial name="_OrderStatusBadge" model="order.Status" />
+</div>
+
+@switch (order.Status)
+{
+    case OrderStatus.PendingPayment:
+        <div class="alert alert-warning d-flex flex-wrap align-items-center gap-2">
+            <span>⏳ Thanh toán trước <strong>@Display.Time(order.PaymentDeadline)</strong>
+                (còn <strong data-countdown="@Display.Iso(order.PaymentDeadline)"></strong>), quá hạn đơn tự huỷ.</span>
+            <a class="btn btn-success btn-sm ms-auto" asp-controller="Checkout" asp-action="Pay" asp-route-id="@order.Id">Thanh toán ngay</a>
+        </div>
+        break;
+    case OrderStatus.Paid:
+        <div class="alert alert-primary d-flex flex-wrap align-items-center gap-2">
+            <span>Đến <strong>@order.StoreName</strong> trong khung <strong>@Display.Window(order.PickupStartTime, order.PickupEndTime)</strong> và đưa mã QR cho nhân viên.</span>
+            <a class="btn btn-primary btn-sm ms-auto" asp-action="Ticket" asp-route-id="@order.Id">Xem vé QR</a>
+        </div>
+        break;
+    case OrderStatus.Redeemed:
+        <div class="alert alert-success">🎉 Bạn đã nhận hàng. Cảm ơn bạn đã cùng giải cứu thực phẩm!</div>
+        break;
+    case OrderStatus.Cancelled:
+        <div class="alert alert-secondary">
+            <strong>@Display.CancelledByLabel(order.CancelledBy)</strong>
+            @if (order.CancelledAt is { } cancelledAt)
+            {
+                <span> lúc @Display.DateAndTime(cancelledAt)</span>
+            }
+            @if (!string.IsNullOrWhiteSpace(order.CancelReason))
+            {
+                <div class="small mt-1">Lý do: @order.CancelReason</div>
+            }
+            <div class="small mt-1">
+                @(order.RefundStatus == RefundStatus.Refunded ? "Đã hoàn 100% số tiền về phương thức thanh toán của bạn." : "Đơn chưa thanh toán nên không phát sinh hoàn tiền.")
+            </div>
+        </div>
+        break;
+    case OrderStatus.NoShow:
+        <div class="alert alert-danger">Bạn đã không đến nhận hàng trong khung giờ — đơn không được hoàn tiền.</div>
+        break;
+}
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h6 text-muted text-uppercase small">Món đã đặt</h2>
+                <table class="table table-sm align-middle mb-0">
+                    <tbody>
+                        @foreach (var item in order.Items)
+                        {
+                            <tr>
+                                <td>@item.OfferName <span class="text-muted">× @item.Quantity</span></td>
+                                <td class="text-end text-muted small">@Display.Money(item.UnitPrice)</td>
+                                <td class="text-end">@Display.Money(item.LineTotal)</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr class="fw-bold">
+                            <td colspan="2">Tổng cộng</td>
+                            <td class="text-end">@Display.Money(order.TotalAmount)</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card h-100">
+            <div class="card-body small">
+                <h2 class="h6 text-muted text-uppercase small">Nhận hàng</h2>
+                <p class="mb-2">🏪 <strong>@order.StoreName</strong><br />@order.StoreAddress</p>
+                <p class="mb-2">🕘 @Display.Window(order.PickupStartTime, order.PickupEndTime)</p>
+                <p class="mb-0 text-muted">
+                    Đặt lúc @Display.DateAndTime(order.CreatedAt)
+                    @if (order.PaidAt is { } paidAt)
+                    {
+                        <br /><span>Thanh toán lúc @Display.DateAndTime(paidAt)</span>
+                    }
+                </p>
+
+                @if (Model.CanCancel)
+                {
+                    <hr />
+                    <form asp-action="Cancel" asp-route-id="@order.Id" method="post"
+                          onsubmit="return confirm('Huỷ đơn @order.OrderCode? Thao tác này không hoàn tác được.');">
+                        <button type="submit" class="btn btn-outline-danger btn-sm">Huỷ đơn</button>
+                        @if (Model.FreeCancelDeadline is { } deadline)
+                        {
+                            <span class="text-muted ms-2">Huỷ được và hoàn 100% đến @Display.Time(deadline)</span>
+                        }
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (order.Status == OrderStatus.Redeemed)
+{
+    <div class="row g-3 mt-1">
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h2 class="h6">⭐ Đánh giá đơn hàng</h2>
+                    <form asp-action="Review" asp-route-id="@order.Id" method="post" enctype="multipart/form-data">
+                        <div class="text-danger small mb-2">@Html.ValidationMessage("Review")</div>
+                        <fieldset class="mb-3">
+                            <legend class="form-label fs-6">Chấm điểm</legend>
+                            <div class="fr-stars">
+                                @for (var star = 5; star >= 1; star--)
+                                {
+                                    <input type="radio" id="rating-@star" name="Review.Rating" value="@star" checked="@(Model.Review.Rating == star)" />
+                                    <label for="rating-@star" title="@star sao">★</label>
+                                }
+                            </div>
+                            <span asp-validation-for="Review.Rating" class="text-danger small"></span>
+                        </fieldset>
+                        <div class="mb-3">
+                            <label asp-for="Review.Comment" class="form-label">Nhận xét <span class="text-muted small">(không bắt buộc)</span></label>
+                            <textarea asp-for="Review.Comment" class="form-control" rows="3" placeholder="Đồ ăn còn tươi không? Có đáng tiền không?"></textarea>
+                            <span asp-validation-for="Review.Comment" class="text-danger small"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Review.Photo" class="form-label">Ảnh chụp <span class="text-muted small">(không bắt buộc)</span></label>
+                            <input asp-for="Review.Photo" type="file" class="form-control" accept="@ImageRules.Accept" />
+                            <span asp-validation-for="Review.Photo" class="text-danger small"></span>
+                        </div>
+                        <button type="submit" class="btn btn-success">Gửi đánh giá</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h2 class="h6">⚠️ Gặp vấn đề với đơn hàng?</h2>
+                    <p class="small text-muted">Gửi khiếu nại kèm ảnh trong vòng <strong>2 giờ</strong> sau khi nhận hàng. Quản trị viên sẽ xem xét và hoàn tiền nếu hợp lệ.</p>
+                    <button class="btn btn-outline-danger btn-sm @(Model.ShowDispute ? "d-none" : "")" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#fr-dispute" aria-expanded="@(Model.ShowDispute ? "true" : "false")">
+                        Gửi khiếu nại
+                    </button>
+                    <div class="collapse @(Model.ShowDispute ? "show" : "")" id="fr-dispute">
+                        <form asp-action="Dispute" asp-route-id="@order.Id" method="post" enctype="multipart/form-data" class="mt-3">
+                            <div class="text-danger small mb-2">@Html.ValidationMessage("Dispute")</div>
+                            <div class="mb-3">
+                                <label asp-for="Dispute.Reason" class="form-label">Lý do</label>
+                                <select asp-for="Dispute.Reason" class="form-select">
+                                    <option value="">— Chọn lý do —</option>
+                                    @foreach (var reason in Enum.GetValues<DisputeReason>())
+                                    {
+                                        <option value="@reason" selected="@(Model.Dispute.Reason == reason)">@Display.DisputeReasonLabel(reason)</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="Dispute.Reason" class="text-danger small"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="Dispute.Description" class="form-label">Mô tả</label>
+                                <textarea asp-for="Dispute.Description" class="form-control" rows="3" placeholder="Ví dụ: đặt túi chay nhưng nhận túi có thịt"></textarea>
+                                <span asp-validation-for="Dispute.Description" class="text-danger small"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="Dispute.Photo" class="form-label">Ảnh chụp thực tế</label>
+                                <input asp-for="Dispute.Photo" type="file" class="form-control" accept="@ImageRules.Accept" />
+                                <span asp-validation-for="Dispute.Photo" class="text-danger small"></span>
+                            </div>
+                            <button type="submit" class="btn btn-danger">Gửi khiếu nại</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
