@@ -1,0 +1,24 @@
+@* Modal Quick Checkout — wwwroot/js/checkout.js vẽ nội dung từng bước. URL lấy từ data-* để JS không phải đoán route. *@
+<div class="modal fade" id="qc-modal" tabindex="-1" aria-labelledby="qc-title" aria-hidden="true"
+     data-create-url="@Url.Action("Create", "Checkout", new { area = "Customer" })"
+     data-pay-url="@Url.Action("Pay", "Checkout", new { area = "Customer", id = "__id__" })"
+     data-ticket-url="@Url.Action("Ticket", "Orders", new { area = "Customer", id = "__id__" })"
+     data-order-url="@Url.Action("Details", "Orders", new { area = "Customer", id = "__id__" })"
+     data-orders-url="@Url.Action("Index", "Orders", new { area = "Customer" })">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title h5" id="qc-title">Đặt nhanh</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <ol class="fr-steps" aria-label="Các bước đặt hàng">
+                    <li data-step="items">Chọn món</li>
+                    <li data-step="pay">Thanh toán</li>
+                    <li data-step="ticket">Nhận vé QR</li>
+                </ol>
+                <div id="qc-body" aria-live="polite"></div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,17 @@
+@model OrderDto
+@{
+    ViewData["Title"] = $"Thanh toán đơn {Model.OrderCode}";
+}
+
+<div class="fr-narrow">
+    <a asp-controller="Orders" asp-action="Details" asp-route-id="@Model.Id" class="small">‹ Quay lại đơn</a>
+    <div class="card shadow-sm mt-2">
+        <div class="card-body p-4">
+            <h1 class="h5 mb-3">Thanh toán</h1>
+            @* checkout.js vẽ cổng thanh toán giả lập vào đây — cùng một đoạn code với bước 2 của modal. *@
+            <div id="fr-pay" data-order="@System.Text.Json.JsonSerializer.Serialize(Model, ApiJson.Options)">
+                <div class="text-center text-muted py-4">Đang tải…</div>
+            </div>
+        </div>
+    </div>
+</div>
