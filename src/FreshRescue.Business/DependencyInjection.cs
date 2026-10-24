@@ -30,6 +30,9 @@ public static class DependencyInjection
         services.AddScoped<IStoreService, StoreService>();
         services.AddScoped<IOfferTemplateService, OfferTemplateService>();
 
+        // --- Storefront công khai (Đức Anh) ---
+        services.AddScoped<Features.Catalog.IStorefrontService, Features.Catalog.StorefrontService>();
+
         // --- Sales (Quang Huy) ---
         services.AddScoped<Features.Sales.ISaleBatchService, Features.Sales.SaleBatchService>();
         services.AddScoped<Features.Sales.IOfferService, Features.Sales.OfferService>();
