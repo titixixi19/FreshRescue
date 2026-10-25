@@ -10,7 +10,6 @@ namespace FreshRescue.WebClient.Areas.Dashboard.Controllers;
 /// <summary>
 /// Admin quản lý người dùng — FR-A02.
 /// GET admin/users · PATCH admin/users/{id}/status (03-API-CONTRACT §8).
-/// Không có endpoint Admin tạo user trong contract → không làm form tạo.
 /// </summary>
 [Area("Dashboard")]
 [Authorize(Roles = AppRoles.Admin)]
@@ -24,7 +23,7 @@ public class UsersController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Index(
+    public async Task<IActionResult> IndexAsync(
         string? role,
         bool? isActive,
         string? q,
@@ -73,7 +72,7 @@ public class UsersController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> SetStatus(
+    public async Task<IActionResult> SetStatusAsync(
         Guid id,
         bool isActive,
         string? role,
@@ -96,7 +95,7 @@ public class UsersController : Controller
             TempData["Error"] = FormatApiError(ex);
         }
 
-        return RedirectToAction(nameof(Index), new
+        return RedirectToAction("Index", new
         {
             role,
             isActive = filterIsActive,

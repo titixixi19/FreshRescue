@@ -22,7 +22,7 @@ public class StaffOrdersController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Index(
+    public async Task<IActionResult> IndexAsync(
         Guid saleBatchId,
         string? status,
         int page = 1,

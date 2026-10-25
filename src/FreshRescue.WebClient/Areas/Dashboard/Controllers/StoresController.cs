@@ -8,8 +8,8 @@ using Microsoft.AspNetCore.WebUtilities;
 namespace FreshRescue.WebClient.Areas.Dashboard.Controllers;
 
 /// <summary>
-/// Quản lý chi nhánh — FR-B02.
-/// Path: brand/stores (03-API-CONTRACT §7). Chỉ Admin + BrandManager.
+/// Quản lý chi nhánh — FR-B02. Path: brand/stores (03 §7).
+/// Không dùng GET brand/stores/{id} — endpoint không có trong contract.
 /// </summary>
 [Area("Dashboard")]
 [Authorize(Roles = AppRoles.Admin + "," + AppRoles.BrandManager)]
@@ -23,7 +23,7 @@ public class StoresController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Index(int page = 1, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> IndexAsync(int page = 1, CancellationToken cancellationToken = default)
     {
         page = page < 1 ? 1 : page;
         var vm = new StoreListViewModel { Page = page };
@@ -59,7 +59,7 @@ public class StoresController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(StoreFormViewModel model, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> CreateAsync(StoreFormViewModel model, CancellationToken cancellationToken = default)
     {
         if (!ModelState.IsValid)
             return View(model);
@@ -82,7 +82,7 @@ public class StoresController : Controller
 
             await _api.PostAsync<StoreDto>("brand/stores", request, cancellationToken);
             TempData["Success"] = "Đã tạo chi nhánh.";
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Index");
         }
         catch (ApiException ex)
         {
@@ -91,25 +91,33 @@ public class StoresController : Controller
         }
     }
 
+    /// <summary>
+    /// Nạp form sửa từ GET brand/stores (phân trang), không gọi GET theo id.
+    /// </summary>
     [HttpGet]
-    public async Task<IActionResult> Edit(Guid id, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> EditAsync(Guid id, CancellationToken cancellationToken = default)
     {
         try
         {
-            // Contract §7 nêu PUT/DELETE theo id; GET theo id dùng nếu API hỗ trợ.
-            var store = await _api.GetAsync<StoreDto>($"brand/stores/{id}", cancellationToken);
+            var store = await FindStoreByIdAsync(id, cancellationToken);
+            if (store is null)
+            {
+                TempData["Error"] = "Không tìm thấy chi nhánh trong danh sách (có thể đã xoá hoặc không thuộc thương hiệu của bạn).";
+                return RedirectToAction("Index");
+            }
+
             return View(MapForm(store));
         }
         catch (ApiException ex)
         {
             TempData["Error"] = FormatApiError(ex);
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Index");
         }
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(Guid id, StoreFormViewModel model, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> EditAsync(Guid id, StoreFormViewModel model, CancellationToken cancellationToken = default)
     {
         if (!ModelState.IsValid)
             return View(model);
@@ -131,9 +139,10 @@ public class StoresController : Controller
                 Status = model.Status
             };
 
+            // Contract: PUT brand/stores/{id}
             await _api.PutAsync<StoreDto>($"brand/stores/{id}", request, cancellationToken);
             TempData["Success"] = "Đã cập nhật chi nhánh.";
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Index");
         }
         catch (ApiException ex)
         {
@@ -144,10 +153,11 @@ public class StoresController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
         try
         {
+            // Contract: DELETE brand/stores/{id}
             await _api.DeleteAsync($"brand/stores/{id}", cancellationToken);
             TempData["Success"] = "Đã xoá (mềm) chi nhánh.";
         }
@@ -156,7 +166,37 @@ public class StoresController : Controller
             TempData["Error"] = FormatApiError(ex);
         }
 
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction("Index");
+    }
+
+    /// <summary>
+    /// Tìm store theo Id bằng GET brand/stores?page&amp;pageSize (duyệt trang).
+    /// </summary>
+    private async Task<StoreDto?> FindStoreByIdAsync(Guid id, CancellationToken cancellationToken)
+    {
+        const int pageSize = 100;
+        var page = 1;
+        var totalPages = 1;
+
+        do
+        {
+            var path = QueryHelpers.AddQueryString("brand/stores", new Dictionary<string, string?>
+            {
+                ["page"] = page.ToString(),
+                ["pageSize"] = pageSize.ToString()
+            });
+
+            var data = await _api.GetAsync<PagedResponse<StoreDto>>(path, cancellationToken);
+            var match = data.Items.FirstOrDefault(s => s.Id == id);
+            if (match is not null)
+                return match;
+
+            totalPages = data.TotalPages < 1 ? 1 : data.TotalPages;
+            page++;
+        }
+        while (page <= totalPages);
+
+        return null;
     }
 
     private static StoreFormViewModel MapForm(StoreDto s) => new()

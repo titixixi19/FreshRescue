@@ -17,6 +17,17 @@ public static class Display
     public static DateTime ToVietnamTime(DateTime utc)
         => TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(utc, DateTimeKind.Utc), _vietnam);
 
+    /// <summary>
+    /// Giờ tường Việt Nam (từ datetime-local, Kind Unspecified/Local) → UTC gửi API.
+    /// Không dùng SpecifyKind(..., Utc) vì chỉ đổi nhãn, không đổi mốc thời gian.
+    /// </summary>
+    public static DateTime FromVietnamToUtc(DateTime vietnamWallClock)
+    {
+        // datetime-local bind thành Unspecified; coi là giờ trên đồng hồ VN.
+        var unspecified = DateTime.SpecifyKind(vietnamWallClock, DateTimeKind.Unspecified);
+        return TimeZoneInfo.ConvertTimeToUtc(unspecified, _vietnam);
+    }
+
     public static string Time(DateTime utc) => ToVietnamTime(utc).ToString("HH:mm", _vi);
 
     public static string DateAndTime(DateTime utc) => ToVietnamTime(utc).ToString("HH:mm dd/MM/yyyy", _vi);

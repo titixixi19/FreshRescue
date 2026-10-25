@@ -23,7 +23,7 @@ public class BrandsController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Index(
+    public async Task<IActionResult> IndexAsync(
         string? status,
         int page = 1,
         CancellationToken cancellationToken = default)
@@ -64,7 +64,7 @@ public class BrandsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Approve(
+    public async Task<IActionResult> ApproveAsync(
         Guid id,
         string? status,
         int page = 1,
@@ -80,12 +80,12 @@ public class BrandsController : Controller
             TempData["Error"] = FormatApiError(ex);
         }
 
-        return RedirectToAction(nameof(Index), new { status, page });
+        return RedirectToAction("Index", new { status, page });
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Reject(
+    public async Task<IActionResult> RejectAsync(
         Guid id,
         string reason,
         string? status,
@@ -95,7 +95,7 @@ public class BrandsController : Controller
         if (string.IsNullOrWhiteSpace(reason))
         {
             TempData["Error"] = "Bắt buộc nhập lý do từ chối.";
-            return RedirectToAction(nameof(Index), new { status, page });
+            return RedirectToAction("Index", new { status, page });
         }
 
         try
@@ -111,12 +111,12 @@ public class BrandsController : Controller
             TempData["Error"] = FormatApiError(ex);
         }
 
-        return RedirectToAction(nameof(Index), new { status, page });
+        return RedirectToAction("Index", new { status, page });
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Suspend(
+    public async Task<IActionResult> SuspendAsync(
         Guid id,
         string? status,
         int page = 1,
@@ -132,7 +132,7 @@ public class BrandsController : Controller
             TempData["Error"] = FormatApiError(ex);
         }
 
-        return RedirectToAction(nameof(Index), new { status, page });
+        return RedirectToAction("Index", new { status, page });
     }
 
     private static string FormatApiError(ApiException ex)

@@ -8,7 +8,7 @@ namespace FreshRescue.WebClient.Areas.Dashboard.Controllers;
 
 /// <summary>
 /// Quét QR / nhập mã — POST staff/redemptions (03 §6.3).
-/// Không báo thành công nếu API lỗi.
+/// Camera → { token }; nhập tay → { orderCode }.
 /// </summary>
 [Area("Dashboard")]
 [Authorize(Roles = AppRoles.BrandManager + "," + AppRoles.StoreStaff)]
@@ -27,10 +27,9 @@ public class RedemptionsController : Controller
         return View(new RedemptionPageViewModel());
     }
 
-    /// <summary>Form nhập tay hoặc POST từ JS sau khi quét.</summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Redeem(
+    public async Task<IActionResult> RedeemAsync(
         RedemptionPageViewModel model,
         CancellationToken cancellationToken = default)
     {
@@ -38,15 +37,14 @@ public class RedemptionsController : Controller
         if (string.IsNullOrEmpty(code))
         {
             model.LastSucceeded = false;
-            model.LastResultMessage = "Nhập mã đơn hoặc quét QR trước.";
+            model.LastResultMessage = "Nhập mã đơn trước khi xác nhận.";
             return View("Index", model);
         }
 
         var request = new RedeemOrderRequest
         {
-            // Contract: ưu tiên orderCode; nếu payload QR là token dài, gửi cả hai field để API chọn.
             OrderCode = code,
-            QrToken = code
+            Token = null
         };
 
         try
@@ -58,10 +56,11 @@ public class RedemptionsController : Controller
 
             model.LastSucceeded = true;
             model.LastOrderCode = result.OrderCode;
-            model.LastStatus = result.Status;
-            model.LastResultMessage = string.IsNullOrWhiteSpace(result.Message)
-                ? $"Đã xác nhận giao hàng cho {result.OrderCode} ({result.Status})."
-                : result.Message;
+            model.LastStatus = string.IsNullOrWhiteSpace(result.Status)
+                ? "Redeemed"
+                : result.Status;
+            model.LastCustomerName = result.CustomerName;
+            model.LastResultMessage = BuildSuccessMessage(result);
             model.ManualCode = string.Empty;
         }
         catch (ApiException ex)
@@ -75,24 +74,21 @@ public class RedemptionsController : Controller
         return View("Index", model);
     }
 
-    /// <summary>
-    /// Endpoint AJAX (JSON) cho quét webcam — cùng path API, không giả success.
-    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> RedeemAjax(
+    public async Task<IActionResult> RedeemAjaxAsync(
         [FromForm] string code,
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(code))
         {
-            return Json(new { success = false, message = "Mã trống." });
+            return Json(new { success = false, message = "Mã QR trống." });
         }
 
         var request = new RedeemOrderRequest
         {
-            OrderCode = code.Trim(),
-            QrToken = code.Trim()
+            Token = code.Trim(),
+            OrderCode = null
         };
 
         try
@@ -106,10 +102,9 @@ public class RedemptionsController : Controller
             {
                 success = true,
                 orderCode = result.OrderCode,
-                status = result.Status,
-                message = string.IsNullOrWhiteSpace(result.Message)
-                    ? $"OK: {result.OrderCode}"
-                    : result.Message
+                status = string.IsNullOrWhiteSpace(result.Status) ? "Redeemed" : result.Status,
+                customerName = result.CustomerName,
+                message = BuildSuccessMessage(result)
             });
         }
         catch (ApiException ex)
@@ -122,5 +117,16 @@ public class RedemptionsController : Controller
                     : ex.Message
             });
         }
+    }
+
+    private static string BuildSuccessMessage(RedeemOrderResponse result)
+    {
+        if (!string.IsNullOrWhiteSpace(result.Message))
+            return result.Message;
+
+        var who = string.IsNullOrWhiteSpace(result.CustomerName)
+            ? result.OrderCode
+            : $"{result.OrderCode} — {result.CustomerName}";
+        return $"Đã xác nhận giao hàng: {who}.";
     }
 }

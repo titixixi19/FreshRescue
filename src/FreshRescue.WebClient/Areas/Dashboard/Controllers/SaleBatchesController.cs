@@ -4,6 +4,7 @@ using FreshRescue.WebClient.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
+using FreshRescue.WebClient.Helpers;
 
 namespace FreshRescue.WebClient.Areas.Dashboard.Controllers;
 
@@ -287,14 +288,46 @@ public class SaleBatchesController : Controller
             return RedirectToAction(nameof(CreateStep1));
         }
 
+        // BR-15 trên giờ tường VN (cùng ý nghĩa người dùng vừa nhập ở bước 3).
+        var ssVn = model.SaleStartTime.Value;
+        var seVn = model.SaleEndTime.Value;
+        var psVn = model.PickupStartTime.Value;
+        var peVn = model.PickupEndTime.Value;
+        if (!(ssVn < seVn && seVn <= peVn && psVn < peVn && ssVn <= psVn))
+        {
+            model.Step = 4;
+            model.ErrorMessage =
+                "Khung giờ không hợp lệ (BR-15): SaleStart < SaleEnd ≤ PickupEnd; PickupStart < PickupEnd; SaleStart ≤ PickupStart.";
+            return View(model);
+        }
+
+        // datetime-local = giờ VN → UTC đúng nghĩa trước khi gửi API.
+        DateTime saleStartUtc;
+        DateTime saleEndUtc;
+        DateTime pickupStartUtc;
+        DateTime pickupEndUtc;
+        try
+        {
+            saleStartUtc = Display.FromVietnamToUtc(ssVn);
+            saleEndUtc = Display.FromVietnamToUtc(seVn);
+            pickupStartUtc = Display.FromVietnamToUtc(psVn);
+            pickupEndUtc = Display.FromVietnamToUtc(peVn);
+        }
+        catch (ArgumentException)
+        {
+            model.Step = 4;
+            model.ErrorMessage = "Thời gian nằm ngoài phạm vi hợp lệ của múi giờ Việt Nam.";
+            return View(model);
+        }
+
         var request = new CreateSaleBatchRequest
         {
             Name = string.IsNullOrWhiteSpace(model.Name) ? null : model.Name.Trim(),
             StoreId = model.IsBrandManager ? model.StoreId : null,
-            SaleStartTime = DateTime.SpecifyKind(model.SaleStartTime.Value, DateTimeKind.Utc),
-            SaleEndTime = DateTime.SpecifyKind(model.SaleEndTime.Value, DateTimeKind.Utc),
-            PickupStartTime = DateTime.SpecifyKind(model.PickupStartTime.Value, DateTimeKind.Utc),
-            PickupEndTime = DateTime.SpecifyKind(model.PickupEndTime.Value, DateTimeKind.Utc),
+            SaleStartTime = saleStartUtc,
+            SaleEndTime = saleEndUtc,
+            PickupStartTime = pickupStartUtc,
+            PickupEndTime = pickupEndUtc,
             Offers = model.Offers.Select(o => new CreateSaleBatchOfferRequest
             {
                 OfferTemplateId = o.OfferTemplateId,

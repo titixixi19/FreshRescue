@@ -7,8 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace FreshRescue.WebClient.Areas.Dashboard.Controllers;
 
 /// <summary>
-/// Offer trong đợt — PUT staff/offers/{id}, PATCH .../quantity, DELETE staff/offers/{id},
-/// POST staff/sale-batches/{id}/offers (03 §6).
+/// Offer trong đợt — PATCH .../quantity, DELETE staff/offers/{id} (03 §6).
 /// </summary>
 [Area("Dashboard")]
 [Authorize(Roles = AppRoles.BrandManager + "," + AppRoles.StoreStaff)]
@@ -22,7 +21,7 @@ public class StaffOffersController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Manage(Guid saleBatchId, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> ManageAsync(Guid saleBatchId, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -45,7 +44,7 @@ public class StaffOffersController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> AdjustQuantity(
+    public async Task<IActionResult> AdjustQuantityAsync(
         Guid offerId,
         Guid saleBatchId,
         int totalQuantity,
@@ -54,7 +53,7 @@ public class StaffOffersController : Controller
         if (totalQuantity < 1)
         {
             TempData["Error"] = "totalQuantity phải ≥ 1.";
-            return RedirectToAction(nameof(Manage), new { saleBatchId });
+            return RedirectToAction("Manage", new { saleBatchId });
         }
 
         try
@@ -70,12 +69,12 @@ public class StaffOffersController : Controller
             TempData["Error"] = FormatApiError(ex);
         }
 
-        return RedirectToAction(nameof(Manage), new { saleBatchId });
+        return RedirectToAction("Manage", new { saleBatchId });
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Delete(
+    public async Task<IActionResult> DeleteAsync(
         Guid offerId,
         Guid saleBatchId,
         CancellationToken cancellationToken = default)
@@ -90,7 +89,7 @@ public class StaffOffersController : Controller
             TempData["Error"] = FormatApiError(ex);
         }
 
-        return RedirectToAction(nameof(Manage), new { saleBatchId });
+        return RedirectToAction("Manage", new { saleBatchId });
     }
 
     private static string FormatApiError(ApiException ex)

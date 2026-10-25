@@ -1,0 +1,142 @@
+@model FreshRescue.WebClient.Areas.Dashboard.Models.BrandListViewModel
+@{
+    ViewData["Title"] = "Duyệt thương hiệu";
+}
+
+<div class="dash-toolbar">
+    <div>
+        <h2>Duyệt thương hiệu</h2>
+        <p class="muted small">FR-A01 · <code>GET admin/brands</code> · approve / reject / suspend</p>
+    </div>
+</div>
+
+@if (TempData["Success"] is string ok)
+{
+    <div class="dash-alert dash-alert-ok">@ok</div>
+}
+@if (TempData["Error"] is string err)
+{
+    <div class="dash-alert dash-alert-err">@err</div>
+}
+
+<form method="get" asp-action="Index" class="dash-filters">
+    <select name="status" class="dash-input">
+        <option value="">— Mọi trạng thái —</option>
+        @foreach (var s in new[] { "PendingApproval", "Approved", "Rejected", "Suspended" })
+        {
+            if (Model.StatusFilter == s)
+            {
+                <option value="@s" selected>@s</option>
+            }
+            else
+            {
+                <option value="@s">@s</option>
+            }
+        }
+    </select>
+    <button type="submit" class="dash-btn dash-btn-sm">Lọc</button>
+</form>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="dash-alert dash-alert-err">@Model.ErrorMessage</div>
+}
+else if (Model.Items.Count == 0)
+{
+    <div class="dash-empty">
+        <p>Không có thương hiệu nào khớp bộ lọc.</p>
+    </div>
+}
+else
+{
+    <div class="dash-table-wrap">
+        <table class="dash-table">
+            <thead>
+                <tr>
+                    <th>Thương hiệu</th>
+                    <th>Chủ sở hữu</th>
+                    <th>Trạng thái</th>
+                    <th>Thời gian</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var b in Model.Items)
+                {
+                    <tr>
+                        <td>
+                            <strong>@b.Name</strong>
+                            @if (!string.IsNullOrEmpty(b.Slug))
+                            {
+                                <div class="muted small">@b.Slug</div>
+                            }
+                            @if (!string.IsNullOrEmpty(b.Description))
+                            {
+                                <div class="muted small">@b.Description</div>
+                            }
+                        </td>
+                        <td class="muted small">
+                            @(string.IsNullOrEmpty(b.OwnerEmail) ? "—" : b.OwnerEmail)
+                        </td>
+                        <td><span class="badge">@b.Status</span></td>
+                        <td class="muted small">
+                            @if (b.CreatedAt is not null)
+                            {
+                                <div>Tạo: @b.CreatedAt.Value.ToString("yyyy-MM-dd HH:mm") UTC</div>
+                            }
+                            @if (b.ApprovedAt is not null)
+                            {
+                                <div>Duyệt: @b.ApprovedAt.Value.ToString("yyyy-MM-dd HH:mm") UTC</div>
+                            }
+                        </td>
+                        <td class="dash-actions">
+                            @if (string.Equals(b.Status, "PendingApproval", StringComparison.OrdinalIgnoreCase))
+                            {
+                                <form asp-action="Approve" method="post" class="inline-form">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@b.Id" />
+                                    <input type="hidden" name="status" value="@Model.StatusFilter" />
+                                    <input type="hidden" name="page" value="@Model.Page" />
+                                    <button type="submit" class="link-ok">Duyệt</button>
+                                </form>
+                                <form asp-action="Reject" method="post" class="reject-form"
+                                      onsubmit="return this.reason.value.trim().length > 0 || (alert('Nhập lý do từ chối'), false);">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@b.Id" />
+                                    <input type="hidden" name="status" value="@Model.StatusFilter" />
+                                    <input type="hidden" name="page" value="@Model.Page" />
+                                    <input type="text" name="reason" class="dash-input dash-input-sm" placeholder="Lý do từ chối" maxlength="500" />
+                                    <button type="submit" class="link-danger">Từ chối</button>
+                                </form>
+                            }
+                            @if (string.Equals(b.Status, "Approved", StringComparison.OrdinalIgnoreCase))
+                            {
+                                <form asp-action="Suspend" method="post" class="inline-form"
+                                      onsubmit="return confirm('Tạm khoá thương hiệu này?');">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@b.Id" />
+                                    <input type="hidden" name="status" value="@Model.StatusFilter" />
+                                    <input type="hidden" name="page" value="@Model.Page" />
+                                    <button type="submit" class="link-danger">Tạm khoá</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav class="dash-pager" aria-label="Phân trang">
+            @for (var p = 1; p <= Model.TotalPages; p++)
+            {
+                <a class="@(p == Model.Page ? "active" : null)"
+                   asp-action="Index"
+                   asp-route-page="@p"
+                   asp-route-status="@Model.StatusFilter">@p</a>
+            }
+        </nav>
+    }
+}

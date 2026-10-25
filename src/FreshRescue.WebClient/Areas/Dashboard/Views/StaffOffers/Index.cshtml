@@ -6,11 +6,19 @@
 <div class="dash-toolbar">
     <div>
         <h2>Đơn trong đợt</h2>
-        <p class="muted small">Batch: <code>@Model.SaleBatchId</code> · <code>GET staff/sale-batches/&#123;id&#125;/orders</code></p>
+        <p class="muted small">
+            Batch: <code>@Model.SaleBatchId</code>
+            @if (!string.IsNullOrEmpty(Model.BatchName))
+            {
+                <text>· @Model.BatchName</text>
+            }
+            · <code>GET staff/sale-batches/&#123;id&#125;/orders</code>
+        </p>
     </div>
     <div class="dash-actions">
-        <a class="dash-btn-secondary" asp-controller="SaleBatches" asp-action="Index">← Đợt bán</a>
+        <a class="dash-btn-secondary" asp-area="Dashboard" asp-controller="SaleBatches" asp-action="Index">← Đợt bán</a>
         <a class="dash-btn-secondary"
+           asp-area="Dashboard"
            asp-controller="StaffOffers"
            asp-action="Manage"
            asp-route-saleBatchId="@Model.SaleBatchId">Offer</a>
@@ -30,7 +38,7 @@
     <input type="hidden" name="saleBatchId" value="@Model.SaleBatchId" />
     <select name="status" class="dash-input">
         <option value="">— Mọi trạng thái —</option>
-        @foreach (var s in new[] { "PendingPayment", "Paid", "ReadyForPickup", "Redeemed", "Cancelled", "Expired" })
+        @foreach (var s in new[] { "PendingPayment", "Paid", "Redeemed", "Cancelled", "NoShow" })
         {
             if (Model.StatusFilter == s)
             {
@@ -61,11 +69,12 @@ else
         <table class="dash-table">
             <thead>
                 <tr>
-                    <th>Mã</th>
+                    <th>Mã đơn</th>
                     <th>Khách</th>
                     <th>Trạng thái</th>
                     <th>Tổng</th>
-                    <th>Items</th>
+                    <th>Thời gian</th>
+                    <th>Chi tiết</th>
                 </tr>
             </thead>
             <tbody>
@@ -76,6 +85,20 @@ else
                         <td>@o.CustomerName</td>
                         <td><span class="badge">@o.Status</span></td>
                         <td>@o.TotalAmount.ToString("N0")</td>
+                        <td class="muted small">
+                            @if (o.PaidAt is not null)
+                            {
+                                <div>Paid: @o.PaidAt.Value.ToString("yyyy-MM-dd HH:mm") UTC</div>
+                            }
+                            @if (o.RedeemedAt is not null)
+                            {
+                                <div>Redeemed: @o.RedeemedAt.Value.ToString("yyyy-MM-dd HH:mm") UTC</div>
+                            }
+                            @if (o.CancelledAt is not null)
+                            {
+                                <div>Cancelled: @o.CancelledAt.Value.ToString("yyyy-MM-dd HH:mm") UTC</div>
+                            }
+                        </td>
                         <td class="muted small">
                             @foreach (var it in o.Items)
                             {
@@ -90,7 +113,7 @@ else
 
     @if (Model.TotalPages > 1)
     {
-        <nav class="dash-pager">
+        <nav class="dash-pager" aria-label="Phân trang">
             @for (var p = 1; p <= Model.TotalPages; p++)
             {
                 <a class="@(p == Model.Page ? "active" : null)"
