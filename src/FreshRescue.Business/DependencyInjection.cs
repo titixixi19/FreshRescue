@@ -29,6 +29,7 @@ public static class DependencyInjection
         services.AddScoped<IAdminBrandService, AdminBrandService>();
         services.AddScoped<IStoreService, StoreService>();
         services.AddScoped<IOfferTemplateService, OfferTemplateService>();
+        services.AddScoped<IOfferTemplateExcelService, OfferTemplateExcelService>();
 
         // --- Storefront công khai (Đức Anh) ---
         services.AddScoped<Features.Catalog.IStorefrontService, Features.Catalog.StorefrontService>();
