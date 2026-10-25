@@ -1,0 +1,104 @@
+@model FreshRescue.WebClient.Areas.Dashboard.Models.StaffOrderListViewModel
+@{
+    ViewData["Title"] = "Đơn trong đợt";
+}
+
+<div class="dash-toolbar">
+    <div>
+        <h2>Đơn trong đợt</h2>
+        <p class="muted small">Batch: <code>@Model.SaleBatchId</code> · <code>GET staff/sale-batches/&#123;id&#125;/orders</code></p>
+    </div>
+    <div class="dash-actions">
+        <a class="dash-btn-secondary" asp-controller="SaleBatches" asp-action="Index">← Đợt bán</a>
+        <a class="dash-btn-secondary"
+           asp-controller="StaffOffers"
+           asp-action="Manage"
+           asp-route-saleBatchId="@Model.SaleBatchId">Offer</a>
+    </div>
+</div>
+
+@if (TempData["Success"] is string ok)
+{
+    <div class="dash-alert dash-alert-ok">@ok</div>
+}
+@if (TempData["Error"] is string err)
+{
+    <div class="dash-alert dash-alert-err">@err</div>
+}
+
+<form method="get" asp-action="Index" class="dash-filters">
+    <input type="hidden" name="saleBatchId" value="@Model.SaleBatchId" />
+    <select name="status" class="dash-input">
+        <option value="">— Mọi trạng thái —</option>
+        @foreach (var s in new[] { "PendingPayment", "Paid", "ReadyForPickup", "Redeemed", "Cancelled", "Expired" })
+        {
+            if (Model.StatusFilter == s)
+            {
+                <option value="@s" selected>@s</option>
+            }
+            else
+            {
+                <option value="@s">@s</option>
+            }
+        }
+    </select>
+    <button type="submit" class="dash-btn dash-btn-sm">Lọc</button>
+</form>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="dash-alert dash-alert-err">@Model.ErrorMessage</div>
+}
+else if (Model.Items.Count == 0)
+{
+    <div class="dash-empty">
+        <p>Không có đơn trong đợt này (hoặc chưa có đơn).</p>
+    </div>
+}
+else
+{
+    <div class="dash-table-wrap">
+        <table class="dash-table">
+            <thead>
+                <tr>
+                    <th>Mã</th>
+                    <th>Khách</th>
+                    <th>Trạng thái</th>
+                    <th>Tổng</th>
+                    <th>Items</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var o in Model.Items)
+                {
+                    <tr>
+                        <td><code>@o.OrderCode</code></td>
+                        <td>@o.CustomerName</td>
+                        <td><span class="badge">@o.Status</span></td>
+                        <td>@o.TotalAmount.ToString("N0")</td>
+                        <td class="muted small">
+                            @foreach (var it in o.Items)
+                            {
+                                <div>@it.OfferName × @it.Quantity (@it.LineTotal.ToString("N0"))</div>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav class="dash-pager">
+            @for (var p = 1; p <= Model.TotalPages; p++)
+            {
+                <a class="@(p == Model.Page ? "active" : null)"
+                   asp-action="Index"
+                   asp-route-saleBatchId="@Model.SaleBatchId"
+                   asp-route-page="@p"
+                   asp-route-status="@Model.StatusFilter">@p</a>
+            }
+        </nav>
+    }
+}

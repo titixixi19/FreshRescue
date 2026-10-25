@@ -1,0 +1,107 @@
+@model FreshRescue.WebClient.Areas.Dashboard.Controllers.DashboardHomeViewModel
+@{
+    ViewData["Title"] = "Tổng quan";
+}
+
+<div class="dash-welcome">
+    <h2>Xin chào, @Model.DisplayName</h2>
+    <p class="muted">
+        @if (Model.IsAdmin)
+        {
+            <text>Bảng điều khiển <strong>Admin</strong> — duyệt thương hiệu và quản lý người dùng.</text>
+        }
+        else if (Model.IsBrandManager)
+        {
+            <text>Bảng điều khiển <strong>BrandManager</strong> — quản lý chi nhánh và vận hành chuỗi.</text>
+        }
+        else if (Model.IsStoreStaff)
+        {
+            <text>Bảng điều khiển <strong>StoreStaff</strong> — đợt bán, đơn cần xử lý và quét QR.</text>
+        }
+        else
+        {
+            <text>Dashboard chỉ dành cho Admin, BrandManager và StoreStaff.</text>
+        }
+    </p>
+</div>
+
+@if (Model.BrandId is not null || Model.StoreId is not null)
+{
+    <div class="muted small" style="margin-bottom:1rem;">
+        @if (Model.BrandId is not null)
+        {
+            <span>brand_id: <code>@Model.BrandId</code></span>
+        }
+        @if (Model.StoreId is not null)
+        {
+            <span style="margin-left:0.75rem;">store_id: <code>@Model.StoreId</code></span>
+        }
+    </div>
+}
+
+<div class="dash-cards">
+    @if (Model.IsAdmin)
+    {
+        <div class="dash-card">
+            <h3>Duyệt thương hiệu</h3>
+            <p class="muted">PendingApproval / Approved / Rejected / Suspended.</p>
+            <a class="dash-btn dash-btn-sm" asp-area="Dashboard" asp-controller="Brands" asp-action="Index">Mở danh sách</a>
+        </div>
+        <div class="dash-card">
+            <h3>Người dùng</h3>
+            <p class="muted">Lọc role / trạng thái, khoá hoặc mở khoá.</p>
+            <a class="dash-btn dash-btn-sm" asp-area="Dashboard" asp-controller="Users" asp-action="Index">Mở danh sách</a>
+        </div>
+        <div class="dash-card">
+            <h3>Chi nhánh</h3>
+            <p class="muted">Xem / hỗ trợ quản lý chi nhánh.</p>
+            <a class="dash-btn dash-btn-sm" asp-area="Dashboard" asp-controller="Stores" asp-action="Index">Mở chi nhánh</a>
+        </div>
+    }
+
+    @if (Model.IsBrandManager)
+    {
+        <div class="dash-card">
+            <h3>Chi nhánh</h3>
+            <p class="muted">CRUD chi nhánh thuộc thương hiệu (claim <code>brand_id</code>).</p>
+            <a class="dash-btn dash-btn-sm" asp-area="Dashboard" asp-controller="Stores" asp-action="Index">Quản lý chi nhánh</a>
+        </div>
+        <div class="dash-card dash-card-muted">
+            <h3>Đợt bán &amp; Offer</h3>
+            <p class="muted">Chưa triển khai trong phase khung.</p>
+            <span class="badge">Sắp có</span>
+        </div>
+        <div class="dash-card dash-card-muted">
+            <h3>Đơn cần xử lý</h3>
+            <p class="muted">Chưa triển khai trong phase khung.</p>
+            <span class="badge">Sắp có</span>
+        </div>
+    }
+
+    @if (Model.IsStoreStaff)
+    {
+        <div class="dash-card dash-card-muted">
+            <h3>Đợt bán</h3>
+            <p class="muted">Wizard 4 bước — phase sau.</p>
+            <span class="badge">Sắp có</span>
+        </div>
+        <div class="dash-card dash-card-muted">
+            <h3>Đơn cần xử lý</h3>
+            <p class="muted">Phase sau.</p>
+            <span class="badge">Sắp có</span>
+        </div>
+        <div class="dash-card dash-card-muted">
+            <h3>Quét QR</h3>
+            <p class="muted">Webcam + mã tay — phase sau.</p>
+            <span class="badge">Sắp có</span>
+        </div>
+    }
+</div>
+
+<div class="dash-empty" style="margin-top:1.5rem;">
+    <h3>Trạng thái số liệu</h3>
+    <p class="muted">
+        Phase khung không hiển thị biểu đồ hay KPI giả.
+        Liên kết Chi nhánh / Users / Brands chỉ hoạt động sau khi có controller tương ứng (phase nghiệp vụ).
+    </p>
+</div>
