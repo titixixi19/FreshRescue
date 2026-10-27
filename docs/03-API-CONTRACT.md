@@ -454,6 +454,9 @@ Yêu cầu role `StoreStaff` **hoặc** `BrandManager`. Phạm vi kiểm theo `B
 `storeId` chỉ dùng khi **Brand Manager** tạo thay chi nhánh (`BR-11`), bắt buộc với role này;
 Store Staff lấy chi nhánh từ token, trường này bị bỏ qua *(chốt 15/10)*.
 
+Danh sách mẫu để chọn `offerTemplateId` lấy từ `GET /brand/offer-templates` — cả Store Staff lẫn
+Brand Manager đều gọi được (§7) *(chốt 27/10)*.
+
 Lỗi: `BATCH_TIME_INVALID` (`BR-15`), `BATCH_OVERLAP` (`OQ-11`),
 `PRICE_OUT_OF_BAND` (`BR-07`), `BRAND_NOT_APPROVED` (`BR-14`), `409 BATCH_LOCKED` khi chi nhánh
 đang `Inactive` hoặc kích hoạt đợt không ở trạng thái `Draft`.
@@ -544,20 +547,29 @@ Lỗi: `FORBIDDEN_SCOPE` (đợt của chi nhánh khác), `NOT_FOUND` (không c�
 ## 7. Thương hiệu — `/brand`
 
 Yêu cầu role `BrandManager`. Mọi endpoint ngầm lọc theo `brand_id` trong token.
+Ngoại lệ duy nhất: `StoreStaff` được **xem** mẫu mặt hàng (hai dòng `GET` đánh dấu ★) *(chốt 27/10)*.
 
 | Method | Đường dẫn | Mô tả |
 | --- | --- | --- |
 | GET / PUT | `/brand/profile` | Hồ sơ thương hiệu |
 | GET / POST | `/brand/stores` | Danh sách / tạo chi nhánh |
 | PUT / DELETE | `/brand/stores/{id}` | Sửa / xoá mềm |
-| GET / POST | `/brand/offer-templates` | **Mẫu mặt hàng** (`FR-B04`) |
-| PUT / DELETE | `/brand/offer-templates/{id}` | |
+| GET ★ | `/brand/offer-templates` | Danh sách **mẫu mặt hàng** (`FR-B04`), lọc `search`, `categoryId`, `offerType` |
+| POST | `/brand/offer-templates` | Tạo mẫu |
+| GET ★ | `/brand/offer-templates/{id}` | Chi tiết một mẫu |
+| PUT / DELETE | `/brand/offer-templates/{id}` | Sửa / xoá mềm |
 | GET / POST | `/brand/staff` | Danh sách / tạo tài khoản nhân viên |
 | DELETE | `/brand/staff/{id}` | Gỡ nhân viên khỏi chi nhánh |
 | GET | `/brand/stats` | 2 biểu đồ (`FR-B06`), số liệu theo `BR-25` |
 | GET | `/brand/offer-templates/import-template` | Tải file Excel mẫu để điền (`FR-B07`) |
 | POST | `/brand/offer-templates/import` | Import mẫu mặt hàng từ `.xlsx` (`FR-B07`, `BR-26`) |
 | GET | `/brand/orders/export` | Export đơn + thống kê ra `.xlsx`, `?from=&to=` (`FR-B08`, `BR-27`) |
+
+★ `BrandManager` **hoặc** `StoreStaff`. Staff cần danh sách mẫu để chọn `offerTemplateId` khi tạo
+đợt bán (§6.1), mà `/staff` không có endpoint nào trả mẫu. Phạm vi vẫn theo `brand_id` trong token
+(`BR-11`): staff chỉ thấy mẫu của thương hiệu sở hữu chi nhánh mình; mẫu của thương hiệu khác trả
+`403 FORBIDDEN_SCOPE` như với Brand Manager. Mọi thao tác ghi (tạo, sửa, xoá, import) vẫn **chỉ**
+`BrandManager` — staff gọi nhận `403`.
 
 ```json
 // POST /brand/offer-templates
