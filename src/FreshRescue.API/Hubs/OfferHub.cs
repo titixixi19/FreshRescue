@@ -8,5 +8,38 @@ namespace FreshRescue.API.Hubs;
 /// </summary>
 public class OfferHub : Hub
 {
-    // TODO(Hieu, 2026-10-13): JoinBatch, LeaveBatch, JoinStore.
+    public static string BatchGroup(Guid saleBatchId) => $"batch:{saleBatchId}";
+    public static string StoreGroup(Guid storeId) => $"store:{storeId}";
+
+    /// <summary>
+    /// Vào nhóm theo dõi một đợt bán.
+    /// </summary>
+    public async Task JoinBatchAsync(Guid saleBatchId)
+    {
+        await Groups.AddToGroupAsync(Context.ConnectionId, BatchGroup(saleBatchId));
+    }
+
+    /// <summary>
+    /// Rời nhóm theo dõi một đợt bán.
+    /// </summary>
+    public async Task LeaveBatchAsync(Guid saleBatchId)
+    {
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, BatchGroup(saleBatchId));
+    }
+
+    /// <summary>
+    /// Theo dõi mọi đợt bán của một chi nhánh.
+    /// </summary>
+    public async Task JoinStoreAsync(Guid storeId)
+    {
+        await Groups.AddToGroupAsync(Context.ConnectionId, StoreGroup(storeId));
+    }
+
+    /// <summary>
+    /// Rời nhóm theo dõi chi nhánh.
+    /// </summary>
+    public async Task LeaveStoreAsync(Guid storeId)
+    {
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, StoreGroup(storeId));
+    }
 }

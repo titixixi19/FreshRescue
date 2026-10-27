@@ -1,0 +1,343 @@
+/* Giao diện phía khách — Areas/Customer (Đức Anh). Màu gốc khai ở site.css. */
+
+.fr-hero {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 2rem;
+    border-radius: 1.25rem;
+    color: #fff;
+    background: linear-gradient(120deg, var(--fr-green-dark), var(--fr-green) 60%, #4cb878);
+}
+
+.fr-hero-title {
+    font-size: clamp(1.5rem, 3vw, 2.2rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.fr-hero-text {
+    max-width: 640px;
+    opacity: 0.92;
+}
+
+.fr-hero-stat {
+    text-align: center;
+    padding: 0.75rem 1.5rem;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.fr-hero-stat strong {
+    display: block;
+    font-size: 2rem;
+    line-height: 1.1;
+}
+
+.fr-hero-stat span {
+    font-size: 0.85rem;
+}
+
+.fr-filter {
+    border: 0;
+    border-radius: 1rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+/* ---------- Thẻ offer ---------- */
+
+.fr-offer {
+    border: 0;
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.fr-offer:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+}
+
+.fr-offer.is-sold-out {
+    opacity: 0.65;
+}
+
+.fr-offer-media {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    text-decoration: none;
+}
+
+.fr-offer-media.is-bag {
+    background: linear-gradient(135deg, #fff1df, #ffd9a8);
+}
+
+.fr-offer-media.is-clearance {
+    background: linear-gradient(135deg, var(--fr-green-soft), #c9ead6);
+}
+
+.fr-offer-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.fr-offer-media-lg {
+    height: 100%;
+    min-height: 260px;
+}
+
+.fr-offer-emoji {
+    font-size: 3.5rem;
+}
+
+.fr-offer-media-lg .fr-offer-emoji {
+    font-size: 6rem;
+}
+
+.fr-badge-type,
+.fr-badge-discount {
+    position: absolute;
+    top: 0.75rem;
+    font-weight: 600;
+}
+
+.fr-badge-type {
+    left: 0.75rem;
+    color: var(--fr-ink);
+    background: rgba(255, 255, 255, 0.92);
+}
+
+.fr-badge-discount {
+    right: 0.75rem;
+    background: var(--fr-orange);
+}
+
+.fr-price {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--fr-green-dark);
+}
+
+.fr-price-lg {
+    font-size: 2rem;
+}
+
+.fr-low-stock {
+    color: #b45309;
+    font-weight: 600;
+}
+
+.fr-offer-detail {
+    border: 0;
+    border-radius: 1.25rem;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.fr-note {
+    padding: 0.5rem 0.75rem;
+    border-left: 3px solid var(--fr-orange);
+    background: #fff7ed;
+    border-radius: 0.25rem;
+}
+
+.fr-facts dt {
+    font-weight: 500;
+    color: #6c757d;
+}
+
+/* ---------- Quick Checkout ---------- */
+
+.fr-steps {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0;
+    margin: 0 0 1rem;
+    list-style: none;
+    counter-reset: fr-step;
+}
+
+.fr-steps li {
+    flex: 1;
+    padding-top: 0.5rem;
+    font-size: 0.8rem;
+    color: #6c757d;
+    border-top: 3px solid #dee2e6;
+    counter-increment: fr-step;
+}
+
+.fr-steps li::before {
+    content: counter(fr-step) ". ";
+}
+
+.fr-steps li.is-active {
+    color: var(--fr-green-dark);
+    font-weight: 600;
+    border-color: var(--fr-green);
+}
+
+.fr-steps li.is-done {
+    border-color: #9bd3b0;
+}
+
+.fr-qc-line {
+    display: flex;
+    align-items: center;
+    padding: 0.6rem 0;
+    border-bottom: 1px dashed #e5e7eb;
+}
+
+.fr-qc-line:last-child {
+    border-bottom: 0;
+}
+
+.fr-qty {
+    width: 7.5rem;
+    flex-shrink: 0;
+}
+
+.fr-qty input::-webkit-outer-spin-button,
+.fr-qty input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.fr-qty input {
+    -moz-appearance: textfield;
+}
+
+.fr-fake-gateway {
+    padding: 1rem;
+    border: 1px dashed #adb5bd;
+    border-radius: 0.75rem;
+    background: #f8f9fa;
+}
+
+.fr-success-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+    color: #fff;
+    border-radius: 50%;
+    background: var(--fr-green);
+}
+
+/* ---------- Vé QR & đơn hàng ---------- */
+
+.fr-qr {
+    width: 220px;
+    max-width: 100%;
+    padding: 0.5rem;
+    background: #fff;
+    border-radius: 0.75rem;
+    border: 1px solid #e5e7eb;
+}
+
+.fr-qr-lg {
+    width: 300px;
+}
+
+.fr-qr svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.fr-order-code,
+.fr-mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    letter-spacing: 0.06em;
+}
+
+.fr-order-code {
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+.fr-order-code-lg {
+    font-size: 2rem;
+}
+
+.fr-narrow {
+    max-width: 520px;
+    margin: 0 auto;
+}
+
+.fr-ticket {
+    border: 0;
+    border-radius: 1.25rem;
+}
+
+.fr-order-row {
+    border: 0;
+    border-radius: 0.9rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07);
+}
+
+.fr-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+.fr-tabs .nav-link {
+    color: var(--fr-ink);
+}
+
+.fr-tabs .nav-link.active {
+    background: var(--fr-green);
+}
+
+/* Chọn sao: radio xếp ngược để CSS tô được các sao đứng trước sao đang chọn. */
+.fr-stars {
+    display: inline-flex;
+    flex-direction: row-reverse;
+    gap: 0.15rem;
+}
+
+.fr-stars input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.fr-stars label {
+    font-size: 1.8rem;
+    line-height: 1;
+    color: #d1d5db;
+    cursor: pointer;
+}
+
+.fr-stars input:checked ~ label,
+.fr-stars label:hover,
+.fr-stars label:hover ~ label {
+    color: #f59e0b;
+}
+
+.fr-stars input:focus-visible + label {
+    outline: 2px solid var(--fr-green);
+    border-radius: 0.25rem;
+}
+
+@media print {
+    header,
+    footer {
+        display: none !important;
+    }
+
+    .fr-ticket {
+        box-shadow: none !important;
+    }
+}

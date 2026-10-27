@@ -1,0 +1,56 @@
+@model ActiveOfferDto
+@inject ApiOptions Api
+@{
+    var soldOut = Model.RemainingQuantity <= 0;
+    var detailUrl = Url.Action("Offer", "Storefront", new { area = "Customer", id = Model.Id });
+    var imageUrl = Api.ResolveUrl(Model.ImageUrl);
+    var typeCss = Model.OfferType == OfferType.SurpriseBag ? "is-bag" : "is-clearance";
+}
+<div class="col">
+    <article class="card fr-offer h-100 @(soldOut ? "is-sold-out" : "")">
+        <a href="@detailUrl" class="fr-offer-media @typeCss" tabindex="-1" aria-hidden="true">
+            @if (imageUrl is not null)
+            {
+                <img src="@imageUrl" alt="" loading="lazy" />
+            }
+            else
+            {
+                <span class="fr-offer-emoji">@(Model.OfferType == OfferType.SurpriseBag ? "🛍️" : "🏷️")</span>
+            }
+            <span class="badge fr-badge-type">@Display.OfferTypeLabel(Model.OfferType)</span>
+            <span class="badge fr-badge-discount">−@Display.Percent(Model.DiscountPercent)</span>
+        </a>
+        <div class="card-body d-flex flex-column">
+            <div class="small text-muted text-truncate" title="@Model.StoreName">
+                🏪 @Model.StoreName
+                @if (Model.DistanceKm is { } km)
+                {
+                    <span>· @Display.Distance(km)</span>
+                }
+            </div>
+            <h3 class="h6 card-title my-1">
+                <a href="@detailUrl" class="text-reset text-decoration-none">@Model.Name</a>
+            </h3>
+            <div class="small text-muted mb-3">
+                @Model.CategoryName · Nhận @Display.Window(Model.PickupStartTime, Model.PickupEndTime)
+            </div>
+            <div class="mt-auto d-flex align-items-end justify-content-between">
+                <div>
+                    <div class="fr-price">@Display.Money(Model.ActualPrice)</div>
+                    <div class="small text-muted text-decoration-line-through">@Display.Money(Model.OriginalPrice)</div>
+                </div>
+                <div class="small text-end @(soldOut ? "text-danger" : Model.RemainingQuantity <= 3 ? "fr-low-stock" : "text-muted")">
+                    @(soldOut ? "Hết suất" : $"Còn {Model.RemainingQuantity} suất")
+                </div>
+            </div>
+            @if (soldOut)
+            {
+                <button type="button" class="btn btn-outline-secondary w-100 mt-3" disabled>Đã hết suất</button>
+            }
+            else
+            {
+                <button type="button" class="btn btn-success w-100 mt-3" data-qc="@QuickCheckout.For(Model)">Mua nhanh</button>
+            }
+        </div>
+    </article>
+</div>

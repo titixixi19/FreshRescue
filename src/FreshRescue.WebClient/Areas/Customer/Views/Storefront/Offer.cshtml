@@ -1,0 +1,106 @@
+@model OfferDetailViewModel
+@inject ApiOptions Api
+@{
+    var offer = Model.Offer;
+    ViewData["Title"] = offer.Name;
+    var imageUrl = Api.ResolveUrl(offer.ImageUrl);
+    var soldOut = offer.RemainingQuantity <= 0;
+    var canBuy = Model.IsOnSale && Model.BatchOffers.Any(o => o.RemainingQuantity > 0);
+    var others = Model.BatchOffers.Where(o => o.Id != offer.Id).ToList();
+}
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb small mb-0">
+        <li class="breadcrumb-item"><a asp-action="Index">Săn đồ ăn</a></li>
+        <li class="breadcrumb-item"><a asp-action="Index" asp-route-storeId="@offer.StoreId">@offer.StoreName</a></li>
+        <li class="breadcrumb-item active" aria-current="page">@offer.Name</li>
+    </ol>
+</nav>
+
+<div class="card fr-offer-detail mb-4">
+    <div class="row g-0">
+        <div class="col-md-5">
+            <div class="fr-offer-media fr-offer-media-lg @(offer.OfferType == OfferType.SurpriseBag ? "is-bag" : "is-clearance")">
+                @if (imageUrl is not null)
+                {
+                    <img src="@imageUrl" alt="Ảnh @offer.Name" />
+                }
+                else
+                {
+                    <span class="fr-offer-emoji">@(offer.OfferType == OfferType.SurpriseBag ? "🛍️" : "🏷️")</span>
+                }
+                <span class="badge fr-badge-type">@Display.OfferTypeLabel(offer.OfferType)</span>
+                <span class="badge fr-badge-discount">−@Display.Percent(offer.DiscountPercent)</span>
+            </div>
+        </div>
+        <div class="col-md-7">
+            <div class="card-body p-4">
+                <div class="small text-muted mb-1">🏪 @offer.StoreName · @offer.CategoryName</div>
+                <h1 class="h3 mb-2">@offer.Name</h1>
+                @if (!string.IsNullOrWhiteSpace(offer.Description))
+                {
+                    <p class="text-muted">@offer.Description</p>
+                }
+                @if (offer.OfferType == OfferType.SurpriseBag)
+                {
+                    <p class="small fr-note">
+                        Túi mù gồm các món ngẫu nhiên cùng nhóm, cửa hàng đóng gói lúc bạn đến nhận —
+                        trị giá gốc ít nhất @Display.Money(offer.OriginalPrice).
+                    </p>
+                }
+
+                <div class="d-flex align-items-baseline gap-3 my-3">
+                    <span class="fr-price fr-price-lg">@Display.Money(offer.ActualPrice)</span>
+                    <span class="text-muted text-decoration-line-through">@Display.Money(offer.OriginalPrice)</span>
+                    <span class="badge bg-danger">Tiết kiệm @Display.Money(offer.OriginalPrice - offer.ActualPrice)</span>
+                </div>
+
+                <dl class="row small fr-facts mb-4">
+                    <dt class="col-5 col-lg-4">Nhận hàng</dt>
+                    <dd class="col-7 col-lg-8"><strong>@Display.Window(offer.PickupStartTime, offer.PickupEndTime)</strong></dd>
+                    <dt class="col-5 col-lg-4">Hạn đặt</dt>
+                    <dd class="col-7 col-lg-8">@Display.DateAndTime(offer.SaleEndTime)</dd>
+                    <dt class="col-5 col-lg-4">Còn lại</dt>
+                    <dd class="col-7 col-lg-8 @(soldOut ? "text-danger" : "")">@(soldOut ? "Hết suất" : $"{offer.RemainingQuantity} suất")</dd>
+                    <dt class="col-5 col-lg-4">Giới hạn</dt>
+                    <dd class="col-7 col-lg-8">Tối đa @offer.MaxPerCustomer suất mỗi người trong đợt</dd>
+                    @if (offer.DistanceKm is { } km)
+                    {
+                        <dt class="col-5 col-lg-4">Khoảng cách</dt>
+                        <dd class="col-7 col-lg-8">@Display.Distance(km)</dd>
+                    }
+                </dl>
+
+                @if (!Model.IsOnSale)
+                {
+                    <div class="alert alert-secondary mb-0">Đợt bán này đã kết thúc hoặc chưa mở.</div>
+                }
+                else if (!canBuy)
+                {
+                    <button type="button" class="btn btn-outline-secondary btn-lg" disabled>Đã hết suất</button>
+                }
+                else
+                {
+                    <button type="button" class="btn btn-success btn-lg px-4" data-qc="@QuickCheckout.For(offer, Model.BatchOffers)">
+                        Đặt ngay
+                    </button>
+                    @if (others.Count > 0)
+                    {
+                        <span class="small text-muted ms-2">Có thể thêm @others.Count món khác cùng đợt vào một đơn.</span>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (others.Count > 0)
+{
+    <h2 class="h5 mb-3">Cùng đợt bán tại @offer.StoreName</h2>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-3">
+        @foreach (var other in others)
+        {
+            <partial name="_OfferCard" model="other" />
+        }
+    </div>
+}

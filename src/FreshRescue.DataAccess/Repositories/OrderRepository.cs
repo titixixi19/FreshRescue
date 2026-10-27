@@ -47,4 +47,17 @@ public class OrderRepository : GenericRepository<Order>, IOrderRepository
                 cancellationToken);
         return affected == 1;
     }
+
+    public async Task<bool> TryMarkNoShowAsync(Guid orderId, DateTime noShowAt, CancellationToken cancellationToken)
+    {
+        var affected = await Set
+            .Where(o => o.Id == orderId && o.Status == OrderStatus.Paid)
+            .ExecuteUpdateAsync(
+                s => s
+                    .SetProperty(o => o.Status, OrderStatus.NoShow)
+                    .SetProperty(o => o.RefundStatus, RefundStatus.None)
+                    .SetProperty(o => o.UpdatedAt, noShowAt),
+                cancellationToken);
+        return affected == 1;
+    }
 }
