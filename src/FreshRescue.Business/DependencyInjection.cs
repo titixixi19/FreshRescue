@@ -3,7 +3,9 @@ using FreshRescue.Business.Features.Admin;
 using FreshRescue.Business.Features.Catalog;
 using FreshRescue.Business.Features.Engagement;
 using FreshRescue.Business.Features.Ordering;
+using FreshRescue.DataAccess.Repositories;
 using Microsoft.Extensions.DependencyInjection;
+
 
 namespace FreshRescue.Business;
 
@@ -29,6 +31,10 @@ public static class DependencyInjection
         services.AddScoped<IAdminBrandService, AdminBrandService>();
         services.AddScoped<IStoreService, StoreService>();
         services.AddScoped<IOfferTemplateService, OfferTemplateService>();
+
+        // --- Engagement / Review (Dinh Duc) ---
+        services.AddScoped<IReviewService, ReviewService>();
+        services.AddScoped<IStoreRatingRepository, StoreRatingRepository>();
 
         // --- Storefront công khai (Đức Anh) ---
         services.AddScoped<Features.Catalog.IStorefrontService, Features.Catalog.StorefrontService>();
