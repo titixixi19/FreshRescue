@@ -32,6 +32,7 @@ public static class DependencyInjection
         services.AddScoped<IStoreService, StoreService>();
         services.AddScoped<IOfferTemplateService, OfferTemplateService>();
         services.AddScoped<IOfferTemplateExcelService, OfferTemplateExcelService>();
+        services.AddScoped<IAdminUserService, AdminUserService>();
         services.AddScoped<IPublicCatalogODataService, PublicCatalogODataService>();
 
         // --- Engagement / Review (Dinh Duc) ---
