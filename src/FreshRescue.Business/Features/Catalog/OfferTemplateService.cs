@@ -2,6 +2,7 @@ using FreshRescue.Business.Common;
 using FreshRescue.Business.Features.Catalog.Dtos;
 using FreshRescue.DataAccess.UnitOfWork;
 using FreshRescue.Entities.Catalog;
+using FreshRescue.Entities.Constants;
 using Microsoft.EntityFrameworkCore;
 
 namespace FreshRescue.Business.Features.Catalog;
@@ -20,7 +21,7 @@ public sealed class OfferTemplateService : IOfferTemplateService
     public async Task<PagedResponse<OfferTemplateDto>> GetAllAsync(
         GetOfferTemplatesRequest request, CancellationToken ct)
     {
-        var brandId = await GetOwnedBrandIdAsync(ct);
+        var brandId = await GetReadableBrandIdAsync(ct);
         if (request.Page < 1 || request.PageSize is < 1 or > 100)
         {
             throw AppException.BadRequest(ErrorCodes.ValidationFailed, "Phân trang không hợp lệ.");
@@ -79,7 +80,7 @@ public sealed class OfferTemplateService : IOfferTemplateService
 
     public async Task<OfferTemplateDto> GetByIdAsync(Guid id, CancellationToken ct)
     {
-        var brandId = await GetOwnedBrandIdAsync(ct);
+        var brandId = await GetReadableBrandIdAsync(ct);
         var template = await FindOwnedTemplateAsync(id, brandId, ct);
         return ToDto(template);
     }
@@ -135,6 +136,36 @@ public sealed class OfferTemplateService : IOfferTemplateService
         var template = await FindOwnedTemplateAsync(id, brandId, ct);
         _unitOfWork.OfferTemplates.Remove(template);
         await _unitOfWork.SaveChangesAsync(ct);
+    }
+
+    /// <summary>
+    /// BrandManager thấy mẫu của brand sở hữu; StoreStaff chỉ thấy mẫu của brand chứa
+    /// chi nhánh họ đang được phân công. Không tin store_id đơn thuần: kiểm tra StoreStaff còn hoạt động.
+    /// </summary>
+    private async Task<Guid> GetReadableBrandIdAsync(CancellationToken ct)
+    {
+        if (_currentUser.IsInRole(AppRoles.BrandManager))
+        {
+            return await GetOwnedBrandIdAsync(ct);
+        }
+
+        if (_currentUser.IsInRole(AppRoles.StoreStaff)
+            && _currentUser.UserId is Guid userId
+            && _currentUser.StoreId is Guid storeId)
+        {
+            var brandId = await _unitOfWork.StoreStaff.Query().AsNoTracking()
+                .Where(x => x.UserId == userId && x.StoreId == storeId && x.IsActive)
+                .Select(x => (Guid?)x.Store.BrandId)
+                .FirstOrDefaultAsync(ct);
+
+            if (brandId.HasValue)
+            {
+                return brandId.Value;
+            }
+        }
+
+        throw AppException.Forbidden(ErrorCodes.ForbiddenScope,
+            "Bạn không có quyền xem mẫu hàng của thương hiệu này.");
     }
 
     private async Task<Guid> GetOwnedBrandIdAsync(CancellationToken ct)
