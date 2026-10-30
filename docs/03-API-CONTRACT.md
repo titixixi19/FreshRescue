@@ -589,6 +589,43 @@ Ngoại lệ duy nhất: `StoreStaff` được **xem** mẫu mặt hàng (hai d�
 Biên độ của brand phải **nằm trong** biên độ của sàn theo `offerType`, nếu không →
 `400 PRICE_OUT_OF_BAND` (`BR-07`).
 
+#### Nhân viên — `/brand/staff` *(chốt 27/10)*
+
+```json
+// POST /brand/staff
+{
+  "fullName": "Trần Thị Bình",
+  "email": "binh@example.com",
+  "password": "matkhau123",
+  "phoneNumber": "0901234567",     // không bắt buộc
+  "storeId": "b77d...",
+  "position": "Thu ngân"           // không bắt buộc
+}
+
+// 201 — và là một phần tử của GET /brand/staff (PagedResponse, lọc ?storeId=)
+{
+  "id": "5e9a...",                 // Id của StoreStaff, dùng cho DELETE
+  "userId": "3f2a...",
+  "fullName": "Trần Thị Bình",
+  "email": "binh@example.com",
+  "storeId": "b77d...",
+  "storeName": "Nguyễn Huệ",
+  "position": "Thu ngân",
+  "isActive": true
+}
+```
+
+- `POST` tạo **tài khoản mới** với role `StoreStaff` và bản ghi `StoreStaff`, nên lần đăng nhập
+  sau token mang `store_id`. Email đã có tài khoản (kể cả tài khoản `Customer`) →
+  `400 VALIDATION_FAILED`, **không** gắn thêm vai vào tài khoản cũ.
+- `storeId` không thuộc thương hiệu trong token → `403 FORBIDDEN_SCOPE` (`BR-11`).
+- `DELETE /brand/staff/{id}` = gỡ khỏi chi nhánh: đặt `StoreStaff.IsActive = false`, giữ tài
+  khoản và lịch sử đối soát. Token đang dùng vẫn mang `store_id` cũ tới khi hết hạn (tối đa 15
+  phút, `02` §3.2). Không có endpoint chuyển chi nhánh — muốn chuyển thì gỡ rồi tạo tài khoản khác,
+  vì mỗi tài khoản chỉ thuộc một chi nhánh (`OQ-07`).
+
+#### Thống kê — `/brand/stats` *(chốt 27/10)*
+
 ```json
 // GET /brand/stats?from=2026-09-01&to=2026-09-30
 {
@@ -601,6 +638,15 @@ Biên độ của brand phải **nằm trong** biên độ của sàn theo `offe
   ]
 }
 ```
+
+- `from`, `to`: ngày, cả hai đầu tính trọn ngày, lọc theo `Order.CreatedAt` — **giống hệt**
+  `/brand/orders/export` (sheet `Summary` phải ra cùng số). Không truyền thì không giới hạn phía đó;
+  `from > to` → `400 VALIDATION_FAILED`.
+- `noShowRate` = số đơn `NoShow` / số đơn `Redeemed` + `NoShow` trong khoảng ngày; mẫu bằng 0 thì
+  trả `0`. Làm tròn 2 chữ số thập phân.
+- `ratingAverage` = `Store.RatingAverage` hiện tại — **không** lọc theo khoảng ngày.
+- `byStore` có **mọi** chi nhánh của thương hiệu, kể cả chi nhánh chưa có đơn (số liệu `0`) và
+  chi nhánh đã xoá mềm nhưng có đơn trong khoảng (`BR-22`).
 
 ### 7.1. Import / Export Excel
 
