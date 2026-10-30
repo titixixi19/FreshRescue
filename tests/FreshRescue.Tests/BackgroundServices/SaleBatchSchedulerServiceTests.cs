@@ -1,5 +1,7 @@
 using FluentAssertions;
 using FreshRescue.API.BackgroundServices;
+using FreshRescue.Business.Common;
+using FreshRescue.Business.Features.Engagement;
 using FreshRescue.Business.Features.Ordering;
 using FreshRescue.Business.Features.Sales;
 using FreshRescue.DataAccess;
@@ -267,6 +269,74 @@ public class SaleBatchSchedulerServiceTests
         // Assert
         var updated = await _context.SaleBatches.FindAsync(batch.Id);
         updated!.Status.Should().Be(SaleBatchStatus.Active);
+    }
+
+    [Fact]
+    public async Task ProcessBatchesAsync_KichHoatVaDongDot_PhatSuKienSignalRVaNotificationAsync()
+    {
+        // Arrange
+        var batchScheduled = new SaleBatch
+        {
+            StoreId = _store.Id,
+            Store = _store,
+            Name = "Đợt sắp mở",
+            Status = SaleBatchStatus.Scheduled,
+            SaleStartTime = _baseTime.AddMinutes(-5),
+            SaleEndTime = _baseTime.AddHours(1),
+            PickupStartTime = _baseTime.AddHours(1),
+            PickupEndTime = _baseTime.AddHours(2),
+        };
+
+        var batchActive = new SaleBatch
+        {
+            StoreId = _store.Id,
+            Store = _store,
+            Name = "Đợt sắp đóng",
+            Status = SaleBatchStatus.Active,
+            SaleStartTime = _baseTime.AddHours(-3),
+            SaleEndTime = _baseTime.AddHours(-2),
+            PickupStartTime = _baseTime.AddHours(-2),
+            PickupEndTime = _baseTime.AddMinutes(-5),
+        };
+
+        _context.SaleBatches.AddRange(batchScheduled, batchActive);
+        await _context.SaveChangesAsync();
+
+        var clock = new MutableTimeProvider(_baseTime);
+        var uow = new UnitOfWork(_context);
+        var saleBatchService = CreateSaleBatchService(_baseTime);
+
+        var realtimeMock = new Mock<IOfferRealtimeNotifier>();
+        var notifMock = new Mock<INotificationService>();
+
+        var serviceProviderMock = new Mock<IServiceProvider>();
+        serviceProviderMock.Setup(sp => sp.GetService(typeof(ISaleBatchService))).Returns(saleBatchService);
+        serviceProviderMock.Setup(sp => sp.GetService(typeof(IUnitOfWork))).Returns(uow);
+        serviceProviderMock.Setup(sp => sp.GetService(typeof(IOfferRealtimeNotifier))).Returns(realtimeMock.Object);
+        serviceProviderMock.Setup(sp => sp.GetService(typeof(INotificationService))).Returns(notifMock.Object);
+
+        var scopeMock = new Mock<IServiceScope>();
+        scopeMock.Setup(s => s.ServiceProvider).Returns(serviceProviderMock.Object);
+        var scopeFactoryMock = new Mock<IServiceScopeFactory>();
+        scopeFactoryMock.Setup(f => f.CreateScope()).Returns(scopeMock.Object);
+
+        var scheduler = new SaleBatchSchedulerService(
+            scopeFactoryMock.Object,
+            clock,
+            NullLogger<SaleBatchSchedulerService>.Instance);
+
+        // Act
+        await scheduler.ProcessBatchesAsync(CancellationToken.None);
+
+        // Assert
+        realtimeMock.Verify(r => r.NotifySaleBatchActivatedAsync(
+            batchScheduled.Id, _store.Id, _store.Name, 0, It.IsAny<CancellationToken>()), Times.Once);
+
+        notifMock.Verify(n => n.NotifyNewSaleBatchAsync(
+            batchScheduled.Id, _store.Id, _store.Name, It.IsAny<CancellationToken>()), Times.Once);
+
+        realtimeMock.Verify(r => r.NotifySaleBatchClosedAsync(
+            batchActive.Id, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     private SaleBatchService CreateSaleBatchService(DateTime now)
