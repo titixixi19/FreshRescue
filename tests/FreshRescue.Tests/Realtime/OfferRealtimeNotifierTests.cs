@@ -46,7 +46,7 @@ public class OfferRealtimeNotifierTests
     }
 
     [Fact]
-    public async Task NotifySaleBatchActivated_PhatSuKienChoStoreGroupVaAllAsync()
+    public async Task NotifySaleBatchActivated_PhatSuKienChoStoreGroupAsync()
     {
         // Arrange
         var batchId = Guid.NewGuid();
@@ -57,14 +57,14 @@ public class OfferRealtimeNotifierTests
 
         // Assert
         _hubClientsMock.Verify(c => c.Group($"store:{storeId}"), Times.Once);
-        _hubClientsMock.Verify(c => c.All, Times.Once);
+        _hubClientsMock.Verify(c => c.All, Times.Never);
         _clientProxyMock.Verify(
             p => p.SendCoreAsync("SaleBatchActivated", It.Is<object?[]>(args => args.Length == 1), It.IsAny<CancellationToken>()),
-            Times.Exactly(2));
+            Times.Once);
     }
 
     [Fact]
-    public async Task NotifySaleBatchClosed_PhatSuKienChoBatchGroupVaAllAsync()
+    public async Task NotifySaleBatchClosed_PhatSuKienChoBatchGroupAsync()
     {
         // Arrange
         var batchId = Guid.NewGuid();
@@ -74,10 +74,10 @@ public class OfferRealtimeNotifierTests
 
         // Assert
         _hubClientsMock.Verify(c => c.Group($"batch:{batchId}"), Times.Once);
-        _hubClientsMock.Verify(c => c.All, Times.Once);
+        _hubClientsMock.Verify(c => c.All, Times.Never);
         _clientProxyMock.Verify(
             p => p.SendCoreAsync("SaleBatchClosed", It.Is<object?[]>(args => args.Length == 1), It.IsAny<CancellationToken>()),
-            Times.Exactly(2));
+            Times.Once);
     }
 
     [Fact]

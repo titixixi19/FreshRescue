@@ -175,13 +175,14 @@ public class NotificationService : INotificationService
             return 0;
         }
 
+        var storeDisplayName = storeName.StartsWith("Chi nhánh", StringComparison.OrdinalIgnoreCase) ? storeName : $"Chi nhánh {storeName}";
         foreach (var userId in followerUserIds)
         {
             var notification = new Notification
             {
                 UserId = userId,
                 Title = $"Đợt bán mới tại {storeName}",
-                Body = $"Chi nhánh {storeName} vừa mở đợt bán mới. Hãy vào xem ngay các túi giải cứu tươi ngon hôm nay!",
+                Body = $"{storeDisplayName} vừa mở đợt bán mới. Hãy vào xem ngay các túi giải cứu tươi ngon hôm nay!",
                 Type = NotificationType.NewSaleBatch,
                 RelatedEntityId = saleBatchId,
                 IsRead = false,
