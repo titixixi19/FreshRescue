@@ -143,13 +143,25 @@ public class OfferTemplateServiceTests : IDisposable
             .Where(x => x.ErrorCode == ErrorCodes.ForbiddenScope && x.StatusCode == 403);
     }
 
-    private IOfferTemplateService CreateService(Guid? brandId = null, bool useOwnBrand = true)
+    private IOfferTemplateService CreateService(
+    Guid? brandId = null,
+    bool useOwnBrand = true)
     {
         var currentUser = new Mock<ICurrentUser>();
+
         currentUser.Setup(x => x.UserId).Returns(_owner.Id);
+
         currentUser.Setup(x => x.BrandId)
             .Returns(useOwnBrand ? brandId ?? _brand.Id : brandId);
-        return new OfferTemplateService(new UnitOfWork(_context), currentUser.Object);
+
+        // Giả lập tài khoản BrandManager
+        currentUser.Setup(x => x.IsInRole(
+            FreshRescue.Entities.Constants.AppRoles.BrandManager))
+            .Returns(true);
+
+        return new OfferTemplateService(
+            new UnitOfWork(_context),
+            currentUser.Object);
     }
 
     private UpsertOfferTemplateRequest ValidRequest() => new()

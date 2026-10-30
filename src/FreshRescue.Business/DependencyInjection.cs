@@ -6,6 +6,7 @@ using FreshRescue.Business.Features.Ordering;
 using FreshRescue.DataAccess.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 
+
 namespace FreshRescue.Business;
 
 public static class DependencyInjection
@@ -31,6 +32,12 @@ public static class DependencyInjection
         services.AddScoped<IStoreService, StoreService>();
         services.AddScoped<IOfferTemplateService, OfferTemplateService>();
         services.AddScoped<IOfferTemplateExcelService, OfferTemplateExcelService>();
+        services.AddScoped<IAdminUserService, AdminUserService>();
+        services.AddScoped<IPublicCatalogODataService, PublicCatalogODataService>();
+
+        // --- Engagement / Review + Dispute (Dinh Duc) ---
+        services.AddScoped<IReviewService, ReviewService>();
+        services.AddScoped<IStoreRatingRepository, StoreRatingRepository>();
         services.AddScoped<IDisputeService, DisputeService>();
         services.AddScoped<IDisputeWorkflowRepository, DisputeWorkflowRepository>();
 
