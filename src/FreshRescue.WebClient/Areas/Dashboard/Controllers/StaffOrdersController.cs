@@ -44,7 +44,9 @@ public class StaffOrdersController : Controller
                 ["pageSize"] = "20"
             };
             if (!string.IsNullOrWhiteSpace(status))
+            {
                 query["status"] = status.Trim();
+            }
 
             var path = QueryHelpers.AddQueryString(
                 $"staff/sale-batches/{saleBatchId}/orders",

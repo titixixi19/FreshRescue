@@ -12,7 +12,7 @@ namespace FreshRescue.WebClient.Areas.Dashboard.Controllers;
 /// GET admin/users · PATCH admin/users/{id}/status (03-API-CONTRACT §8).
 /// </summary>
 [Area("Dashboard")]
-[Authorize(Roles = AppRoles.Admin)]
+[Authorize(Roles = "SystemAdmin")]
 public class UsersController : Controller
 {
     private readonly IApiClient _api;
@@ -46,12 +46,21 @@ public class UsersController : Controller
                 ["page"] = page.ToString(),
                 ["pageSize"] = "20"
             };
+
             if (!string.IsNullOrWhiteSpace(role))
+            {
                 query["role"] = role.Trim();
+            }
+
             if (isActive is not null)
+            {
                 query["isActive"] = isActive.Value ? "true" : "false";
+            }
+
             if (!string.IsNullOrWhiteSpace(q))
+            {
                 query["q"] = q.Trim();
+            }
 
             var path = QueryHelpers.AddQueryString("admin/users", query);
             var data = await _api.GetAsync<PagedResponse<AdminUserDto>>(path, cancellationToken);
@@ -88,7 +97,7 @@ public class UsersController : Controller
                 new UpdateUserStatusRequest { IsActive = isActive },
                 cancellationToken);
 
-            TempData["Success"] = isActive ? "Đã mở khoá tài khoản." : "Đã khoá tài khoản.";
+            TempData["Success"] = isActive ? "De da mo khoá tài khoản." : "Đã khoá tài khoản.";
         }
         catch (ApiException ex)
         {
@@ -107,7 +116,10 @@ public class UsersController : Controller
     private static string FormatApiError(ApiException ex)
     {
         if (!string.IsNullOrWhiteSpace(ex.Message))
+        {
             return ex.Message;
+        }
+
         return "Thao tác API thất bại.";
     }
 }

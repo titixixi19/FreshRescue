@@ -1,10 +1,10 @@
 using FreshRescue.WebClient.Areas.Dashboard.Models;
+using FreshRescue.WebClient.Helpers;
 using FreshRescue.WebClient.Models.Api;
 using FreshRescue.WebClient.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
-using FreshRescue.WebClient.Helpers;
 
 namespace FreshRescue.WebClient.Areas.Dashboard.Controllers;
 
@@ -40,7 +40,9 @@ public class SaleBatchesController : Controller
                 ["pageSize"] = "20"
             };
             if (!string.IsNullOrWhiteSpace(status))
+            {
                 query["status"] = status.Trim();
+            }
 
             var path = QueryHelpers.AddQueryString("staff/sale-batches", query);
             var data = await _api.GetAsync<PagedResponse<SaleBatchDto>>(path, cancellationToken);
@@ -203,9 +205,14 @@ public class SaleBatchesController : Controller
         for (var i = 0; i < model.Offers.Count; i++)
         {
             if (model.Offers[i].TotalQuantity < 1)
+            {
                 ModelState.AddModelError($"Offers[{i}].TotalQuantity", "Số lượng phải ≥ 1.");
+            }
+
             if (model.Offers[i].ActualPrice < 0)
+            {
                 ModelState.AddModelError($"Offers[{i}].ActualPrice", "Giá không hợp lệ.");
+            }
         }
 
         if (!ModelState.IsValid)
@@ -454,7 +461,10 @@ public class SaleBatchesController : Controller
     private static string FormatApiError(ApiException ex)
     {
         if (!string.IsNullOrWhiteSpace(ex.Message))
+        {
             return ex.Message;
+        }
+
         return "Thao tác API thất bại.";
     }
 

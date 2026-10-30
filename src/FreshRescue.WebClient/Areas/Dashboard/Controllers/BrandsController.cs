@@ -43,7 +43,9 @@ public class BrandsController : Controller
                 ["pageSize"] = "20"
             };
             if (!string.IsNullOrWhiteSpace(status))
+            {
                 query["status"] = status.Trim();
+            }
 
             var path = QueryHelpers.AddQueryString("admin/brands", query);
             var data = await _api.GetAsync<PagedResponse<AdminBrandDto>>(path, cancellationToken);
@@ -138,7 +140,10 @@ public class BrandsController : Controller
     private static string FormatApiError(ApiException ex)
     {
         if (!string.IsNullOrWhiteSpace(ex.Message))
+        {
             return ex.Message;
+        }
+
         return "Thao tác API thất bại.";
     }
 }

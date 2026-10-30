@@ -26,7 +26,6 @@ document.addEventListener("DOMContentLoaded", function () {
       return null;
     }
 
-    // https://localhost:7001/  →  https://localhost:7001
     var base = raw.replace(/\/+$/, "");
     return base + "/hubs/offers";
   }
@@ -37,7 +36,6 @@ document.addEventListener("DOMContentLoaded", function () {
     return;
   }
 
-  // Chỉ log URL hub (không log token hay cookie)
   console.log("SignalR hub URL:", hubUrl);
 
   if (typeof signalR === "undefined") {
@@ -50,6 +48,19 @@ document.addEventListener("DOMContentLoaded", function () {
     .withUrl(hubUrl)
     .withAutomaticReconnect()
     .build();
+
+  // Lấy saleBatchId từ thuộc tính data của bảng (được Razor truyền vào)
+  var saleBatchId = tableEl.getAttribute("data-sale-batch-id");
+
+  // Hàm phụ trợ để gọi JoinBatchAsync an toàn khi đã kết nối
+  function joinBatch() {
+    if (saleBatchId && connection.state === signalR.HubConnectionState.Connected) {
+      connection.invoke("JoinBatchAsync", saleBatchId)
+        .catch(function (err) {
+          console.error("Lỗi khi join batch:", err);
+        });
+    }
+  }
 
   // Contract: OfferQuantityChanged — payload offerId, remainingQuantity, saleBatchId
   connection.on("OfferQuantityChanged", function (data) {
@@ -77,8 +88,10 @@ document.addEventListener("DOMContentLoaded", function () {
     updateConnectionStatus("Đang kết nối lại...", "badge-warn");
   });
 
+  // Yêu cầu: invoke("JoinBatchAsync", saleBatchId) sau start() và trong onreconnected
   connection.onreconnected(function () {
     updateConnectionStatus("Đã kết nối", "badge-ok");
+    joinBatch();
   });
 
   connection.onclose(function () {
@@ -90,6 +103,7 @@ document.addEventListener("DOMContentLoaded", function () {
     .start()
     .then(function () {
       updateConnectionStatus("Đã kết nối", "badge-ok");
+      joinBatch(); // Gọi ngay sau khi start() thành công
     })
     .catch(function (err) {
       console.error("SignalR connection error:", err && err.toString ? err.toString() : err);

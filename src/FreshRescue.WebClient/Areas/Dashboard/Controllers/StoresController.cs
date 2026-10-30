@@ -62,7 +62,9 @@ public class StoresController : Controller
     public async Task<IActionResult> CreateAsync(StoreFormViewModel model, CancellationToken cancellationToken = default)
     {
         if (!ModelState.IsValid)
+        {
             return View(model);
+        }
 
         try
         {
@@ -120,7 +122,9 @@ public class StoresController : Controller
     public async Task<IActionResult> EditAsync(Guid id, StoreFormViewModel model, CancellationToken cancellationToken = default)
     {
         if (!ModelState.IsValid)
+        {
             return View(model);
+        }
 
         try
         {
@@ -189,7 +193,9 @@ public class StoresController : Controller
             var data = await _api.GetAsync<PagedResponse<StoreDto>>(path, cancellationToken);
             var match = data.Items.FirstOrDefault(s => s.Id == id);
             if (match is not null)
+            {
                 return match;
+            }
 
             totalPages = data.TotalPages < 1 ? 1 : data.TotalPages;
             page++;
@@ -218,7 +224,10 @@ public class StoresController : Controller
     private static string FormatApiError(ApiException ex)
     {
         if (!string.IsNullOrWhiteSpace(ex.Message))
+        {
             return ex.Message;
+        }
+
         return "Thao tác API thất bại.";
     }
 }

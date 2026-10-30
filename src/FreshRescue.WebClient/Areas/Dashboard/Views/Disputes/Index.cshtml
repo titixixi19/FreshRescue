@@ -1,0 +1,140 @@
+@model FreshRescue.WebClient.Areas.Dashboard.Models.DisputeListViewModel
+@{
+    ViewData["Title"] = "Quản lý khiếu nại";
+}
+
+<div class="dash-toolbar">
+    <div>
+        <h2>Quản lý khiếu nại đơn hàng</h2>
+        <p class="muted small">Xử lý khiếu nại từ khách hàng (FR-A04, 03-API-CONTRACT §8)[cite: 4].</p>
+    </div>
+</div>
+
+@if (TempData["Success"] is string ok)
+{
+    <div class="dash-alert dash-alert-ok">@ok</div>
+}
+@if (TempData["Error"] is string err)
+{
+    <div class="dash-alert dash-alert-err">@err</div>
+}
+
+<form method="get" asp-action="Index" class="dash-filters">
+    <select name="status" class="dash-input">
+        <option value="">— Mọi trạng thái —</option>
+        <option value="0" selected="@(Model.StatusFilter == 0)">Open (Chờ duyệt)</option>
+        <option value="1" selected="@(Model.StatusFilter == 1)">Approved (Đã duyệt / Hoàn tiền)</option>
+        <option value="2" selected="@(Model.StatusFilter == 2)">Rejected (Đã từ chối)</option>
+    </select>
+    <button type="submit" class="dash-btn dash-btn-sm">Lọc</button>
+</form>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="dash-alert dash-alert-err">@Model.ErrorMessage</div>
+}
+else if (Model.Items.Count == 0)
+{
+    <div class="dash-empty">
+        <p>Không có khiếu nại nào cần xử lý.</p>
+    </div>
+}
+else
+{
+    <div class="dash-table-wrap">
+        <table class="dash-table">
+            <thead>
+                <tr>
+                    <th>Mã đơn</th>
+                    <th>Khách hàng</th>
+                    <th>Lý do &amp; Mô tả</th>
+                    <th>Bằng chứng</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác (Approve / Reject)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var d in Model.Items)
+                {
+                    <tr>
+                        <td><code>@d.OrderCode</code></td>
+                        <td>@d.CustomerName</td>
+                        <td>
+                            <div><strong>Lý do:</strong> @d.Reason</div>
+                            <div class="small text-muted">@d.Description</div>
+                            @if (!string.IsNullOrEmpty(d.MerchantNote))
+                            {
+                                <div class="small text-info mt-1">Giải trình CH: @d.MerchantNote</div>
+                            }
+                        </td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(d.PhotoUrl))
+                            {
+                                <a href="@d.PhotoUrl" target="_blank" class="small">Xem ảnh</a>
+                            }
+                            else
+                            {
+                                <span class="muted small">Không có</span>
+                            }
+                        </td>
+                        <td>
+                            @if (d.Status == 0)
+                            {
+                                <span class="badge bg-warning text-dark">Open</span>
+                            }
+                            else if (d.Status == 1)
+                            {
+                                <span class="badge bg-success">Approved</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Rejected</span>
+                            }
+                        </td>
+                        <td>
+                            @if (d.Status == 0)
+                            {
+                                <div class="d-flex gap-2">
+                                    <!-- Form duyệt khiếu nại -->
+                                    <form asp-action="Approve" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@d.Id" />
+                                        <input type="hidden" name="status" value="@Model.StatusFilter" />
+                                        <input type="hidden" name="page" value="@Model.Page" />
+                                        <button type="submit" class="dash-btn dash-btn-sm btn-success" onclick="return confirm('Xác nhận duyệt khiếu nại và hoàn tiền cho đơn này?');">Duyệt</button>
+                                    </form>
+
+                                    <!-- Form từ chối khiếu nại -->
+                                    <form asp-action="Reject" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@d.Id" />
+                                        <input type="hidden" name="status" value="@Model.StatusFilter" />
+                                        <input type="hidden" name="page" value="@Model.Page" />
+                                        <button type="submit" class="dash-btn dash-btn-sm btn-danger" onclick="return confirm('Xác nhận từ chối khiếu nại này?');">Từ chối</button>
+                                    </form>
+                                </div>
+                            }
+                            else
+                            {
+                                <span class="muted small">Đã xử lý</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav class="dash-pager" aria-label="Phân trang">
+            @for (var p = 1; p <= Model.TotalPages; p++)
+            {
+                <a class="@(p == Model.Page ? "active" : null)"
+                   asp-action="Index"
+                   asp-route-status="@Model.StatusFilter"
+                   asp-route-page="@p">@p</a>
+            }
+        </nav>
+    }
+}

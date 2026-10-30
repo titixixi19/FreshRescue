@@ -1,7 +1,7 @@
 
+using FreshRescue.WebClient.Models.Api;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using FreshRescue.WebClient.Models.Api;
 
 namespace FreshRescue.WebClient.Areas.Dashboard.Controllers;
 

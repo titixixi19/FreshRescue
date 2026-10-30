@@ -122,7 +122,9 @@ public class RedemptionsController : Controller
     private static string BuildSuccessMessage(RedeemOrderResponse result)
     {
         if (!string.IsNullOrWhiteSpace(result.Message))
+        {
             return result.Message;
+        }
 
         var who = string.IsNullOrWhiteSpace(result.CustomerName)
             ? result.OrderCode

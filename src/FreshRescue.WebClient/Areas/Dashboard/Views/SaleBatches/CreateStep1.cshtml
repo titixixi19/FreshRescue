@@ -1,4 +1,5 @@
 @model FreshRescue.WebClient.Areas.Dashboard.Models.SaleBatchWizardViewModel
+
 @{
     ViewData["Title"] = "Tạo đợt bán — Bước 1";
 }
@@ -13,13 +14,16 @@
 
 @if (!string.IsNullOrEmpty(Model.ErrorMessage))
 {
-    <div class="dash-alert dash-alert-err" role="alert">@Model.ErrorMessage</div>
+    <div class="dash-alert dash-alert-err" role="alert">
+        @Model.ErrorMessage
+    </div>
 }
 
-<div asp-validation-summary="ModelOnly" class="dash-alert dash-alert-err"></div>
+<div asp-validation-summary="All" class="dash-alert dash-alert-err"></div>
 
 <form asp-action="CreateStep1" method="post" class="dash-form" style="max-width: 900px;">
     @Html.AntiForgeryToken()
+
     <input type="hidden" asp-for="Step" />
     <input type="hidden" asp-for="IsBrandManager" />
 
@@ -27,11 +31,16 @@
     {
         <div class="dash-field" style="margin-bottom: 1.5rem;">
             <label asp-for="StoreId">Chi nhánh *</label>
-            <select asp-for="StoreId" class="dash-input" asp-items="@(new SelectList(Model.AvailableStores, "Id", "Name"))">
+            <select asp-for="StoreId"
+                    class="dash-input"
+                    asp-items="@(new SelectList(Model.AvailableStores, "Id", "Name"))">
                 <option value="">— Chọn chi nhánh —</option>
             </select>
+
             <span asp-validation-for="StoreId" class="field-error"></span>
-            <span class="muted small">BrandManager bắt buộc gửi storeId theo contract §6.1.</span>
+            <span class="muted small">
+                BrandManager bắt buộc gửi storeId theo contract §6.1.
+            </span>
         </div>
     }
 
@@ -60,16 +69,26 @@
                     {
                         <tr>
                             <td style="text-align: center;">
-                                <input type="checkbox" name="SelectedTemplateIds" value="@Model.AvailableTemplates[i].Id"
-                                @(Model.SelectedTemplateIds != null && Model.SelectedTemplateIds.Contains(Model.AvailableTemplates[i].Id) ? "checked" : "") />
-                                <input type="hidden" asp-for="AvailableTemplates[i].Id" />
-                                <input type="hidden" asp-for="AvailableTemplates[i].Name" />
-                                <input type="hidden" asp-for="AvailableTemplates[i].OriginalPrice" />
-                                <input type="hidden" asp-for="AvailableTemplates[i].SuggestedPrice" />
+                                <input type="checkbox"
+                                       name="SelectedTemplateIds"
+                                       value="@Model.AvailableTemplates[i].Id"
+                                @(Model.SelectedTemplateIds != null &&
+                                         Model.SelectedTemplateIds.Contains(Model.AvailableTemplates[i].Id)
+                                             ? "checked"
+                                             : "") />
                             </td>
-                            <td><strong>@Model.AvailableTemplates[i].Name</strong></td>
-                            <td class="muted">@Model.AvailableTemplates[i].OriginalPrice.ToString("N0") đ</td>
-                            <td class="muted">@Model.AvailableTemplates[i].SuggestedPrice.ToString("N0") đ</td>
+
+                            <td>
+                                <strong>@Model.AvailableTemplates[i].Name</strong>
+                            </td>
+
+                            <td class="muted">
+                                @Model.AvailableTemplates[i].OriginalPrice.ToString("N0") đ
+                            </td>
+
+                            <td class="muted">
+                                @Model.AvailableTemplates[i].SuggestedPrice.ToString("N0") đ
+                            </td>
                         </tr>
                     }
                 </tbody>
