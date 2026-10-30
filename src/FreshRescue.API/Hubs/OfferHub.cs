@@ -14,6 +14,7 @@ public class OfferHub : Hub
     /// <summary>
     /// Vào nhóm theo dõi một đợt bán.
     /// </summary>
+    [HubMethodName("JoinBatch")]
     public async Task JoinBatchAsync(Guid saleBatchId)
     {
         await Groups.AddToGroupAsync(Context.ConnectionId, BatchGroup(saleBatchId));
@@ -22,6 +23,7 @@ public class OfferHub : Hub
     /// <summary>
     /// Rời nhóm theo dõi một đợt bán.
     /// </summary>
+    [HubMethodName("LeaveBatch")]
     public async Task LeaveBatchAsync(Guid saleBatchId)
     {
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, BatchGroup(saleBatchId));
@@ -30,6 +32,7 @@ public class OfferHub : Hub
     /// <summary>
     /// Theo dõi mọi đợt bán của một chi nhánh.
     /// </summary>
+    [HubMethodName("JoinStore")]
     public async Task JoinStoreAsync(Guid storeId)
     {
         await Groups.AddToGroupAsync(Context.ConnectionId, StoreGroup(storeId));
@@ -38,6 +41,7 @@ public class OfferHub : Hub
     /// <summary>
     /// Rời nhóm theo dõi chi nhánh.
     /// </summary>
+    [HubMethodName("LeaveStore")]
     public async Task LeaveStoreAsync(Guid storeId)
     {
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, StoreGroup(storeId));

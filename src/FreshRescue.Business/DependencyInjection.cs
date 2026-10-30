@@ -52,6 +52,7 @@ public static class DependencyInjection
         services.AddOptions<OrderingOptions>().BindConfiguration(OrderingOptions.SectionName);
         services.AddScoped<IOrderService, OrderService>();
         services.AddScoped<IOrderExportService, OrderExportService>();
+        services.AddScoped<IBrandStatsService, BrandStatsService>();
 
         return services;
     }

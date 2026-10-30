@@ -237,7 +237,7 @@ public partial class AuthService : IAuthService
         // Phát hiện tái sử dụng token đã thu hồi (OQ-03, 02 §3.1) -> Thu hồi toàn bộ chuỗi token của user
         if (storedToken.RevokedAt != null)
         {
-            _logger.LogWarning("Phát hiện token đã thu hồi bị sử dụng lại! UserId={UserId}, Token={Token}", storedToken.UserId, storedToken.Token);
+            _logger.LogWarning("Phát hiện token đã thu hồi bị sử dụng lại! UserId={UserId}", storedToken.UserId);
 
             var activeTokens = await _uow.RefreshTokens.Query()
                 .Where(r => r.UserId == storedToken.UserId && r.RevokedAt == null)
@@ -322,7 +322,7 @@ public partial class AuthService : IAuthService
         if (user != null && user.IsActive)
         {
             var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
-            _logger.LogInformation("Password reset token generated for UserId={UserId}, Token={Token}", user.Id, resetToken);
+            _logger.LogInformation("Password reset token generated for UserId={UserId}", user.Id);
         }
 
         return new AuthMessageResponse("Nếu email tồn tại trên hệ thống, hướng dẫn đặt lại mật khẩu đã được gửi.");
