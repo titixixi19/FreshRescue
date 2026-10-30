@@ -9,6 +9,7 @@ public static class ODataExtensions
 {
     public static IMvcBuilder AddODataConfig(this IMvcBuilder builder)
     {
+        builder.AddXmlSerializerFormatters();
         // TODO(Đình Đức, 2026-10-06): builder.AddOData(...) theo 03-API-CONTRACT.md §9.
         return builder;
     }
