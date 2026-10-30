@@ -35,9 +35,11 @@ public static class DependencyInjection
         services.AddScoped<IAdminUserService, AdminUserService>();
         services.AddScoped<IPublicCatalogODataService, PublicCatalogODataService>();
 
-        // --- Engagement / Review (Dinh Duc) ---
+        // --- Engagement / Review + Dispute (Dinh Duc) ---
         services.AddScoped<IReviewService, ReviewService>();
         services.AddScoped<IStoreRatingRepository, StoreRatingRepository>();
+        services.AddScoped<IDisputeService, DisputeService>();
+        services.AddScoped<IDisputeWorkflowRepository, DisputeWorkflowRepository>();
 
         // --- Storefront công khai (Đức Anh) ---
         services.AddScoped<Features.Catalog.IStorefrontService, Features.Catalog.StorefrontService>();
