@@ -6,7 +6,6 @@ using FreshRescue.Business.Features.Ordering;
 using FreshRescue.DataAccess.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 
-
 namespace FreshRescue.Business;
 
 public static class DependencyInjection
@@ -35,14 +34,15 @@ public static class DependencyInjection
         services.AddScoped<IAdminUserService, AdminUserService>();
         services.AddScoped<IPublicCatalogODataService, PublicCatalogODataService>();
 
-        // --- Engagement / Review + Dispute (Dinh Duc) ---
+        // --- Engagement / Review + Dispute (Đình Đức) ---
         services.AddScoped<IReviewService, ReviewService>();
         services.AddScoped<IStoreRatingRepository, StoreRatingRepository>();
         services.AddScoped<IDisputeService, DisputeService>();
         services.AddScoped<IDisputeWorkflowRepository, DisputeWorkflowRepository>();
 
-        // --- Storefront công khai (Đức Anh) ---
+        // --- Storefront công khai & Nhân viên chi nhánh (Đức Anh) ---
         services.AddScoped<Features.Catalog.IStorefrontService, Features.Catalog.StorefrontService>();
+        services.AddScoped<IBrandStaffService, BrandStaffService>();
 
         // --- Sales (Quang Huy) ---
         services.AddScoped<Features.Sales.ISaleBatchService, Features.Sales.SaleBatchService>();
