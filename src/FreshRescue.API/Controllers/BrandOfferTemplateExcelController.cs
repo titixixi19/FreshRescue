@@ -30,8 +30,9 @@ public sealed class BrandOfferTemplateExcelController : ControllerBase
     [HttpPost("import")]
     [Consumes("multipart/form-data")]
     [RequestSizeLimit(6 * 1024 * 1024)] // 5 MB for file + multipart form overhead.
-    public async Task<IActionResult> ImportAsync([FromForm] IFormFile? file,
-        CancellationToken ct)
+    public async Task<IActionResult> ImportAsync(
+    IFormFile? file,
+    CancellationToken ct)
     {
         if (file is null || file.Length == 0)
         {

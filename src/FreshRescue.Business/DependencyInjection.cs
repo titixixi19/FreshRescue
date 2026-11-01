@@ -3,7 +3,9 @@ using FreshRescue.Business.Features.Admin;
 using FreshRescue.Business.Features.Catalog;
 using FreshRescue.Business.Features.Engagement;
 using FreshRescue.Business.Features.Ordering;
+using FreshRescue.DataAccess.Repositories;
 using Microsoft.Extensions.DependencyInjection;
+
 
 namespace FreshRescue.Business;
 
@@ -30,6 +32,14 @@ public static class DependencyInjection
         services.AddScoped<IStoreService, StoreService>();
         services.AddScoped<IOfferTemplateService, OfferTemplateService>();
         services.AddScoped<IOfferTemplateExcelService, OfferTemplateExcelService>();
+        services.AddScoped<IAdminUserService, AdminUserService>();
+        services.AddScoped<IPublicCatalogODataService, PublicCatalogODataService>();
+
+        // --- Engagement / Review + Dispute (Dinh Duc) ---
+        services.AddScoped<IReviewService, ReviewService>();
+        services.AddScoped<IStoreRatingRepository, StoreRatingRepository>();
+        services.AddScoped<IDisputeService, DisputeService>();
+        services.AddScoped<IDisputeWorkflowRepository, DisputeWorkflowRepository>();
 
         // --- Storefront công khai (Đức Anh) ---
         services.AddScoped<Features.Catalog.IStorefrontService, Features.Catalog.StorefrontService>();
@@ -42,6 +52,7 @@ public static class DependencyInjection
         services.AddOptions<OrderingOptions>().BindConfiguration(OrderingOptions.SectionName);
         services.AddScoped<IOrderService, OrderService>();
         services.AddScoped<IOrderExportService, OrderExportService>();
+        services.AddScoped<IBrandStatsService, BrandStatsService>();
 
         return services;
     }

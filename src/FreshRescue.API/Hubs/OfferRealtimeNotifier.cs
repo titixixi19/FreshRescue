@@ -41,8 +41,6 @@ public class OfferRealtimeNotifier : IOfferRealtimeNotifier
 
         await _hubContext.Clients.Group(OfferHub.StoreGroup(storeId))
             .SendAsync("SaleBatchActivated", payload, cancellationToken);
-        await _hubContext.Clients.All
-            .SendAsync("SaleBatchActivated", payload, cancellationToken);
 
         _logger.LogInformation("Đã phát sự kiện SaleBatchActivated cho đợt {SaleBatchId}", saleBatchId);
     }
@@ -55,8 +53,6 @@ public class OfferRealtimeNotifier : IOfferRealtimeNotifier
         };
 
         await _hubContext.Clients.Group(OfferHub.BatchGroup(saleBatchId))
-            .SendAsync("SaleBatchClosed", payload, cancellationToken);
-        await _hubContext.Clients.All
             .SendAsync("SaleBatchClosed", payload, cancellationToken);
 
         _logger.LogInformation("Đã phát sự kiện SaleBatchClosed cho đợt {SaleBatchId}", saleBatchId);

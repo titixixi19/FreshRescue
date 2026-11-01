@@ -454,6 +454,9 @@ Yêu cầu role `StoreStaff` **hoặc** `BrandManager`. Phạm vi kiểm theo `B
 `storeId` chỉ dùng khi **Brand Manager** tạo thay chi nhánh (`BR-11`), bắt buộc với role này;
 Store Staff lấy chi nhánh từ token, trường này bị bỏ qua *(chốt 15/10)*.
 
+Danh sách mẫu để chọn `offerTemplateId` lấy từ `GET /brand/offer-templates` — cả Store Staff lẫn
+Brand Manager đều gọi được (§7) *(chốt 27/10)*.
+
 Lỗi: `BATCH_TIME_INVALID` (`BR-15`), `BATCH_OVERLAP` (`OQ-11`),
 `PRICE_OUT_OF_BAND` (`BR-07`), `BRAND_NOT_APPROVED` (`BR-14`), `409 BATCH_LOCKED` khi chi nhánh
 đang `Inactive` hoặc kích hoạt đợt không ở trạng thái `Draft`.
@@ -544,20 +547,29 @@ Lỗi: `FORBIDDEN_SCOPE` (đợt của chi nhánh khác), `NOT_FOUND` (không c�
 ## 7. Thương hiệu — `/brand`
 
 Yêu cầu role `BrandManager`. Mọi endpoint ngầm lọc theo `brand_id` trong token.
+Ngoại lệ duy nhất: `StoreStaff` được **xem** mẫu mặt hàng (hai dòng `GET` đánh dấu ★) *(chốt 27/10)*.
 
 | Method | Đường dẫn | Mô tả |
 | --- | --- | --- |
 | GET / PUT | `/brand/profile` | Hồ sơ thương hiệu |
 | GET / POST | `/brand/stores` | Danh sách / tạo chi nhánh |
 | PUT / DELETE | `/brand/stores/{id}` | Sửa / xoá mềm |
-| GET / POST | `/brand/offer-templates` | **Mẫu mặt hàng** (`FR-B04`) |
-| PUT / DELETE | `/brand/offer-templates/{id}` | |
+| GET ★ | `/brand/offer-templates` | Danh sách **mẫu mặt hàng** (`FR-B04`), lọc `search`, `categoryId`, `offerType` |
+| POST | `/brand/offer-templates` | Tạo mẫu |
+| GET ★ | `/brand/offer-templates/{id}` | Chi tiết một mẫu |
+| PUT / DELETE | `/brand/offer-templates/{id}` | Sửa / xoá mềm |
 | GET / POST | `/brand/staff` | Danh sách / tạo tài khoản nhân viên |
 | DELETE | `/brand/staff/{id}` | Gỡ nhân viên khỏi chi nhánh |
 | GET | `/brand/stats` | 2 biểu đồ (`FR-B06`), số liệu theo `BR-25` |
 | GET | `/brand/offer-templates/import-template` | Tải file Excel mẫu để điền (`FR-B07`) |
 | POST | `/brand/offer-templates/import` | Import mẫu mặt hàng từ `.xlsx` (`FR-B07`, `BR-26`) |
 | GET | `/brand/orders/export` | Export đơn + thống kê ra `.xlsx`, `?from=&to=` (`FR-B08`, `BR-27`) |
+
+★ `BrandManager` **hoặc** `StoreStaff`. Staff cần danh sách mẫu để chọn `offerTemplateId` khi tạo
+đợt bán (§6.1), mà `/staff` không có endpoint nào trả mẫu. Phạm vi vẫn theo `brand_id` trong token
+(`BR-11`): staff chỉ thấy mẫu của thương hiệu sở hữu chi nhánh mình; mẫu của thương hiệu khác trả
+`403 FORBIDDEN_SCOPE` như với Brand Manager. Mọi thao tác ghi (tạo, sửa, xoá, import) vẫn **chỉ**
+`BrandManager` — staff gọi nhận `403`.
 
 ```json
 // POST /brand/offer-templates
@@ -577,6 +589,43 @@ Yêu cầu role `BrandManager`. Mọi endpoint ngầm lọc theo `brand_id` tron
 Biên độ của brand phải **nằm trong** biên độ của sàn theo `offerType`, nếu không →
 `400 PRICE_OUT_OF_BAND` (`BR-07`).
 
+#### Nhân viên — `/brand/staff` *(chốt 27/10)*
+
+```json
+// POST /brand/staff
+{
+  "fullName": "Trần Thị Bình",
+  "email": "binh@example.com",
+  "password": "matkhau123",
+  "phoneNumber": "0901234567",     // không bắt buộc
+  "storeId": "b77d...",
+  "position": "Thu ngân"           // không bắt buộc
+}
+
+// 201 — và là một phần tử của GET /brand/staff (PagedResponse, lọc ?storeId=)
+{
+  "id": "5e9a...",                 // Id của StoreStaff, dùng cho DELETE
+  "userId": "3f2a...",
+  "fullName": "Trần Thị Bình",
+  "email": "binh@example.com",
+  "storeId": "b77d...",
+  "storeName": "Nguyễn Huệ",
+  "position": "Thu ngân",
+  "isActive": true
+}
+```
+
+- `POST` tạo **tài khoản mới** với role `StoreStaff` và bản ghi `StoreStaff`, nên lần đăng nhập
+  sau token mang `store_id`. Email đã có tài khoản (kể cả tài khoản `Customer`) →
+  `400 VALIDATION_FAILED`, **không** gắn thêm vai vào tài khoản cũ.
+- `storeId` không thuộc thương hiệu trong token → `403 FORBIDDEN_SCOPE` (`BR-11`).
+- `DELETE /brand/staff/{id}` = gỡ khỏi chi nhánh: đặt `StoreStaff.IsActive = false`, giữ tài
+  khoản và lịch sử đối soát. Token đang dùng vẫn mang `store_id` cũ tới khi hết hạn (tối đa 15
+  phút, `02` §3.2). Không có endpoint chuyển chi nhánh — muốn chuyển thì gỡ rồi tạo tài khoản khác,
+  vì mỗi tài khoản chỉ thuộc một chi nhánh (`OQ-07`).
+
+#### Thống kê — `/brand/stats` *(chốt 27/10)*
+
 ```json
 // GET /brand/stats?from=2026-09-01&to=2026-09-30
 {
@@ -589,6 +638,15 @@ Biên độ của brand phải **nằm trong** biên độ của sàn theo `offe
   ]
 }
 ```
+
+- `from`, `to`: ngày, cả hai đầu tính trọn ngày, lọc theo `Order.CreatedAt` — **giống hệt**
+  `/brand/orders/export` (sheet `Summary` phải ra cùng số). Không truyền thì không giới hạn phía đó;
+  `from > to` → `400 VALIDATION_FAILED`.
+- `noShowRate` = số đơn `NoShow` / số đơn `Redeemed` + `NoShow` trong khoảng ngày; mẫu bằng 0 thì
+  trả `0`. Làm tròn 2 chữ số thập phân.
+- `ratingAverage` = `Store.RatingAverage` hiện tại — **không** lọc theo khoảng ngày.
+- `byStore` có **mọi** chi nhánh của thương hiệu, kể cả chi nhánh chưa có đơn (số liệu `0`) và
+  chi nhánh đã xoá mềm nhưng có đơn trong khoảng (`BR-22`).
 
 ### 7.1. Import / Export Excel
 

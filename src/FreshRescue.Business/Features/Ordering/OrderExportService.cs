@@ -3,7 +3,6 @@ using FreshRescue.Business.Common;
 using FreshRescue.DataAccess.UnitOfWork;
 using FreshRescue.Entities.Catalog;
 using FreshRescue.Entities.Constants;
-using FreshRescue.Entities.Enums;
 using FreshRescue.Entities.Ordering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -98,17 +97,33 @@ public class OrderExportService : IOrderExportService
             .OrderByDescending(o => o.CreatedAt)
             .ToListAsync(cancellationToken);
 
-        // Lấy danh sách Store liên quan để lập bảng Summary
-        var storeQuery = _uow.Stores.Query()
-            .AsNoTracking()
-            .IgnoreQueryFilters();
-
+        // Lấy danh sách Store liên quan để lập bảng Summary (khớp hoàn toàn với GET /brand/stats theo BR-25).
+        List<Store> stores;
         if (brandId.HasValue)
         {
-            storeQuery = storeQuery.Where(s => s.BrandId == brandId.Value);
+            var activeStores = await _uow.Stores.Query()
+                .AsNoTracking()
+                .Where(s => s.BrandId == brandId.Value && !s.IsDeleted)
+                .ToListAsync(cancellationToken);
+
+            var storeIdsWithOrders = orders.Select(o => o.StoreId).Distinct().ToHashSet();
+
+            var deletedStoresWithOrders = await _uow.Stores.Query()
+                .AsNoTracking()
+                .IgnoreQueryFilters()
+                .Where(s => s.BrandId == brandId.Value && s.IsDeleted && storeIdsWithOrders.Contains(s.Id))
+                .ToListAsync(cancellationToken);
+
+            stores = activeStores.Concat(deletedStoresWithOrders).OrderBy(s => s.Name).ToList();
+        }
+        else
+        {
+            stores = await _uow.Stores.Query()
+                .AsNoTracking()
+                .IgnoreQueryFilters()
+                .ToListAsync(cancellationToken);
         }
 
-        var stores = await storeQuery.ToListAsync(cancellationToken);
         var storeMap = stores.ToDictionary(s => s.Id);
 
         var fileBytes = GenerateExcelFile(orders, storeMap);
@@ -175,26 +190,19 @@ public class OrderExportService : IOrderExportService
 
         wsOrders.Columns().AdjustToContents();
 
-        // 2. Sheet Summary (BR-25: Doanh thu = SUM(StorePayoutAmount) đơn Redeemed/NoShow và RefundStatus=None; Số suất đã cứu = SUM(Quantity) đơn Redeemed)
+        // 2. Sheet Summary (BR-25: Dùng chung với GET /brand/stats qua BrandStatsCalculator)
         var wsSummary = workbook.Worksheets.Add("Summary");
-
-        var totalRevenue = orders
-            .Where(o => (o.Status is OrderStatus.Redeemed or OrderStatus.NoShow) && o.RefundStatus == RefundStatus.None)
-            .Sum(o => o.StorePayoutAmount);
-
-        var totalRescuedPortions = orders
-            .Where(o => o.Status == OrderStatus.Redeemed)
-            .Sum(o => o.Items.Sum(i => i.Quantity));
+        var stats = BrandStatsCalculator.Calculate(orders, storeMap.Values);
 
         // Tiêu đề tổng quan
         wsSummary.Cell(1, 1).SetValue("Chỉ số tổng hợp (BR-25)").Style.Font.Bold = true;
         wsSummary.Cell(1, 1).Style.Font.FontSize = 13;
 
         wsSummary.Cell(3, 1).SetValue("Tổng doanh thu (VNĐ):").Style.Font.Bold = true;
-        wsSummary.Cell(3, 2).SetValue(totalRevenue).Style.NumberFormat.Format = "#,##0";
+        wsSummary.Cell(3, 2).SetValue(stats.TotalRevenue).Style.NumberFormat.Format = "#,##0";
 
         wsSummary.Cell(4, 1).SetValue("Tổng số suất đã cứu:").Style.Font.Bold = true;
-        wsSummary.Cell(4, 2).SetValue(totalRescuedPortions).Style.NumberFormat.Format = "#,##0";
+        wsSummary.Cell(4, 2).SetValue(stats.TotalRescuedPortions).Style.NumberFormat.Format = "#,##0";
 
         // Thống kê theo chi nhánh
         wsSummary.Cell(6, 1).SetValue("Thống kê theo chi nhánh").Style.Font.Bold = true;
@@ -210,31 +218,14 @@ public class OrderExportService : IOrderExportService
             cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
         }
 
-        var storeGroups = orders.GroupBy(o => o.StoreId).ToDictionary(g => g.Key, g => g.ToList());
-
         var storeRow = 8;
-        foreach (var store in storeMap.Values)
+        foreach (var storeStat in stats.ByStore)
         {
-            var storeOrders = storeGroups.GetValueOrDefault(store.Id, []);
-
-            var revenue = storeOrders
-                .Where(o => (o.Status is OrderStatus.Redeemed or OrderStatus.NoShow) && o.RefundStatus == RefundStatus.None)
-                .Sum(o => o.StorePayoutAmount);
-
-            var rescued = storeOrders
-                .Where(o => o.Status == OrderStatus.Redeemed)
-                .Sum(o => o.Items.Sum(i => i.Quantity));
-
-            var redeemedCount = storeOrders.Count(o => o.Status == OrderStatus.Redeemed);
-            var noShowCount = storeOrders.Count(o => o.Status == OrderStatus.NoShow);
-            var totalFinished = redeemedCount + noShowCount;
-            var noShowRate = totalFinished > 0 ? (double)noShowCount / totalFinished : 0.0;
-
-            wsSummary.Cell(storeRow, 1).SetValue(store.Name);
-            wsSummary.Cell(storeRow, 2).SetValue(revenue).Style.NumberFormat.Format = "#,##0";
-            wsSummary.Cell(storeRow, 3).SetValue(rescued).Style.NumberFormat.Format = "#,##0";
-            wsSummary.Cell(storeRow, 4).SetValue(noShowRate).Style.NumberFormat.Format = "0.0%";
-            wsSummary.Cell(storeRow, 5).SetValue((double)store.RatingAverage).Style.NumberFormat.Format = "0.0";
+            wsSummary.Cell(storeRow, 1).SetValue(storeStat.StoreName);
+            wsSummary.Cell(storeRow, 2).SetValue(storeStat.Revenue).Style.NumberFormat.Format = "#,##0";
+            wsSummary.Cell(storeRow, 3).SetValue(storeStat.RescuedPortions).Style.NumberFormat.Format = "#,##0";
+            wsSummary.Cell(storeRow, 4).SetValue(storeStat.NoShowRate).Style.NumberFormat.Format = "0.0%";
+            wsSummary.Cell(storeRow, 5).SetValue((double)storeStat.RatingAverage).Style.NumberFormat.Format = "0.0";
 
             storeRow++;
         }

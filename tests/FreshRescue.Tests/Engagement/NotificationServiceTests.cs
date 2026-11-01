@@ -349,6 +349,36 @@ public class NotificationServiceTests
     }
 
     [Fact]
+    public async Task NotifyNewSaleBatchAsync_KhongLapTuChiNhanhTrongBodyAsync()
+    {
+        // Arrange
+        var followerId = _f.CustomerId;
+        _f.Context.FavoriteStores.Add(new FavoriteStore
+        {
+            CustomerUserId = followerId,
+            StoreId = _f.Store.Id,
+            CreatedAt = EngagementFixture.Now,
+        });
+        await _f.Context.SaveChangesAsync();
+
+        var service = _f.NotificationService();
+        var batchId = Guid.NewGuid();
+
+        // Act 1: Tên store có sẵn 'Chi nhánh' -> không bị lặp 'Chi nhánh Chi nhánh'
+        await service.NotifyNewSaleBatchAsync(batchId, _f.Store.Id, "Chi nhánh Demo 01", CancellationToken.None);
+
+        var notif1 = await _f.Context.Notifications.SingleAsync(n => n.RelatedEntityId == batchId);
+        notif1.Body.Should().StartWith("Chi nhánh Demo 01 vừa mở đợt bán mới.");
+        notif1.Body.Should().NotContain("Chi nhánh Chi nhánh");
+
+        // Act 2: Tên store không có sẵn 'Chi nhánh' -> tự động thêm tiền tố
+        var batchId2 = Guid.NewGuid();
+        await service.NotifyNewSaleBatchAsync(batchId2, _f.Store.Id, "Tous Les Jours Hai Bà Trưng", CancellationToken.None);
+
+        var notif2 = await _f.Context.Notifications.SingleAsync(n => n.RelatedEntityId == batchId2);
+        notif2.Body.Should().StartWith("Chi nhánh Tous Les Jours Hai Bà Trưng vừa mở đợt bán mới.");
+    }
+    [Fact]
     public async Task SendNotificationAsync_TaoVaTraVeDtoThanhCongAsync()
     {
         // Arrange
