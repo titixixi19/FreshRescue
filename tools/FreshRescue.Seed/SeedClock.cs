@@ -1,4 +1,4 @@
-namespace FreshRescue.Business.Seeding;
+namespace FreshRescue.Seed;
 
 /// <summary>
 /// Đồng hồ cho seeder: đứng yên ở thời điểm được đặt, mặc định chạy theo đồng hồ hệ thống.

@@ -7,7 +7,7 @@ using FreshRescue.Entities.Constants;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace FreshRescue.Business.Seeding;
+namespace FreshRescue.Seed;
 
 /// <summary>
 /// Seeder pha 2 (T5-TV6-02): dữ liệu giao dịch. Mọi bản ghi đi qua <see cref="ISaleBatchService"/>
@@ -57,7 +57,7 @@ public sealed class TransactionSeeder
     {
         await LoadFoundationAsync(ct);
 
-        var now = TruncateToMinute(DateTime.UtcNow);
+        var now = TruncateToMinute(_clock.GetUtcNow().UtcDateTime);
         try
         {
             // 1. Lịch sử: mỗi chi nhánh một đợt đã đóng, rải trong 5 ngày trước.

@@ -1,6 +1,7 @@
 using FreshRescue.Business;
 using FreshRescue.Business.Common;
-using FreshRescue.Business.Seeding;
+using FreshRescue.API.Extensions;
+using FreshRescue.Seed;
 using FreshRescue.DataAccess;
 using FreshRescue.DataAccess.Seeding;
 using FreshRescue.Entities.Identity;
@@ -30,6 +31,7 @@ if (!File.Exists(settingsPath))
 }
 
 var configuration = new ConfigurationBuilder()
+    .AddJsonFile(Path.Combine(Path.GetDirectoryName(settingsPath)!, "appsettings.json"), optional: false)
     .AddJsonFile(settingsPath, optional: false)
     .AddEnvironmentVariables()
     .Build();
@@ -51,13 +53,13 @@ var services = new ServiceCollection();
 services.AddLogging();
 services.AddSingleton<IConfiguration>(configuration);
 
-// Pha 2 gọi service thật nên cần đồng hồ tua được, người dùng đặt tay và vé QR giả.
+// Pha 2 gọi service thật nên cần đồng hồ tua được, người dùng đặt tay và QrService thật qua gRPC (phải chạy sẵn QrService).
 // Đăng ký TimeProvider trước AddDataAccessLayer vì nó chỉ TryAdd.
 var seedClock = new SeedClock();
 var seedUser = new SeedCurrentUser();
 services.AddSingleton<TimeProvider>(seedClock);
 services.AddSingleton<ICurrentUser>(seedUser);
-services.AddSingleton<IQrTicketClient, SeedQrTicketClient>();
+services.AddQrServiceClient(configuration);
 
 services.AddDataAccessLayer(connectionString);
 services.AddBusinessLayer();
@@ -108,7 +110,7 @@ if (await transactions.AlreadySeededAsync())
 else
 {
     await transactions.SeedAsync();
-    Console.WriteLine("Seeder pha 2 hoàn tất: đợt bán, offer, đơn hàng, thanh toán, vé QR sinh bằng service thật.");
+    Console.WriteLine("Seeder pha 2 hoàn tất: đợt bán, offer, đơn hàng, thanh toán, vé QR do QrService thật ký.");
 }
 
 Console.WriteLine("Seeder dùng email @freshrescue.test và mật khẩu demo được cấp qua Seed__DemoPassword.");

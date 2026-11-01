@@ -8,9 +8,9 @@ namespace FreshRescue.Tests.Uploads;
 /// <summary>Upload ảnh dùng chung (OQ-09): thư mục, đuôi file, dung lượng, chữ ký byte.</summary>
 public sealed class ImageUploadServiceTests : IDisposable
 {
-    private static readonly byte[] Png = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0];
-    private static readonly byte[] Jpg = [0xFF, 0xD8, 0xFF, 0xE0, 0, 0];
-    private static readonly byte[] Webp = "RIFF\0\0\0\0WEBP"u8.ToArray();
+    private static readonly byte[] _png = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0];
+    private static readonly byte[] _jpg = [0xFF, 0xD8, 0xFF, 0xE0, 0, 0];
+    private static readonly byte[] _webp = "RIFF\0\0\0\0WEBP"u8.ToArray();
 
     private readonly string _root = Path.Combine(Path.GetTempPath(), "fr-upload-" + Guid.NewGuid().ToString("N"));
     private readonly ImageUploadService _service;
@@ -38,9 +38,9 @@ public sealed class ImageUploadServiceTests : IDisposable
     {
         var content = Path.GetExtension(fileName).ToLowerInvariant() switch
         {
-            ".png" => Png,
-            ".webp" => Webp,
-            _ => Jpg,
+            ".png" => _png,
+            ".webp" => _webp,
+            _ => _jpg,
         };
 
         var result = await _service.SaveAsync(new MemoryStream(content), fileName, folder, CancellationToken.None);
@@ -53,8 +53,8 @@ public sealed class ImageUploadServiceTests : IDisposable
     [Fact]
     public async Task Save_HaiLanCungTen_RaHaiFileKhacNhauAsync()
     {
-        var a = await _service.SaveAsync(new MemoryStream(Png), "x.png", "offers", CancellationToken.None);
-        var b = await _service.SaveAsync(new MemoryStream(Png), "x.png", "offers", CancellationToken.None);
+        var a = await _service.SaveAsync(new MemoryStream(_png), "x.png", "offers", CancellationToken.None);
+        var b = await _service.SaveAsync(new MemoryStream(_png), "x.png", "offers", CancellationToken.None);
 
         a.Url.Should().NotBe(b.Url);
     }
@@ -68,7 +68,7 @@ public sealed class ImageUploadServiceTests : IDisposable
     [InlineData("offers", "noext")]
     public async Task Save_ThuMucHoacDuoiSai_NemValidationFailedAsync(string folder, string fileName)
     {
-        var act = () => _service.SaveAsync(new MemoryStream(Png), fileName, folder, CancellationToken.None);
+        var act = () => _service.SaveAsync(new MemoryStream(_png), fileName, folder, CancellationToken.None);
 
         await act.Should().ThrowAsync<AppException>()
             .Where(e => e.ErrorCode == ErrorCodes.ValidationFailed && e.StatusCode == 400);
@@ -86,7 +86,7 @@ public sealed class ImageUploadServiceTests : IDisposable
     [Fact]
     public async Task Save_DuoiJpgNhungNoiDungPng_NemValidationFailedAsync()
     {
-        var act = () => _service.SaveAsync(new MemoryStream(Png), "a.jpg", "offers", CancellationToken.None);
+        var act = () => _service.SaveAsync(new MemoryStream(_png), "a.jpg", "offers", CancellationToken.None);
 
         await act.Should().ThrowAsync<AppException>().Where(e => e.ErrorCode == ErrorCodes.ValidationFailed);
     }
@@ -103,7 +103,7 @@ public sealed class ImageUploadServiceTests : IDisposable
     public async Task Save_VuotNamMb_NemValidationFailedAsync()
     {
         var big = new byte[ImageUploadService.MaxSizeBytes + 1];
-        Png.CopyTo(big, 0);
+        _png.CopyTo(big, 0);
 
         var act = () => _service.SaveAsync(new MemoryStream(big), "a.png", "offers", CancellationToken.None);
 
@@ -114,7 +114,7 @@ public sealed class ImageUploadServiceTests : IDisposable
     public async Task Save_DungNamMb_ChapNhanAsync()
     {
         var exact = new byte[ImageUploadService.MaxSizeBytes];
-        Png.CopyTo(exact, 0);
+        _png.CopyTo(exact, 0);
 
         var result = await _service.SaveAsync(new MemoryStream(exact), "a.png", "offers", CancellationToken.None);
 

@@ -1,6 +1,6 @@
 using FreshRescue.Business.Common;
 
-namespace FreshRescue.Business.Seeding;
+namespace FreshRescue.Seed;
 
 /// <summary>Người dùng hiện tại do seeder đặt tay, thay cho JWT. Mỗi bước nghiệp vụ đóng vai một người.</summary>
 public sealed class SeedCurrentUser : ICurrentUser

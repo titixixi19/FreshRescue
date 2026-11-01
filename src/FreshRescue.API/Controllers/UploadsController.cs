@@ -32,7 +32,7 @@ public class UploadsController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<UploadedImageDto>> UploadImageAsync(
-        [FromForm] IFormFile file,
+        IFormFile file,
         [FromForm] string folder,
         CancellationToken cancellationToken)
     {
