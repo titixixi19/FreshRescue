@@ -24,7 +24,8 @@ public class SaleBatchesController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Index(
+    [ActionName("Index")]
+    public async Task<IActionResult> IndexAsync(
         string? status,
         int page = 1,
         CancellationToken cancellationToken = default)
@@ -63,7 +64,8 @@ public class SaleBatchesController : Controller
     // ——— Wizard step 1: chọn OfferTemplate ———
 
     [HttpGet]
-    public async Task<IActionResult> CreateStep1(CancellationToken cancellationToken = default)
+    [ActionName("CreateStep1")]
+    public async Task<IActionResult> CreateStep1Async(CancellationToken cancellationToken = default)
     {
         var vm = new SaleBatchWizardViewModel
         {
@@ -95,7 +97,8 @@ public class SaleBatchesController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> CreateStep1(
+    [ActionName("CreateStep1")]
+    public async Task<IActionResult> CreateStep1PostAsync(
         SaleBatchWizardViewModel model,
         CancellationToken cancellationToken = default)
     {
@@ -176,7 +179,8 @@ public class SaleBatchesController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> CreateStep2(
+    [ActionName("CreateStep2")]
+    public async Task<IActionResult> CreateStep2Async(
         SaleBatchWizardViewModel model,
         string nav,
         CancellationToken cancellationToken = default)
@@ -199,7 +203,7 @@ public class SaleBatchesController : Controller
         if (model.Offers is null || model.Offers.Count == 0)
         {
             TempData["Error"] = "Thiếu danh sách offer. Bắt đầu lại từ bước 1.";
-            return RedirectToAction(nameof(CreateStep1));
+            return RedirectToAction("CreateStep1"); // Gọi trực tiếp theo tên Action được định tuyến
         }
 
         for (var i = 0; i < model.Offers.Count; i++)
@@ -229,7 +233,8 @@ public class SaleBatchesController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult CreateStep3(SaleBatchWizardViewModel model, string nav)
+    [ActionName("CreateStep3")]
+    public IActionResult CreateStep3Async(SaleBatchWizardViewModel model, string nav)
     {
         model.IsBrandManager = User.IsInRole(AppRoles.BrandManager);
 
@@ -273,7 +278,8 @@ public class SaleBatchesController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> CreateStep4(
+    [ActionName("CreateStep4")]
+    public async Task<IActionResult> CreateStep4Async(
         SaleBatchWizardViewModel model,
         string nav,
         bool activateAfterCreate,
@@ -288,11 +294,11 @@ public class SaleBatchesController : Controller
         }
 
         if (model.Offers is null || model.Offers.Count == 0
-            || model.SaleStartTime is null || model.SaleEndTime is null
-            || model.PickupStartTime is null || model.PickupEndTime is null)
+    || model.SaleStartTime is null || model.SaleEndTime is null
+    || model.PickupStartTime is null || model.PickupEndTime is null)
         {
             TempData["Error"] = "Dữ liệu wizard không đủ. Bắt đầu lại.";
-            return RedirectToAction(nameof(CreateStep1));
+            return RedirectToAction("CreateStep1"); // Gọi trực tiếp theo tên Action được định tuyến
         }
 
         // BR-15 trên giờ tường VN (cùng ý nghĩa người dùng vừa nhập ở bước 3).
@@ -376,7 +382,8 @@ public class SaleBatchesController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Activate(Guid id, CancellationToken cancellationToken = default)
+    [ActionName("Activate")]
+    public async Task<IActionResult> ActivateAsync(Guid id, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -394,7 +401,8 @@ public class SaleBatchesController : Controller
     [HttpPost]
     [Authorize(Roles = AppRoles.BrandManager)]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Cancel(
+    [ActionName("Cancel")]
+    public async Task<IActionResult> CancelAsync(
         Guid id,
         string reason,
         CancellationToken cancellationToken = default)

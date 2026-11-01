@@ -22,6 +22,7 @@ public class StaffOrdersController : Controller
     }
 
     [HttpGet]
+    [ActionName("Index")]
     public async Task<IActionResult> IndexAsync(
         Guid saleBatchId,
         string? status,

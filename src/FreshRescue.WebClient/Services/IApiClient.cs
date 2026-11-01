@@ -40,4 +40,15 @@ public interface IApiClient
     /// avatars · logos. Trả đường dẫn tương đối để gửi kèm request tiếp theo.
     /// </summary>
     Task<UploadImageResponse> UploadImageAsync(IFormFile file, string folder, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Tải file từ API (dùng cho export excel hoặc tải template mẫu).
+    /// </summary>
+    Task<Stream> DownloadFileAsync(string path, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gửi file (multipart/form-data) lên API (dùng cho import offer-templates từ file .xlsx).
+    /// </summary>
+    Task<T> UploadFileAsync<T>(string path, IFormFile file, string paramName = "file", CancellationToken cancellationToken = default);
+
 }

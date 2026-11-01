@@ -52,10 +52,10 @@ document.addEventListener("DOMContentLoaded", function () {
   // Lấy saleBatchId từ thuộc tính data của bảng (được Razor truyền vào)
   var saleBatchId = tableEl.getAttribute("data-sale-batch-id");
 
-  // Hàm phụ trợ để gọi JoinBatchAsync an toàn khi đã kết nối
+  // Hàm phụ trợ để gọi JoinBatch an toàn khi đã kết nối
   function joinBatch() {
     if (saleBatchId && connection.state === signalR.HubConnectionState.Connected) {
-      connection.invoke("JoinBatchAsync", saleBatchId)
+      connection.invoke("JoinBatch", saleBatchId)
         .catch(function (err) {
           console.error("Lỗi khi join batch:", err);
         });

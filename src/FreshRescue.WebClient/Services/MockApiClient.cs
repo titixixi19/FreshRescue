@@ -154,4 +154,26 @@ public class MockApiClient : IApiClient
 
     private static T RoundTrip<T>(object result)
         => JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(result, ApiJson.Options), ApiJson.Options)!;
+
+    public Task<Stream> DownloadFileAsync(string path, CancellationToken cancellationToken = default)
+    {
+        // Trả về một stream rỗng hoặc dữ liệu giả lập cho file Excel (.xlsx)
+        var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes("Mock Excel File Content"));
+        return Task.FromResult<Stream>(stream);
+    }
+
+    public Task<T> UploadFileAsync<T>(string path, IFormFile file, string paramName = "file", CancellationToken cancellationToken = default)
+    {
+        RequireUser();
+        // Kiểm tra định dạng đơn giản cho mock import
+        if (file.Length == 0)
+        {
+            throw new ApiException(StatusCodes.Status400BadRequest, ApiErrorMessages.ValidationFailed, "File tải lên trống.");
+        }
+
+        // Giả lập kết quả trả về thành công khi import
+        var mockResult = new { ImportedCount = 10 };
+        var result = JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(mockResult, ApiJson.Options), ApiJson.Options)!;
+        return Task.FromResult(result);
+    }
 }
