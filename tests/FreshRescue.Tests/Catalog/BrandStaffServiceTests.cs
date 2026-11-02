@@ -13,6 +13,7 @@ using FreshRescue.Entities.Enums;
 using FreshRescue.Entities.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Moq;
 
 namespace FreshRescue.Tests.Catalog;
@@ -30,6 +31,7 @@ public class BrandStaffServiceTests
     {
         var options = new DbContextOptionsBuilder<FreshRescueDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning))
             .Options;
 
         _context = new FreshRescueDbContext(options, new FixedTimeProvider(_now));
@@ -73,7 +75,7 @@ public class BrandStaffServiceTests
     }
 
     [Fact]
-    public async Task GetAllAsync_TraVeNhanVienThuocBrand_ThanhCong()
+    public async Task GetAllAsync_TraVeNhanVienThuocBrand_ThanhCongAsync()
     {
         var staffUser = new AppUser
         {
@@ -106,7 +108,7 @@ public class BrandStaffServiceTests
     }
 
     [Fact]
-    public async Task GetAllAsync_StoreKhongThuocBrand_QuangForbidden()
+    public async Task GetAllAsync_StoreKhongThuocBrand_QuangForbiddenAsync()
     {
         var otherBrandStoreId = SeedOtherBrandStore().Id;
         var service = CreateService();
@@ -118,7 +120,7 @@ public class BrandStaffServiceTests
     }
 
     [Fact]
-    public async Task CreateAsync_StoreKhongThuocBrand_QuangForbidden()
+    public async Task CreateAsync_StoreKhongThuocBrand_QuangForbiddenAsync()
     {
         var otherBrandStoreId = SeedOtherBrandStore().Id;
         var service = CreateService();
@@ -138,7 +140,7 @@ public class BrandStaffServiceTests
     }
 
     [Fact]
-    public async Task CreateAsync_EmailDaTonTai_QuangValidationFailed()
+    public async Task CreateAsync_EmailDaTonTai_QuangValidationFailedAsync()
     {
         var existingUser = new AppUser
         {
@@ -169,7 +171,7 @@ public class BrandStaffServiceTests
     }
 
     [Fact]
-    public async Task CreateAsync_HopLe_TaoUserVaStoreStaffThanhCong()
+    public async Task CreateAsync_HopLe_TaoUserVaStoreStaffThanhCongAsync()
     {
         var userStore = new Mock<IUserStore<AppUser>>();
         var userManager = new Mock<UserManager<AppUser>>(userStore.Object, null!, null!, null!, null!, null!, null!, null!, null!);
@@ -212,7 +214,7 @@ public class BrandStaffServiceTests
     }
 
     [Fact]
-    public async Task RemoveAsync_NhanVienKhongTonTai_QuangNotFound()
+    public async Task RemoveAsync_NhanVienKhongTonTai_QuangNotFoundAsync()
     {
         var service = CreateService();
 
@@ -223,7 +225,7 @@ public class BrandStaffServiceTests
     }
 
     [Fact]
-    public async Task RemoveAsync_NhanVienThuocBrandKhac_QuangForbidden()
+    public async Task RemoveAsync_NhanVienThuocBrandKhac_QuangForbiddenAsync()
     {
         var otherStore = SeedOtherBrandStore();
         var otherUser = new AppUser
@@ -252,7 +254,7 @@ public class BrandStaffServiceTests
     }
 
     [Fact]
-    public async Task RemoveAsync_HopLe_DatIsActiveFalse()
+    public async Task RemoveAsync_HopLe_DatIsActiveFalseAsync()
     {
         var staffUser = new AppUser
         {

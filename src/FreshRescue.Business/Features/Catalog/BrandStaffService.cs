@@ -108,6 +108,8 @@ public class BrandStaffService : IBrandStaffService
                 "Email đã được sử dụng trên hệ thống.");
         }
 
+        await using var transaction = await _unitOfWork.BeginTransactionAsync(cancellationToken);
+
         var user = new AppUser
         {
             FullName = request.FullName.Trim(),
@@ -115,7 +117,6 @@ public class BrandStaffService : IBrandStaffService
             UserName = request.Email.Trim().ToLowerInvariant(),
             PhoneNumber = string.IsNullOrWhiteSpace(request.PhoneNumber) ? null : request.PhoneNumber.Trim(),
             IsActive = true,
-            CreatedAt = DateTime.UtcNow,
         };
 
         var createResult = await _userManager.CreateAsync(user, request.Password);
@@ -139,11 +140,12 @@ public class BrandStaffService : IBrandStaffService
             StoreId = request.StoreId,
             Position = string.IsNullOrWhiteSpace(request.Position) ? null : request.Position.Trim(),
             IsActive = true,
-            CreatedAt = DateTime.UtcNow,
         };
 
         await _unitOfWork.StoreStaff.AddAsync(staff, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await transaction.CommitAsync(cancellationToken);
 
         return new BrandStaffDto
         {
