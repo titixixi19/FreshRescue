@@ -191,6 +191,186 @@ public class BrandManagementController : Controller
         return RedirectToAction("Staff");
     }
 
+    // ——— 1b. Tạo / sửa mẫu mặt hàng (FR-B04) ———
+
+    [HttpGet]
+    [ActionName("CreateOfferTemplate")]
+    public async Task<IActionResult> CreateOfferTemplateAsync(CancellationToken cancellationToken = default)
+    {
+        var vm = new OfferTemplateFormViewModel { Categories = await LoadCategoriesAsync(cancellationToken) };
+        return View("OfferTemplateForm", vm);
+    }
+
+    [HttpGet]
+    [ActionName("EditOfferTemplate")]
+    public async Task<IActionResult> EditOfferTemplateAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var t = await _api.GetAsync<OfferTemplateDto>($"brand/offer-templates/{id}", cancellationToken);
+            var vm = new OfferTemplateFormViewModel
+            {
+                Id = t.Id,
+                Name = t.Name,
+                Description = t.Description,
+                ImageUrl = t.ImageUrl,
+                CategoryId = t.CategoryId,
+                OfferType = t.OfferType,
+                OriginalPrice = t.OriginalPrice,
+                SuggestedPrice = t.SuggestedPrice,
+                BrandMinDiscountPercent = t.BrandMinDiscountPercent,
+                BrandMaxDiscountPercent = t.BrandMaxDiscountPercent,
+                Categories = await LoadCategoriesAsync(cancellationToken)
+            };
+            return View("OfferTemplateForm", vm);
+        }
+        catch (ApiException ex)
+        {
+            TempData["Error"] = string.IsNullOrWhiteSpace(ex.Message) ? "Không tìm thấy mẫu mặt hàng." : ex.Message;
+            return RedirectToAction("OfferTemplates");
+        }
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [ActionName("SaveOfferTemplate")]
+    public async Task<IActionResult> SaveOfferTemplateAsync(OfferTemplateFormViewModel form, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            if (form.Image is { Length: > 0 })
+            {
+                form.ImageUrl = (await _api.UploadImageAsync(form.Image, "offers", cancellationToken)).Url;
+            }
+
+            var body = new
+            {
+                name = form.Name,
+                description = form.Description,
+                imageUrl = form.ImageUrl,
+                categoryId = form.CategoryId,
+                offerType = form.OfferType,
+                originalPrice = form.OriginalPrice,
+                suggestedPrice = form.SuggestedPrice,
+                brandMinDiscountPercent = form.BrandMinDiscountPercent,
+                brandMaxDiscountPercent = form.BrandMaxDiscountPercent
+            };
+
+            if (form.Id.HasValue)
+            {
+                await _api.PutAsync<OfferTemplateDto>($"brand/offer-templates/{form.Id.Value}", body, cancellationToken);
+                TempData["Success"] = $"Đã cập nhật mẫu \"{form.Name}\". Đơn cũ vẫn giữ tên và giá đã chụp (BR-18).";
+            }
+            else
+            {
+                await _api.PostAsync<OfferTemplateDto>("brand/offer-templates", body, cancellationToken);
+                TempData["Success"] = $"Đã tạo mẫu \"{form.Name}\".";
+            }
+            return RedirectToAction("OfferTemplates");
+        }
+        catch (ApiException ex)
+        {
+            form.ErrorMessage = string.IsNullOrWhiteSpace(ex.Message) ? "Lưu mẫu mặt hàng thất bại." : ex.Message;
+            form.FieldErrors = FieldErrors(ex);
+            form.Categories = await LoadCategoriesAsync(cancellationToken);
+            return View("OfferTemplateForm", form);
+        }
+    }
+
+    // ——— 4. Hồ sơ thương hiệu (FR-B01) ———
+
+    [HttpGet]
+    [ActionName("Profile")]
+    public async Task<IActionResult> ProfileAsync(CancellationToken cancellationToken = default)
+    {
+        var vm = new BrandProfileViewModel();
+        try
+        {
+            Fill(vm, await _api.GetAsync<BrandProfileDto>("brand/profile", cancellationToken));
+        }
+        catch (ApiException ex)
+        {
+            vm.ErrorMessage = string.IsNullOrWhiteSpace(ex.Message) ? "Không tải được hồ sơ thương hiệu." : ex.Message;
+        }
+        return View("Profile", vm);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [ActionName("Profile")]
+    public async Task<IActionResult> ProfilePostAsync(BrandProfileViewModel form, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            if (form.Logo is { Length: > 0 })
+            {
+                form.LogoUrl = (await _api.UploadImageAsync(form.Logo, "logos", cancellationToken)).Url;
+            }
+
+            await _api.PutAsync<BrandProfileDto>("brand/profile", new
+            {
+                name = form.Name,
+                slug = form.Slug,
+                logoUrl = form.LogoUrl,
+                description = form.Description
+            }, cancellationToken);
+            TempData["Success"] = "Đã cập nhật hồ sơ thương hiệu.";
+            return RedirectToAction("Profile");
+        }
+        catch (ApiException ex)
+        {
+            form.ErrorMessage = string.IsNullOrWhiteSpace(ex.Message) ? "Cập nhật hồ sơ thất bại." : ex.Message;
+            form.FieldErrors = FieldErrors(ex);
+            // Trạng thái duyệt không có trong form nên đọc lại để khung thông tin không bị trống.
+            try
+            {
+                var current = await _api.GetAsync<BrandProfileDto>("brand/profile", cancellationToken);
+                form.Status = current.Status;
+                form.StatusReason = current.StatusReason;
+                form.ApprovedAt = current.ApprovedAt;
+            }
+            catch (ApiException)
+            {
+                form.Status = null;
+            }
+            return View("Profile", form);
+        }
+    }
+
+    private static void Fill(BrandProfileViewModel vm, BrandProfileDto p)
+    {
+        vm.Name = p.Name;
+        vm.Slug = p.Slug;
+        vm.LogoUrl = p.LogoUrl;
+        vm.Description = p.Description;
+        vm.Status = p.Status;
+        vm.StatusReason = p.StatusReason;
+        vm.ApprovedAt = p.ApprovedAt;
+    }
+
+    private async Task<IReadOnlyList<CategoryOption>> LoadCategoriesAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var path = QueryHelpers.AddQueryString("categories", new Dictionary<string, string?>
+            {
+                ["page"] = "1",
+                ["pageSize"] = "100"
+            });
+            var data = await _api.GetAsync<PagedResponse<CategoryOption>>(path, cancellationToken);
+            return data.Items;
+        }
+        catch (ApiException)
+        {
+            return Array.Empty<CategoryOption>();
+        }
+    }
+
+    private static IReadOnlyList<string> FieldErrors(ApiException ex)
+    {
+        return ex.Errors.SelectMany(e => e.Value).ToList();
+    }
+
     // Form tạo nhân viên cần chọn chi nhánh; lỗi tải chi nhánh không được chặn cả trang danh sách.
     private async Task<IReadOnlyList<StoreDto>> LoadStoresAsync(CancellationToken cancellationToken)
     {

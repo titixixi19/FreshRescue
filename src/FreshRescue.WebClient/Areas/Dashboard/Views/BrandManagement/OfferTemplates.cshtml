@@ -9,7 +9,10 @@
         <h2>Mẫu mặt hàng</h2>
         <p class="muted small">FR-B04 · <code>GET brand/offer-templates</code> · mẫu không có số lượng, số lượng chốt ở từng đợt bán</p>
     </div>
-    <a class="dash-btn-secondary" asp-area="Dashboard" asp-controller="ImportExport" asp-action="Index">Import từ Excel</a>
+    <div>
+        <a class="dash-btn-secondary" asp-area="Dashboard" asp-controller="ImportExport" asp-action="Index">Import từ Excel</a>
+        <a class="dash-btn" asp-action="CreateOfferTemplate">+ Tạo mẫu</a>
+    </div>
 </div>
 
 @if (TempData["Success"] is string ok)
@@ -83,6 +86,7 @@ else
                         <td>@Display.Money(t.SuggestedPrice)</td>
                         <td class="muted small">@t.BrandMinDiscountPercent.ToString("0.#")% – @t.BrandMaxDiscountPercent.ToString("0.#")%</td>
                         <td class="dash-actions">
+                            <a asp-action="EditOfferTemplate" asp-route-id="@t.Id">Sửa</a>
                             <form asp-action="DeleteOfferTemplate" method="post" class="inline-form">
                                 @Html.AntiForgeryToken()
                                 <input type="hidden" name="id" value="@t.Id" />

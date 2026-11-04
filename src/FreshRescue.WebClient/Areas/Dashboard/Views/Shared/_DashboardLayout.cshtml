@@ -41,7 +41,11 @@
                     </a>
                     @if (isBrand)
                     {
-                        <a class="dash-nav-item @(currentController == "BrandManagement" && currentAction == "OfferTemplates" ? "active" : null)"
+                        <a class="dash-nav-item @(currentController == "BrandManagement" && currentAction == "Profile" ? "active" : null)"
+                           asp-area="Dashboard" asp-controller="BrandManagement" asp-action="Profile">
+                            <span class="dash-nav-icon">🏢</span> Hồ sơ thương hiệu
+                        </a>
+                        <a class="dash-nav-item @(currentController == "BrandManagement" && currentAction.Contains("OfferTemplate") ? "active" : null)"
                            asp-area="Dashboard" asp-controller="BrandManagement" asp-action="OfferTemplates">
                             <span class="dash-nav-icon">🧺</span> Mẫu mặt hàng
                         </a>
@@ -66,6 +70,10 @@
                     <a class="dash-nav-item @(currentController == "Users" ? "active" : null)"
                        asp-area="Dashboard" asp-controller="Users" asp-action="Index">
                         <span class="dash-nav-icon">👤</span> Người dùng
+                    </a>
+                    <a class="dash-nav-item @(currentController == "Categories" ? "active" : null)"
+                       asp-area="Dashboard" asp-controller="Categories" asp-action="Index">
+                        <span class="dash-nav-icon">🗂</span> Danh mục
                     </a>
                     <a class="dash-nav-item @(currentController == "ImportExport" ? "active" : null)"
                        asp-area="Dashboard" asp-controller="ImportExport" asp-action="Index">

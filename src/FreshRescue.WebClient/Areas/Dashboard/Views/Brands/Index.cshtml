@@ -1,4 +1,5 @@
 @model FreshRescue.WebClient.Areas.Dashboard.Models.BrandListViewModel
+@using FreshRescue.WebClient.Helpers
 @{
     ViewData["Title"] = "Duyệt thương hiệu";
 }
@@ -82,11 +83,11 @@ else
                         <td class="muted small">
                             @if (b.CreatedAt is not null)
                             {
-                                <div>Tạo: @b.CreatedAt.Value.ToString("yyyy-MM-dd HH:mm") UTC</div>
+                                <div>Tạo: @Display.DateAndTime(b.CreatedAt.Value)</div>
                             }
                             @if (b.ApprovedAt is not null)
                             {
-                                <div>Duyệt: @b.ApprovedAt.Value.ToString("yyyy-MM-dd HH:mm") UTC</div>
+                                <div>Duyệt: @Display.DateAndTime(b.ApprovedAt.Value)</div>
                             }
                         </td>
                         <td class="dash-actions">

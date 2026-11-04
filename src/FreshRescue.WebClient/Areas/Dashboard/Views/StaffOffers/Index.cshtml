@@ -1,4 +1,5 @@
 @model FreshRescue.WebClient.Areas.Dashboard.Models.StaffOrderListViewModel
+@using FreshRescue.WebClient.Helpers
 @{
     ViewData["Title"] = "Đơn trong đợt";
 }
@@ -88,15 +89,15 @@ else
                         <td class="muted small">
                             @if (o.PaidAt is not null)
                             {
-                                <div>Paid: @o.PaidAt.Value.ToString("yyyy-MM-dd HH:mm") UTC</div>
+                                <div>Paid: @Display.DateAndTime(o.PaidAt.Value)</div>
                             }
                             @if (o.RedeemedAt is not null)
                             {
-                                <div>Redeemed: @o.RedeemedAt.Value.ToString("yyyy-MM-dd HH:mm") UTC</div>
+                                <div>Redeemed: @Display.DateAndTime(o.RedeemedAt.Value)</div>
                             }
                             @if (o.CancelledAt is not null)
                             {
-                                <div>Cancelled: @o.CancelledAt.Value.ToString("yyyy-MM-dd HH:mm") UTC</div>
+                                <div>Cancelled: @Display.DateAndTime(o.CancelledAt.Value)</div>
                             }
                         </td>
                         <td class="muted small">

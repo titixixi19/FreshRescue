@@ -1,4 +1,5 @@
 @model FreshRescue.WebClient.Areas.Dashboard.Models.UserListViewModel
+@using FreshRescue.WebClient.Helpers
 @using FreshRescue.WebClient.Models.Api
 @{
     ViewData["Title"] = "Người dùng";
@@ -101,7 +102,7 @@ else
                             }
                         </td>
                         <td class="muted small">
-                            @(u.CreatedAt is null ? "—" : u.CreatedAt.Value.ToString("yyyy-MM-dd HH:mm") + " UTC")
+                            @(u.CreatedAt is null ? "—" : Display.DateAndTime(u.CreatedAt.Value))
                         </td>
                         <td class="dash-actions">
                             <form asp-action="SetStatus" method="post" class="inline-form">

@@ -1,5 +1,6 @@
 @model FreshRescue.WebClient.Areas.Dashboard.Models.SaleBatchListViewModel
 @using FreshRescue.WebClient.Models.Api
+@using FreshRescue.WebClient.Helpers
 @{
     ViewData["Title"] = "Đợt bán";
     var isBrandManager = User.IsInRole(AppRoles.BrandManager);
@@ -74,12 +75,12 @@ else
                         </td>
                         <td><span class="badge">@b.Status</span></td>
                         <td class="muted small">
-                            @b.SaleStartTime.ToString("yyyy-MM-dd HH:mm") UTC
-                            <br />→ @b.SaleEndTime.ToString("yyyy-MM-dd HH:mm")
+                            @Display.DateAndTime(b.SaleStartTime)
+                            <br />→ @Display.DateAndTime(b.SaleEndTime)
                         </td>
                         <td class="muted small">
-                            @b.PickupStartTime.ToString("yyyy-MM-dd HH:mm") UTC
-                            <br />→ @b.PickupEndTime.ToString("yyyy-MM-dd HH:mm")
+                            @Display.DateAndTime(b.PickupStartTime)
+                            <br />→ @Display.DateAndTime(b.PickupEndTime)
                         </td>
                         <td class="dash-actions">
                             <a asp-area="Dashboard" asp-controller="StaffOffers" asp-action="Manage" asp-route-saleBatchId="@b.Id">Offer</a>

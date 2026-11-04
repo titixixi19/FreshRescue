@@ -1,0 +1,37 @@
+@model CategoryFormViewModel
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="dash-alert dash-alert-err">
+        @Model.ErrorMessage
+        @if (Model.FieldErrors.Count > 0)
+        {
+            <ul class="small" style="margin: 0.5rem 0 0 1rem;">
+                @foreach (var e in Model.FieldErrors)
+                {
+                    <li>@e</li>
+                }
+            </ul>
+        }
+    </div>
+}
+
+<div style="display: grid; grid-template-columns: 2fr 2fr 1fr; gap: 0.75rem;">
+    <div class="dash-field">
+        <label class="muted small" for="Name">Tên danh mục *</label>
+        <input id="Name" name="Name" value="@Model.Name" class="dash-input" required maxlength="100" placeholder="VD: Bánh ngọt" />
+    </div>
+    <div class="dash-field">
+        <label class="muted small" for="Slug">Slug *</label>
+        <input id="Slug" name="Slug" value="@Model.Slug" class="dash-input" required maxlength="110"
+               pattern="[a-z0-9]+(-[a-z0-9]+)*" title="Viết thường, không dấu, nối bằng dấu gạch ngang" placeholder="VD: banh-ngot" />
+    </div>
+    <div class="dash-field">
+        <label class="muted small" for="DisplayOrder">Thứ tự</label>
+        <input id="DisplayOrder" type="number" name="DisplayOrder" value="@Model.DisplayOrder" class="dash-input" min="0" />
+    </div>
+    <div class="dash-field" style="grid-column: 1 / -1;">
+        <label class="muted small" for="IconUrl">Đường dẫn icon</label>
+        <input id="IconUrl" name="IconUrl" value="@Model.IconUrl" class="dash-input" maxlength="500" />
+    </div>
+</div>
