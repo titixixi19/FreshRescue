@@ -12,7 +12,7 @@ namespace FreshRescue.API.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/v1/staff/sale-batches/{saleBatchId:guid}/orders")]
-[Produces("application/json")]
+[Produces("application/json", "application/xml")]
 [Authorize(Policy = "StaffOrBrandManager")]
 public class StaffSaleBatchOrdersController : ControllerBase
 {

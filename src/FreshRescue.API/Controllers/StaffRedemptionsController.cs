@@ -7,7 +7,7 @@ namespace FreshRescue.API.Controllers;
 
 [ApiController]
 [Route("api/v1/staff/redemptions")]
-[Produces("application/json")]
+[Produces("application/json", "application/xml")]
 [Authorize(Policy = "StaffOrBrandManager")]
 public class StaffRedemptionsController : ControllerBase
 {

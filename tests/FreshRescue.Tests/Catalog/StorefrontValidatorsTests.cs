@@ -19,6 +19,15 @@ public class StorefrontValidatorsTests
     }
 
     [Fact]
+    public void ActiveOffers_ChiCoMotToaDo_HoacBanKinhVuotGioiHan_Loi()
+    {
+        _offers.Validate(new ActiveOfferListQuery { Lat = 10.7m }).IsValid.Should().BeFalse();
+        _offers.Validate(new ActiveOfferListQuery { Lng = 106.7m }).IsValid.Should().BeFalse();
+        _offers.Validate(new ActiveOfferListQuery { Lat = 10.7m, Lng = 106.7m, RadiusKm = 51 }).IsValid.Should().BeFalse();
+        _offers.Validate(new ActiveOfferListQuery { Lat = 10.7m, Lng = 106.7m, RadiusKm = 10 }).IsValid.Should().BeTrue();
+    }
+
+    [Fact]
     public void ActiveOffers_GiaAm_Loi()
     {
         _offers.Validate(new ActiveOfferListQuery { MinPrice = -1 }).IsValid.Should().BeFalse();

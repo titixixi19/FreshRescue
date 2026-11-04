@@ -8,7 +8,7 @@ namespace FreshRescue.API.Controllers;
 
 [ApiController]
 [Route("api/v1/brand/stats")]
-[Produces("application/json")]
+[Produces("application/json", "application/xml")]
 [Authorize(Roles = AppRoles.BrandManager)]
 public class BrandStatsController : ControllerBase
 {

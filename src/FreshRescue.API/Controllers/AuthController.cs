@@ -11,7 +11,7 @@ namespace FreshRescue.API.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/v1/auth")]
-[Produces("application/json")]
+[Produces("application/json", "application/xml")]
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;

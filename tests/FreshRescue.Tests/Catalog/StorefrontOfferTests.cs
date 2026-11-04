@@ -193,4 +193,47 @@ public class StorefrontOfferTests
 
         await act.Should().ThrowAsync<AppException>().Where(e => e.StatusCode == 404);
     }
+
+    [Fact]
+    public async Task ListActive_CoToaDo_LocTheoBanKinhVaSapGanNhatTruocAsync()
+    {
+        var near = _f.AddOffer(_f.AddBatch(_f.AddStore("Gần", 10.01m, 106.0m)), name: "Gần");
+        var mid = _f.AddOffer(_f.AddBatch(_f.AddStore("Vừa", 10.03m, 106.03m)), name: "Vừa");
+        _f.AddOffer(_f.AddBatch(_f.AddStore("Cách 11km", 10.1m, 106.0m)), name: "Xa");
+
+        var result = await _f.Service().ListActiveOffersAsync(
+            new ActiveOfferListQuery { Lat = 10.0m, Lng = 106.0m, RadiusKm = 5 }, CancellationToken.None);
+
+        result.Items.Select(o => o.Id).Should().Equal(near.Id, mid.Id);
+        result.TotalCount.Should().Be(2);
+        result.Items[0].DistanceKm.Should().BeApproximately(1.11m, 0.02m);
+    }
+
+    [Fact]
+    public async Task ListActive_KhongCoToaDo_KhongTraDistanceKmAsync()
+    {
+        _f.AddOffer(_f.AddBatch(_f.AddStore()));
+
+        var result = await _f.Service().ListActiveOffersAsync(new ActiveOfferListQuery(), CancellationToken.None);
+
+        result.Items.Should().ContainSingle().Which.DistanceKm.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ListActive_CoToaDo_PhanTrangTheoKhoangCachAsync()
+    {
+        var first = _f.AddOffer(_f.AddBatch(_f.AddStore("1", 10.01m, 106.0m)), name: "1");
+        var second = _f.AddOffer(_f.AddBatch(_f.AddStore("2", 10.02m, 106.0m)), name: "2");
+        var third = _f.AddOffer(_f.AddBatch(_f.AddStore("3", 10.03m, 106.0m)), name: "3");
+
+        var page1 = await _f.Service().ListActiveOffersAsync(
+            new ActiveOfferListQuery { Lat = 10.0m, Lng = 106.0m, Page = 1, PageSize = 2 }, CancellationToken.None);
+        var page2 = await _f.Service().ListActiveOffersAsync(
+            new ActiveOfferListQuery { Lat = 10.0m, Lng = 106.0m, Page = 2, PageSize = 2 }, CancellationToken.None);
+
+        page1.Items.Select(o => o.Id).Should().Equal(first.Id, second.Id);
+        page2.Items.Select(o => o.Id).Should().Equal(third.Id);
+        page2.TotalCount.Should().Be(3);
+        page2.TotalPages.Should().Be(2);
+    }
 }

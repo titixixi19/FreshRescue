@@ -8,7 +8,7 @@ namespace FreshRescue.API.Controllers;
 
 [ApiController]
 [Route("api/v1/offers")]
-[Produces("application/json")]
+[Produces("application/json", "application/xml")]
 [AllowAnonymous]
 public class PublicOffersController : ControllerBase
 {

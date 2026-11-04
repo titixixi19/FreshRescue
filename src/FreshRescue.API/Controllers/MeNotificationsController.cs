@@ -8,7 +8,7 @@ namespace FreshRescue.API.Controllers;
 
 [ApiController]
 [Route("api/v1/me/notifications")]
-[Produces("application/json")]
+[Produces("application/json", "application/xml")]
 [Authorize]
 public class MeNotificationsController : ControllerBase
 {

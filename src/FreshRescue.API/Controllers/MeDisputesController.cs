@@ -16,6 +16,7 @@ public sealed class MeDisputesController : ControllerBase
 
     public MeDisputesController(IDisputeService service) => _service = service;
 
+    /// <summary>Khiếu nại của khách đang đăng nhập, mới nhất trước (FR-C15).</summary>
     [HttpGet]
     [ProducesResponseType(typeof(PagedResponse<DisputeDto>), StatusCodes.Status200OK)]
     public Task<PagedResponse<DisputeDto>> GetAsync(

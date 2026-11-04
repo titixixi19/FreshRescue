@@ -17,6 +17,7 @@ public sealed class AdminDisputesController : ControllerBase
 
     public AdminDisputesController(IDisputeService service) => _service = service;
 
+    /// <summary>Hàng đợi khiếu nại cho Admin, lọc theo <c>status</c> (FR-A04).</summary>
     [HttpGet]
     [ProducesResponseType(typeof(PagedResponse<DisputeDto>), StatusCodes.Status200OK)]
     public Task<PagedResponse<DisputeDto>> GetAsync(
@@ -26,11 +27,13 @@ public sealed class AdminDisputesController : ControllerBase
         CancellationToken ct = default)
         => _service.GetAdminAsync(status, page, pageSize, ct);
 
+    /// <summary>Duyệt khiếu nại → hoàn 100% cho khách (FR-A04, OQ-25, BR-21).</summary>
     [HttpPost("{id:guid}/approve")]
     [ProducesResponseType(typeof(DisputeDto), StatusCodes.Status200OK)]
     public Task<DisputeDto> ApproveAsync(Guid id, CancellationToken ct)
         => _service.ApproveAsync(id, ct);
 
+    /// <summary>Từ chối khiếu nại, bắt buộc kèm <c>adminNote</c> (FR-A04).</summary>
     [HttpPost("{id:guid}/reject")]
     [ProducesResponseType(typeof(DisputeDto), StatusCodes.Status200OK)]
     public Task<DisputeDto> RejectAsync(

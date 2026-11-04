@@ -13,6 +13,9 @@ public record ActiveOfferDto
 
     public string StoreName { get; init; } = default!;
 
+    /// <summary>Khoảng cách tới chi nhánh (km); chỉ có khi request kèm <c>lat</c> + <c>lng</c>.</summary>
+    public decimal? DistanceKm { get; init; }
+
     public string Name { get; init; } = default!;
 
     public string? Description { get; init; }

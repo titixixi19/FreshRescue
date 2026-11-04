@@ -63,6 +63,11 @@ public class StorefrontService : IStorefrontService
             offers = offers.Where(o => o.RemainingQuantity > 0);
         }
 
+        if (query.Lat is { } latValue && query.Lng is { } lngValue)
+        {
+            return await ListActiveOffersNearAsync(offers, (double)latValue, (double)lngValue, query, cancellationToken);
+        }
+
         // Sắp theo hạn bán trước để khách thấy món sắp hết giờ; Id chốt thứ tự cho phân trang ổn định.
         return await offers
             .OrderBy(o => o.SaleBatch.SaleEndTime)
@@ -70,6 +75,60 @@ public class StorefrontService : IStorefrontService
             .ThenBy(o => o.Id)
             .ToPagedResponseAsync<Entities.Sales.Offer, ActiveOfferDto>(
                 query.Page, query.PageSize, _mapper.ConfigurationProvider, cancellationToken);
+    }
+
+    // Cùng cách với FindNearbyStoresAsync: lọc hộp bao bằng chỉ mục, rồi Haversine trên tập nhỏ còn lại.
+    // Có toạ độ thì gần nhất lên trước, cùng khoảng cách thì món sắp hết giờ bán trước.
+    private async Task<PagedResponse<ActiveOfferDto>> ListActiveOffersNearAsync(
+        IQueryable<Entities.Sales.Offer> offers, double lat, double lng, ActiveOfferListQuery query,
+        CancellationToken cancellationToken)
+    {
+        var box = GeoDistance.BoundingBox(lat, lng, (double)query.RadiusKm);
+        var candidates = await offers
+            .Where(o => o.SaleBatch.Store.Latitude >= box.MinLat && o.SaleBatch.Store.Latitude <= box.MaxLat
+                && o.SaleBatch.Store.Longitude >= box.MinLng && o.SaleBatch.Store.Longitude <= box.MaxLng)
+            .Select(o => new
+            {
+                o.Id,
+                o.Name,
+                o.SaleBatch.SaleEndTime,
+                o.SaleBatch.Store.Latitude,
+                o.SaleBatch.Store.Longitude,
+            })
+            .ToListAsync(cancellationToken);
+
+        var ranked = candidates
+            .Select(c => new
+            {
+                c.Id,
+                c.Name,
+                c.SaleEndTime,
+                DistanceKm = (decimal)Math.Round(
+                    GeoDistance.HaversineKm(lat, lng, (double)c.Latitude, (double)c.Longitude), 2),
+            })
+            .Where(c => c.DistanceKm <= query.RadiusKm)
+            .OrderBy(c => c.DistanceKm)
+            .ThenBy(c => c.SaleEndTime)
+            .ThenBy(c => c.Name)
+            .ThenBy(c => c.Id)
+            .ToList();
+
+        var page = ranked.Skip((query.Page - 1) * query.PageSize).Take(query.PageSize).ToList();
+        var pageIds = page.Select(c => c.Id).ToList();
+        var dtos = await _uow.Offers.Query()
+            .Where(o => pageIds.Contains(o.Id))
+            .ProjectTo<ActiveOfferDto>(_mapper.ConfigurationProvider)
+            .ToDictionaryAsync(o => o.Id, cancellationToken);
+
+        return new PagedResponse<ActiveOfferDto>
+        {
+            Items = page.Where(c => dtos.ContainsKey(c.Id))
+                .Select(c => dtos[c.Id] with { DistanceKm = c.DistanceKm })
+                .ToList(),
+            Page = query.Page,
+            PageSize = query.PageSize,
+            TotalCount = ranked.Count,
+        };
     }
 
     public async Task<ActiveOfferDto> GetOfferAsync(Guid offerId, CancellationToken cancellationToken)

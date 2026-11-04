@@ -20,6 +20,7 @@ public class StorefrontProfile : Profile
         CreateMap<Offer, ActiveOfferDto>()
             .ForMember(d => d.StoreId, o => o.MapFrom(s => s.SaleBatch.StoreId))
             .ForMember(d => d.StoreName, o => o.MapFrom(s => s.SaleBatch.Store.Name))
+            .ForMember(d => d.DistanceKm, o => o.Ignore())
             .ForMember(d => d.CategoryName, o => o.MapFrom(s => s.Category.Name))
             .ForMember(d => d.DiscountPercent, o => o.MapFrom(s => s.OriginalPrice > 0
                 ? Math.Round((1 - s.ActualPrice / s.OriginalPrice) * 100, 1)
