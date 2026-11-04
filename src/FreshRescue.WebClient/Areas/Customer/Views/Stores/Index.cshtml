@@ -1,0 +1,132 @@
+@model NearbyStoresViewModel
+@using System.Globalization
+@{
+    ViewData["Title"] = "Cửa hàng gần tôi";
+    double[] radiusOptions = [1, 2, 5, 10, 20, 50];
+    string Route(int page) => Url.Action("Index", new
+    {
+        lat = Model.IsDefaultLocation ? null : Model.Lat.ToString("0.######", CultureInfo.InvariantCulture),
+        lng = Model.IsDefaultLocation ? null : Model.Lng.ToString("0.######", CultureInfo.InvariantCulture),
+        radiusKm = Model.RadiusKm,
+        hasActiveBatch = Model.HasActiveBatch ? "true" : null,
+        page,
+    })!;
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+    <div>
+        <h1 class="h3 mb-1">Cửa hàng gần tôi</h1>
+        <p class="text-muted mb-0">Sắp xếp theo khoảng cách thực (Haversine), gần nhất lên đầu.</p>
+    </div>
+</div>
+
+<form method="get" asp-action="Index" class="card fr-filter mb-4" id="fr-near">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-6 col-md-3">
+                <label class="form-label small" for="radiusKm">Bán kính</label>
+                <div class="input-group">
+                    <select class="form-select" id="radiusKm" name="radiusKm">
+                        @foreach (var r in radiusOptions)
+                        {
+                            <option value="@r" selected="@(Model.RadiusKm == r)">≤ @r km</option>
+                        }
+                    </select>
+                    <button type="button" class="btn btn-outline-success" id="fr-locate" title="Dùng vị trí của tôi">📍</button>
+                </div>
+                <input type="hidden" name="lat" id="lat" value="@(Model.IsDefaultLocation ? null : Model.Lat.ToString(CultureInfo.InvariantCulture))" />
+                <input type="hidden" name="lng" id="lng" value="@(Model.IsDefaultLocation ? null : Model.Lng.ToString(CultureInfo.InvariantCulture))" />
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="hasActiveBatch" name="hasActiveBatch" value="true" checked="@Model.HasActiveBatch" />
+                    <label class="form-check-label small" for="hasActiveBatch">Chỉ cửa hàng đang mở bán</label>
+                </div>
+            </div>
+            <div class="col-12 col-md-2">
+                <button type="submit" class="btn btn-success w-100">Tìm</button>
+            </div>
+        </div>
+        <div class="small mt-2" id="fr-near-status">
+            @if (Model.IsDefaultLocation)
+            {
+                <span class="text-muted">Đang tìm quanh trung tâm Quận 1. Bấm 📍 để dùng vị trí của bạn.</span>
+            }
+            else
+            {
+                <span class="text-success">📍 Đang tìm quanh vị trí của bạn</span>
+            }
+        </div>
+    </div>
+</form>
+
+@if (Model.Stores.Items.Count == 0)
+{
+    <div class="fr-empty my-5">
+        <div class="fr-empty-icon">🏪</div>
+        <h2 class="h5">Không có cửa hàng nào trong bán kính này</h2>
+        <p class="text-muted">Thử tăng bán kính hoặc bỏ lọc "đang mở bán".</p>
+    </div>
+}
+else
+{
+    <p class="text-muted small">Tìm thấy @Model.Stores.TotalCount cửa hàng.</p>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
+        @foreach (var s in Model.Stores.Items)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="small text-muted">@s.BrandName</div>
+                                <h2 class="h6 mb-1">
+                                    <a asp-action="Details" asp-route-id="@s.Id" class="stretched-link text-decoration-none">@s.Name</a>
+                                </h2>
+                            </div>
+                            <span class="badge bg-success-subtle text-success-emphasis">@Display.Distance(s.DistanceKm)</span>
+                        </div>
+                        <div class="small text-muted mb-2">@s.AddressLine@(string.IsNullOrEmpty(s.District) ? "" : ", " + s.District)</div>
+                        <div class="small d-flex flex-wrap gap-3">
+                            <span>🕘 @s.OpenTime.ToString("HH\\:mm") – @s.CloseTime.ToString("HH\\:mm")</span>
+                            <span>⭐ @(s.RatingCount > 0 ? s.RatingAverage.ToString("0.0") + $" ({s.RatingCount})" : "Chưa có đánh giá")</span>
+                        </div>
+                        <div class="small mt-2">
+                            @if (s.ActiveBatchCount > 0)
+                            {
+                                <span class="text-success fw-semibold">Đang mở bán @(s.MinPrice is { } p ? "· từ " + Display.Money(p) : "")</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">Chưa có đợt bán đang mở</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <partial name="_Pager" model="@(new PagerModel(Model.Stores.Page, Model.Stores.TotalPages, page => Route(page)))" />
+}
+
+@section Scripts {
+    <script>
+        document.getElementById('fr-locate').addEventListener('click', () => {
+            const status = document.getElementById('fr-near-status');
+            if (!navigator.geolocation) {
+                status.textContent = 'Trình duyệt không hỗ trợ lấy vị trí.';
+                return;
+            }
+            status.textContent = 'Đang lấy vị trí…';
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    document.getElementById('lat').value = position.coords.latitude.toFixed(6);
+                    document.getElementById('lng').value = position.coords.longitude.toFixed(6);
+                    document.getElementById('fr-near').submit();
+                },
+                () => { status.textContent = 'Không lấy được vị trí — hãy cho phép trình duyệt truy cập vị trí.'; },
+                { timeout: 10000 });
+        });
+    </script>
+}

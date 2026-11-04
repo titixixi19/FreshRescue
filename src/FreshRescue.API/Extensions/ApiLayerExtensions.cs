@@ -38,7 +38,8 @@ public static class ApiLayerExtensions
             .AddRealtime()
             .AddBackgroundJobs()
             .AddQrServiceClient(configuration)
-            .AddUploads();
+            .AddUploads()
+            .AddPasswordResetEmail();
 
         return services;
     }

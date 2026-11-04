@@ -12,7 +12,7 @@
 <nav aria-label="breadcrumb" class="mb-3">
     <ol class="breadcrumb small mb-0">
         <li class="breadcrumb-item"><a asp-action="Index">Săn đồ ăn</a></li>
-        <li class="breadcrumb-item"><a asp-action="Index" asp-route-storeId="@offer.StoreId">@offer.StoreName</a></li>
+        <li class="breadcrumb-item"><a asp-controller="Stores" asp-action="Details" asp-route-id="@offer.StoreId">@offer.StoreName</a></li>
         <li class="breadcrumb-item active" aria-current="page">@offer.Name</li>
     </ol>
 </nav>

@@ -1,0 +1,113 @@
+@model StoreDetailViewModel
+@inject ApiOptions Api
+@{
+    var s = Model.Store;
+    ViewData["Title"] = s.Name;
+    var returnUrl = Context.Request.Path + Context.Request.QueryString;
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb small">
+        <li class="breadcrumb-item"><a asp-action="Index">Cửa hàng gần tôi</a></li>
+        <li class="breadcrumb-item active" aria-current="page">@s.Name</li>
+    </ol>
+</nav>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body d-flex flex-wrap justify-content-between gap-3">
+        <div>
+            <div class="text-muted small">@s.BrandName</div>
+            <h1 class="h3 mb-1">@s.Name</h1>
+            <div class="text-muted">@string.Join(", ", new[] { s.AddressLine, s.Ward, s.District, s.City }.Where(x => !string.IsNullOrWhiteSpace(x)))</div>
+            <div class="small mt-2 d-flex flex-wrap gap-3">
+                <span>🕘 @s.OpenTime.ToString("HH\\:mm") – @s.CloseTime.ToString("HH\\:mm")</span>
+                @if (!string.IsNullOrWhiteSpace(s.Phone))
+                {
+                    <span>📞 @s.Phone</span>
+                }
+                <span>⭐ @(s.RatingCount > 0 ? s.RatingAverage.ToString("0.0") + $" / 5 ({s.RatingCount} đánh giá)" : "Chưa có đánh giá")</span>
+                <a target="_blank" rel="noopener" href="https://www.google.com/maps?q=@s.Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture),@s.Longitude.ToString(System.Globalization.CultureInfo.InvariantCulture)">🗺 Chỉ đường</a>
+            </div>
+        </div>
+        <div>
+            @if (Model.IsFavorite == true)
+            {
+                <form asp-controller="Favorites" asp-action="Remove" method="post">
+                    <input type="hidden" name="storeId" value="@s.Id" />
+                    <input type="hidden" name="returnUrl" value="@returnUrl" />
+                    <button type="submit" class="btn btn-outline-danger">♥ Bỏ yêu thích</button>
+                </form>
+            }
+            else if (Model.IsFavorite == false)
+            {
+                <form asp-controller="Favorites" asp-action="Add" method="post">
+                    <input type="hidden" name="storeId" value="@s.Id" />
+                    <input type="hidden" name="returnUrl" value="@returnUrl" />
+                    <button type="submit" class="btn btn-outline-success">♡ Yêu thích</button>
+                </form>
+            }
+            else
+            {
+                <a class="btn btn-outline-success" asp-area="" asp-controller="Account" asp-action="Login" asp-route-returnUrl="@returnUrl">♡ Đăng nhập để yêu thích</a>
+            }
+        </div>
+    </div>
+</div>
+
+<h2 class="h5 mb-3">Đợt bán đang mở</h2>
+@if (s.ActiveBatches.Count == 0)
+{
+    <div class="fr-empty my-4">
+        <div class="fr-empty-icon">🥡</div>
+        <p class="text-muted mb-0">Cửa hàng chưa mở đợt bán nào. Thêm vào yêu thích để được báo khi có đợt mới.</p>
+    </div>
+}
+else
+{
+    @foreach (var b in s.ActiveBatches)
+    {
+        <div class="mb-4">
+            <div class="d-flex flex-wrap gap-3 small text-muted mb-2">
+                <strong class="text-body">@(b.Name ?? "Đợt bán")</strong>
+                <span>Bán: @Display.Window(b.SaleStartTime, b.SaleEndTime)</span>
+                <span>Nhận hàng: @Display.Window(b.PickupStartTime, b.PickupEndTime)</span>
+            </div>
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-3">
+                @foreach (var offer in b.Offers)
+                {
+                    <partial name="_OfferCard" model="offer" />
+                }
+            </div>
+        </div>
+    }
+}
+
+<h2 class="h5 mt-4 mb-3">Đánh giá (@Model.Reviews.TotalCount)</h2>
+@if (Model.Reviews.Items.Count == 0)
+{
+    <p class="text-muted">Chưa có đánh giá nào.</p>
+}
+else
+{
+    <div class="list-group mb-3">
+        @foreach (var r in Model.Reviews.Items)
+        {
+            var photo = Api.ResolveUrl(r.PhotoUrl);
+            <div class="list-group-item">
+                <div class="d-flex justify-content-between">
+                    <span class="text-warning">@(new string('★', r.Rating))<span class="text-muted">@(new string('☆', 5 - r.Rating))</span></span>
+                    <span class="small text-muted">@Display.DateAndTime(r.CreatedAt)</span>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(r.Comment))
+                {
+                    <p class="mb-1 mt-1">@r.Comment</p>
+                }
+                @if (photo is not null)
+                {
+                    <img src="@photo" alt="Ảnh đánh giá" class="rounded mt-1" style="max-height: 96px;" />
+                }
+            </div>
+        }
+    </div>
+    <partial name="_Pager" model="@(new PagerModel(Model.Reviews.Page, Model.Reviews.TotalPages, page => Url.Action("Details", new { id = s.Id, page })!))" />
+}

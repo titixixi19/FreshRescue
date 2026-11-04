@@ -1,0 +1,44 @@
+@model PagedResponse<FavoriteStoreDto>
+@inject ApiOptions Api
+@{
+    ViewData["Title"] = "Cửa hàng yêu thích";
+}
+
+<h1 class="h3 mb-1">Cửa hàng yêu thích</h1>
+<p class="text-muted">Cửa hàng yêu thích mở đợt bán mới thì bạn nhận được thông báo.</p>
+
+@if (Model.Items.Count == 0)
+{
+    <div class="fr-empty my-5">
+        <div class="fr-empty-icon">♡</div>
+        <h2 class="h5">Chưa có cửa hàng yêu thích</h2>
+        <p class="text-muted">Mở trang một cửa hàng và bấm "Yêu thích".</p>
+        <a class="btn btn-outline-success" asp-controller="Stores" asp-action="Index">Tìm cửa hàng gần tôi</a>
+    </div>
+}
+else
+{
+    <div class="list-group mb-3">
+        @foreach (var f in Model.Items)
+        {
+            var logo = Api.ResolveUrl(f.BrandLogoUrl);
+            <div class="list-group-item d-flex align-items-center gap-3">
+                @if (logo is not null)
+                {
+                    <img src="@logo" alt="" class="rounded" style="width: 48px; height: 48px; object-fit: cover;" />
+                }
+                <div class="flex-grow-1">
+                    <div class="small text-muted">@f.BrandName</div>
+                    <a class="fw-semibold" asp-controller="Stores" asp-action="Details" asp-route-id="@f.StoreId">@f.StoreName</a>
+                    <div class="small text-muted">@f.AddressLine@(string.IsNullOrEmpty(f.District) ? "" : ", " + f.District)</div>
+                </div>
+                <span class="small">⭐ @(f.RatingAverage > 0 ? f.RatingAverage.ToString("0.0") : "—")</span>
+                <form asp-action="Remove" method="post">
+                    <input type="hidden" name="storeId" value="@f.StoreId" />
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Bỏ</button>
+                </form>
+            </div>
+        }
+    </div>
+    <partial name="_Pager" model="@(new PagerModel(Model.Page, Model.TotalPages, page => Url.Action("Index", new { page })!))" />
+}

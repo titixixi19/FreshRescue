@@ -20,6 +20,7 @@ public partial class AuthService : IAuthService
     private readonly ITokenService _tokenService;
     private readonly TimeProvider _clock;
     private readonly ILogger<AuthService> _logger;
+    private readonly IPasswordResetSender _passwordResetSender;
 
     public AuthService(
         UserManager<AppUser> userManager,
@@ -27,7 +28,8 @@ public partial class AuthService : IAuthService
         IUnitOfWork uow,
         ITokenService tokenService,
         TimeProvider clock,
-        ILogger<AuthService> logger)
+        ILogger<AuthService> logger,
+        IPasswordResetSender passwordResetSender)
     {
         _userManager = userManager;
         _roleManager = roleManager;
@@ -35,6 +37,7 @@ public partial class AuthService : IAuthService
         _tokenService = tokenService;
         _clock = clock;
         _logger = logger;
+        _passwordResetSender = passwordResetSender;
     }
 
     public async Task<AuthResponseDto> RegisterCustomerAsync(RegisterCustomerRequest request, CancellationToken ct)
@@ -323,6 +326,7 @@ public partial class AuthService : IAuthService
         {
             var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
             _logger.LogInformation("Password reset token generated for UserId={UserId}", user.Id);
+            await _passwordResetSender.SendAsync(user.Email!, user.FullName, resetToken, ct);
         }
 
         return new AuthMessageResponse("Nếu email tồn tại trên hệ thống, hướng dẫn đặt lại mật khẩu đã được gửi.");
