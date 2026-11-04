@@ -8,11 +8,22 @@
     <PackageReference Include="Swashbuckle.AspNetCore" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <PackageReference Include="Microsoft.AspNetCore.OData" />
+    <PackageReference Include="Grpc.Net.ClientFactory" />
+    <PackageReference Include="Google.Protobuf" />
+    <PackageReference Include="Grpc.Tools">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <!-- Cho Add-Migration / dotnet ef. API là startup project. Chỉ Tùng chạy migration. -->
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Dùng chung file .proto của QrService — một nguồn sự thật (03-API-CONTRACT.md §11). -->
+    <Protobuf Include="..\FreshRescue.QrService\Protos\qr.proto" GrpcServices="Client" Link="Protos\qr.proto" />
   </ItemGroup>
 
 </Project>

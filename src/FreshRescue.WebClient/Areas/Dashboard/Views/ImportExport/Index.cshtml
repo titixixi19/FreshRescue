@@ -1,0 +1,71 @@
+@{
+    ViewData["Title"] = "Import / Export Dữ liệu";
+    var isBrand = User.IsInRole(AppRoles.BrandManager);
+}
+
+<div class="dash-toolbar">
+    <div>
+        <h2>Import &amp; Export Dữ liệu</h2>
+        <p class="muted small">
+            @(isBrand ? "FR-B07 · FR-B08 · BR-26 · BR-27" : "FR-A07 · BR-27")
+        </p>
+    </div>
+</div>
+
+@if (TempData["Success"] is string ok)
+{
+    <div class="dash-alert dash-alert-ok">@ok</div>
+}
+@if (TempData["Error"] is string err)
+{
+    <div class="dash-alert dash-alert-err">
+        @err
+        @if (TempData["ImportErrors"] is string importErrors)
+        {
+            <ul class="small" style="margin: 0.5rem 0 0 1rem;">
+                @foreach (var line in importErrors.Split('\n'))
+                {
+                    <li><code>@line</code></li>
+                }
+            </ul>
+        }
+    </div>
+}
+
+<div class="dash-grid" style="display: grid; grid-template-columns: @(isBrand ? "1fr 1fr" : "1fr"); gap: 1.5rem;">
+    <div class="dash-card">
+        <h3>Export đơn hàng (Excel)</h3>
+        <p class="muted small" style="margin-bottom: 1rem;">
+            @(isBrand ? "Đơn hàng và thống kê của thương hiệu" : "Đơn hàng toàn sàn"), lọc theo ngày tạo đơn. Bỏ trống để lấy toàn bộ.
+        </p>
+        <form asp-action="Export" method="get" class="dash-form">
+            <div class="dash-filters" style="margin-bottom: 1rem;">
+                <label class="muted small">Từ ngày</label>
+                <input type="date" name="from" class="dash-input" />
+                <label class="muted small">Đến ngày</label>
+                <input type="date" name="to" class="dash-input" />
+            </div>
+            <button type="submit" class="dash-btn">Tải file Excel</button>
+        </form>
+    </div>
+
+    @if (isBrand)
+    {
+        <div class="dash-card">
+            <h3>Import mẫu mặt hàng (Excel)</h3>
+            <p class="muted small" style="margin-bottom: 1rem;">
+                Tải file mẫu, điền rồi tải lên. Chỉ nhận .xlsx tối đa 5 MB, 200 dòng; có một dòng sai thì cả file không được lưu.
+            </p>
+            <p style="margin-bottom: 1rem;">
+                <a asp-action="ImportTemplate" class="dash-btn-secondary">Tải file mẫu</a>
+            </p>
+            <form asp-action="Import" method="post" enctype="multipart/form-data" class="dash-form">
+                @Html.AntiForgeryToken()
+                <div class="dash-field" style="margin-bottom: 1rem;">
+                    <input type="file" name="file" class="dash-input" accept=".xlsx" required />
+                </div>
+                <button type="submit" class="dash-btn">Tải lên &amp; import</button>
+            </form>
+        </div>
+    }
+</div>

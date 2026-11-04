@@ -1,0 +1,125 @@
+@model FreshRescue.WebClient.Areas.Dashboard.Models.SaleBatchListViewModel
+@using FreshRescue.WebClient.Models.Api
+@using FreshRescue.WebClient.Helpers
+@{
+    ViewData["Title"] = "Đợt bán";
+    var isBrandManager = User.IsInRole(AppRoles.BrandManager);
+}
+
+<div class="dash-toolbar">
+    <div>
+        <h2>Đợt bán</h2>
+        <p class="muted small">FR-S02 · <code>GET/POST staff/sale-batches</code></p>
+    </div>
+    <a class="dash-btn" asp-area="Dashboard" asp-controller="SaleBatches" asp-action="CreateStep1">+ Tạo đợt (4 bước)</a>
+</div>
+
+@if (TempData["Success"] is string ok)
+{
+    <div class="dash-alert dash-alert-ok" role="status">@ok</div>
+}
+@if (TempData["Error"] is string err)
+{
+    <div class="dash-alert dash-alert-err" role="alert">@err</div>
+}
+
+<form method="get" asp-action="Index" class="dash-filters">
+    <select name="status" class="dash-input">
+        <option value="">— Mọi trạng thái —</option>
+        @foreach (var s in new[] { "Draft", "Scheduled", "Active", "Closed", "Cancelled" })
+        {
+            if (Model.StatusFilter == s)
+            {
+                <option value="@s" selected>@s</option>
+            }
+            else
+            {
+                <option value="@s">@s</option>
+            }
+        }
+    </select>
+    <button type="submit" class="dash-btn dash-btn-sm">Lọc</button>
+</form>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="dash-alert dash-alert-err" role="alert">@Model.ErrorMessage</div>
+}
+else if (Model.Items.Count == 0)
+{
+    <div class="dash-empty">
+        <p>Chưa có đợt bán nào.</p>
+        <a class="dash-btn" asp-action="CreateStep1">Tạo đợt đầu tiên</a>
+    </div>
+}
+else
+{
+    <div class="dash-table-wrap">
+        <table class="dash-table">
+            <thead>
+                <tr>
+                    <th>Tên</th>
+                    <th>Trạng thái</th>
+                    <th>Bán</th>
+                    <th>Nhận hàng</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var b in Model.Items)
+                {
+                    <tr>
+                        <td>
+                            <strong>@(string.IsNullOrEmpty(b.Name) ? "—" : b.Name)</strong>
+                            <div class="muted small">@b.StoreName</div>
+                        </td>
+                        <td><span class="badge">@b.Status</span></td>
+                        <td class="muted small">
+                            @Display.DateAndTime(b.SaleStartTime)
+                            <br />→ @Display.DateAndTime(b.SaleEndTime)
+                        </td>
+                        <td class="muted small">
+                            @Display.DateAndTime(b.PickupStartTime)
+                            <br />→ @Display.DateAndTime(b.PickupEndTime)
+                        </td>
+                        <td class="dash-actions">
+                            <a asp-area="Dashboard" asp-controller="StaffOffers" asp-action="Manage" asp-route-saleBatchId="@b.Id">Offer</a>
+                            <a asp-area="Dashboard" asp-controller="StaffOrders" asp-action="Index" asp-route-saleBatchId="@b.Id">Đơn</a>
+                            @if (string.Equals(b.Status, "Draft", StringComparison.OrdinalIgnoreCase))
+                            {
+                                <form asp-action="Activate" asp-route-id="@b.Id" method="post" class="inline-form">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="link-ok">Kích hoạt</button>
+                                </form>
+                            }
+                            @if (isBrandManager
+                                 && !string.Equals(b.Status, "Cancelled", StringComparison.OrdinalIgnoreCase)
+                                 && !string.Equals(b.Status, "Closed", StringComparison.OrdinalIgnoreCase))
+                            {
+                                <form asp-action="Cancel" asp-route-id="@b.Id" method="post" class="reject-form"
+                                      onsubmit="return this.reason.value.trim().length > 0 || (alert('Nhập lý do huỷ đợt'), false);">
+                                    @Html.AntiForgeryToken()
+                                    <input type="text" name="reason" class="dash-input dash-input-sm" placeholder="Lý do huỷ" maxlength="500" />
+                                    <button type="submit" class="link-danger">Huỷ đợt</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav class="dash-pager" aria-label="Phân trang">
+            @for (var p = 1; p <= Model.TotalPages; p++)
+            {
+                <a class="@(p == Model.Page ? "active" : null)"
+                   asp-action="Index"
+                   asp-route-page="@p"
+                   asp-route-status="@Model.StatusFilter">@p</a>
+            }
+        </nav>
+    }
+}

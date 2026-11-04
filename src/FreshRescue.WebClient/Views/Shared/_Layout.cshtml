@@ -1,46 +1,116 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+﻿@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@{
+    var isSignedIn = User.Identity?.IsAuthenticated == true;
+    var isCustomer = User.IsInRole(AppRoles.Customer);
+    var canUseDashboard = User.IsInRole(AppRoles.Admin) || User.IsInRole(AppRoles.BrandManager) || User.IsInRole(AppRoles.StoreStaff);
+    var loginUrl = Url.Action("Login", "Account", new { area = "" });
+}
+<!DOCTYPE html>
+<html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - FreshRescue.WebClient</title>
+    @* site.js đọc token này để gửi kèm mọi lệnh fetch POST (chống CSRF). *@
+    <meta name="csrf-token" content="@Antiforgery.GetAndStoreTokens(Context).RequestToken" />
+    <title>@ViewData["Title"] · FreshRescue</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/FreshRescue.WebClient.styles.css" asp-append-version="true" />
+    @await RenderSectionAsync("Head", required: false)
 </head>
-<body>
+<body data-authenticated="@(isSignedIn ? "true" : "false")"
+      data-customer="@(isCustomer ? "true" : "false")"
+      data-login-url="@loginUrl">
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">FreshRescue.WebClient</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+        <nav class="navbar navbar-expand-md navbar-light bg-white border-bottom shadow-sm">
+            <div class="container">
+                <a class="navbar-brand fr-brand" asp-area="Customer" asp-controller="Storefront" asp-action="Index">
+                    <span class="fr-brand-mark">🌱</span> FreshRescue
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#fr-nav"
+                        aria-controls="fr-nav" aria-expanded="false" aria-label="Mở menu">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+                <div class="collapse navbar-collapse" id="fr-nav">
+                    <ul class="navbar-nav me-auto">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link" asp-area="Customer" asp-controller="Storefront" asp-action="Index">Săn đồ ăn</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link" asp-area="Customer" asp-controller="Stores" asp-action="Index">Cửa hàng gần tôi</a>
                         </li>
+                        @if (isCustomer)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="Customer" asp-controller="Orders" asp-action="Index">Đơn của tôi</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="Customer" asp-controller="Favorites" asp-action="Index">Yêu thích</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="Customer" asp-controller="Notifications" asp-action="Index">🔔 Thông báo</a>
+                            </li>
+                        }
+                        @if (canUseDashboard)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" href="/Dashboard">Bảng điều khiển</a>
+                            </li>
+                        }
+                    </ul>
+                    <ul class="navbar-nav">
+                        @if (isSignedIn)
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="fr-user-menu" role="button"
+                                   data-bs-toggle="dropdown" aria-expanded="false">
+                                    👤 @User.Identity!.Name
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="fr-user-menu">
+                                    <li><span class="dropdown-item-text small text-muted">@User.FindFirstValue(ClaimTypes.Email)</span></li>
+                                    @if (isCustomer)
+                                    {
+                                        <li><a class="dropdown-item" asp-area="Customer" asp-controller="Orders" asp-action="Index">Đơn của tôi</a></li>
+                                    }
+                                    <li><hr class="dropdown-divider" /></li>
+                                    <li>
+                                        <form asp-area="" asp-controller="Account" asp-action="Logout" method="post">
+                                            <button type="submit" class="dropdown-item">Đăng xuất</button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Account" asp-action="Login"
+                                   asp-route-returnUrl="@($"{Context.Request.Path}{Context.Request.QueryString}")">Đăng nhập</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="btn btn-success btn-sm ms-md-2 mt-1" asp-area="" asp-controller="Account" asp-action="Register">Đăng ký</a>
+                            </li>
+                        }
                     </ul>
                 </div>
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+
+    <div class="container pt-3">
+        <partial name="_FlashMessages" />
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - FreshRescue.WebClient - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <main role="main" class="container pb-5">
+        @RenderBody()
+    </main>
+
+    <footer class="border-top py-3 text-muted small">
+        <div class="container d-flex flex-wrap justify-content-between gap-2">
+            <span>&copy; 2026 FreshRescue — giải cứu thực phẩm, giảm lãng phí.</span>
+            <span>Đồ án PRN232 · Nhóm 6</span>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

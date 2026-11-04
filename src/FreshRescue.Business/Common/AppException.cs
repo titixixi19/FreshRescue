@@ -22,6 +22,8 @@ public class AppException : Exception
 
     public static AppException BadRequest(string code, string detail) => new(code, 400, detail);
 
+    public static AppException Unauthorized(string code, string detail) => new(code, 401, detail);
+
     public static AppException Forbidden(string code, string detail) => new(code, 403, detail);
 
     public static AppException NotFound(string code, string detail) => new(code, 404, detail);

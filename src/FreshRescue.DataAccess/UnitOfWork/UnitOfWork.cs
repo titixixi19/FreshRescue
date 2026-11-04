@@ -21,8 +21,8 @@ public class UnitOfWork : IUnitOfWork
     private IGenericRepository<Category>? _categories;
     private IGenericRepository<OfferTemplate>? _offerTemplates;
     private IGenericRepository<SaleBatch>? _saleBatches;
-    private IGenericRepository<Offer>? _offers;
-    private IGenericRepository<Order>? _orders;
+    private IOfferRepository? _offers;
+    private IOrderRepository? _orders;
     private IGenericRepository<OrderItem>? _orderItems;
     private IGenericRepository<QrTicket>? _qrTickets;
     private IGenericRepository<Payment>? _payments;
@@ -52,9 +52,9 @@ public class UnitOfWork : IUnitOfWork
 
     public IGenericRepository<SaleBatch> SaleBatches => _saleBatches ??= new GenericRepository<SaleBatch>(_context);
 
-    public IGenericRepository<Offer> Offers => _offers ??= new GenericRepository<Offer>(_context);
+    public IOfferRepository Offers => _offers ??= new OfferRepository(_context);
 
-    public IGenericRepository<Order> Orders => _orders ??= new GenericRepository<Order>(_context);
+    public IOrderRepository Orders => _orders ??= new OrderRepository(_context);
 
     public IGenericRepository<OrderItem> OrderItems => _orderItems ??= new GenericRepository<OrderItem>(_context);
 
@@ -75,4 +75,6 @@ public class UnitOfWork : IUnitOfWork
 
     public Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken)
         => _context.Database.BeginTransactionAsync(cancellationToken);
+
+    public void ClearChangeTracker() => _context.ChangeTracker.Clear();
 }

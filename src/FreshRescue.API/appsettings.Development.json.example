@@ -8,5 +8,12 @@
       "Microsoft.AspNetCore": "Warning",
       "Microsoft.EntityFrameworkCore.Database.Command": "Information"
     }
+  },
+  "Jwt": {
+    "Key": "FreshRescue_Super_Secret_Key_For_Jwt_Auth_2026_Minimum_32_Chars_Long!",
+    "Issuer": "FreshRescue.API",
+    "Audience": "FreshRescue.Client",
+    "AccessTokenExpirationMinutes": 15,
+    "RefreshTokenExpirationDays": 7
   }
 }

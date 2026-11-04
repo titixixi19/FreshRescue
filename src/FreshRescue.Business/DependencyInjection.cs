@@ -1,5 +1,11 @@
 using FluentValidation;
+using FreshRescue.Business.Features.Admin;
+using FreshRescue.Business.Features.Catalog;
+using FreshRescue.Business.Features.Engagement;
+using FreshRescue.Business.Features.Ordering;
+using FreshRescue.DataAccess.Repositories;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace FreshRescue.Business;
 
@@ -13,13 +19,43 @@ public static class DependencyInjection
         // Mỗi người thêm dòng đăng ký service của lát mình vào đúng nhóm dưới đây.
         // Giữ thứ tự nhóm cố định để hai PR cùng sửa file này ít xung đột.
 
-        // --- Auth (Hiếu) ---
+        // --- Auth & Engagement (Hiếu) ---
+        services.AddScoped<Features.Auth.Services.ITokenService, Features.Auth.Services.TokenService>();
+        services.AddScoped<Features.Auth.Services.IAuthService, Features.Auth.Services.AuthService>();
+        // API đăng ký bản gửi email thật; TryAdd để seeder/test vẫn dựng được AuthService.
+        services.TryAddScoped<Features.Auth.Services.IPasswordResetSender, Features.Auth.Services.LogOnlyPasswordResetSender>();
+        services.AddScoped<IFavoriteService, FavoriteService>();
+        services.AddScoped<INotificationService, NotificationService>();
 
         // --- Catalog + Admin (Đình Đức) ---
+        services.AddScoped<ICategoryService, CategoryService>();
+        services.AddScoped<IBrandProfileService, BrandProfileService>();
+        services.AddScoped<IAdminBrandService, AdminBrandService>();
+        services.AddScoped<IStoreService, StoreService>();
+        services.AddScoped<IOfferTemplateService, OfferTemplateService>();
+        services.AddScoped<IOfferTemplateExcelService, OfferTemplateExcelService>();
+        services.AddScoped<IAdminUserService, AdminUserService>();
+        services.AddScoped<IPublicCatalogODataService, PublicCatalogODataService>();
+
+        // --- Engagement / Review + Dispute (Đình Đức) ---
+        services.AddScoped<IReviewService, ReviewService>();
+        services.AddScoped<IStoreRatingRepository, StoreRatingRepository>();
+        services.AddScoped<IDisputeService, DisputeService>();
+        services.AddScoped<IDisputeWorkflowRepository, DisputeWorkflowRepository>();
+
+        // --- Storefront công khai & Nhân viên chi nhánh (Đức Anh) ---
+        services.AddScoped<Features.Catalog.IStorefrontService, Features.Catalog.StorefrontService>();
+        services.AddScoped<IBrandStaffService, BrandStaffService>();
 
         // --- Sales (Quang Huy) ---
+        services.AddScoped<Features.Sales.ISaleBatchService, Features.Sales.SaleBatchService>();
+        services.AddScoped<Features.Sales.IOfferService, Features.Sales.OfferService>();
 
         // --- Ordering + Redemption (Tùng) ---
+        services.AddOptions<OrderingOptions>().BindConfiguration(OrderingOptions.SectionName);
+        services.AddScoped<IOrderService, OrderService>();
+        services.AddScoped<IOrderExportService, OrderExportService>();
+        services.AddScoped<IBrandStatsService, BrandStatsService>();
 
         return services;
     }

@@ -1,0 +1,149 @@
+@model FreshRescue.WebClient.Areas.Dashboard.Models.UserListViewModel
+@using FreshRescue.WebClient.Helpers
+@using FreshRescue.WebClient.Models.Api
+@{
+    ViewData["Title"] = "Người dùng";
+}
+
+<div class="dash-toolbar">
+    <div>
+        <h2>Người dùng</h2>
+        <p class="muted small">FR-A02 · <code>GET admin/users</code> · <code>PATCH .../status</code></p>
+    </div>
+</div>
+
+@if (TempData["Success"] is string ok)
+{
+    <div class="dash-alert dash-alert-ok">@ok</div>
+}
+@if (TempData["Error"] is string err)
+{
+    <div class="dash-alert dash-alert-err">@err</div>
+}
+
+<form method="get" asp-action="Index" class="dash-filters">
+    <input type="text" name="q" value="@Model.Query" class="dash-input" placeholder="Tìm email / tên" />
+    <select name="role" class="dash-input">
+        <option value="">— Mọi role —</option>
+        @foreach (var r in new[] { AppRoles.Admin, AppRoles.BrandManager, AppRoles.StoreStaff, AppRoles.Customer })
+        {
+            if (Model.Role == r)
+            {
+                <option value="@r" selected>@r</option>
+            }
+            else
+            {
+                <option value="@r">@r</option>
+            }
+        }
+    </select>
+    <select name="isActive" class="dash-input">
+        <option value="">— Mọi trạng thái —</option>
+        @if (Model.IsActive == true)
+        {
+            <option value="true" selected>Đang hoạt động</option>
+            <option value="false">Đã khoá</option>
+        }
+        else if (Model.IsActive == false)
+        {
+            <option value="true">Đang hoạt động</option>
+            <option value="false" selected>Đã khoá</option>
+        }
+        else
+        {
+            <option value="true">Đang hoạt động</option>
+            <option value="false">Đã khoá</option>
+        }
+    </select>
+    <button type="submit" class="dash-btn dash-btn-sm">Lọc</button>
+</form>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="dash-alert dash-alert-err">@Model.ErrorMessage</div>
+}
+else if (Model.Items.Count == 0)
+{
+    <div class="dash-empty">
+        <p>Không có người dùng nào khớp bộ lọc.</p>
+    </div>
+}
+else
+{
+    <div class="dash-table-wrap">
+        <table class="dash-table">
+            <thead>
+                <tr>
+                    <th>Họ tên</th>
+                    <th>Email</th>
+                    <th>Vai trò</th>
+                    <th>Trạng thái</th>
+                    <th>Tạo lúc</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var u in Model.Items)
+                {
+                    <tr>
+                        <td><strong>@u.FullName</strong></td>
+                        <td>@u.Email</td>
+                        <td class="muted small">
+                            @string.Join(", ", u.Roles)
+                        </td>
+                        <td>
+                            @if (u.IsActive)
+                            {
+                                <span class="badge">Active</span>
+                            }
+                            else
+                            {
+                                <span class="badge">Locked</span>
+                            }
+                        </td>
+                        <td class="muted small">
+                            @(u.CreatedAt is null ? "—" : Display.DateAndTime(u.CreatedAt.Value))
+                        </td>
+                        <td class="dash-actions">
+                            <form asp-action="SetStatus" method="post" class="inline-form">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@u.Id" />
+                                <input type="hidden" name="isActive" value="@(!u.IsActive)" />
+                                <input type="hidden" name="role" value="@Model.Role" />
+                                <input type="hidden" name="filterIsActive" value="@Model.IsActive" />
+                                <input type="hidden" name="q" value="@Model.Query" />
+                                <input type="hidden" name="page" value="@Model.Page" />
+                                @if (u.IsActive)
+                                {
+                                    <button type="submit" class="link-danger"
+                                            onclick="return confirm('Khoá tài khoản này?');">
+                                        Khoá
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button type="submit" class="link-ok">Mở khoá</button>
+                                }
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav class="dash-pager" aria-label="Phân trang">
+            @for (var p = 1; p <= Model.TotalPages; p++)
+            {
+                <a class="@(p == Model.Page ? "active" : null)"
+                   asp-action="Index"
+                   asp-route-page="@p"
+                   asp-route-role="@Model.Role"
+                   asp-route-isActive="@Model.IsActive"
+                   asp-route-q="@Model.Query">@p</a>
+            }
+        </nav>
+    }
+}

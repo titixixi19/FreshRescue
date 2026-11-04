@@ -336,15 +336,18 @@ tích hợp VNPay thật, đánh bóng UI, hoặc nghỉ.
 
 Đây là thứ phân biệt đồ án này với một bài CRUD tầm thường.
 
-**Optimistic locking** (mặc định):
+**Pessimistic locking** (mặc định từ 05/10 — chỉ chế độ này đạt đúng 10/10 trong kịch
+bản 50 request, số liệu ở `02-DOMAIN-MODEL.md` §6):
+
+- `BEGIN TRAN` + `SELECT ... WITH (UPDLOCK, ROWLOCK)` qua `FromSqlRaw`
+
+**Optimistic locking** (giữ để so sánh trong báo cáo):
 
 - `Offer` có cột `RowVersion` (`[Timestamp]`)
 - Đặt hàng → đọc Offer → kiểm `RemainingQuantity` → trừ → `SaveChanges()`
 - Bắt `DbUpdateConcurrencyException` → retry tối đa 3 lần → hết thì trả `409 Conflict`
 
-**Pessimistic locking** (để so sánh trong báo cáo):
-
-- `BEGIN TRAN` + `SELECT ... WITH (UPDLOCK, ROWLOCK)` qua `FromSqlRaw`
+Chuyển chế độ bằng `Ordering:LockingStrategy` trong `appsettings.json`.
 
 → Báo cáo nên trình bày **cả hai**, kèm số liệu load test. Điểm cộng rất lớn.
 

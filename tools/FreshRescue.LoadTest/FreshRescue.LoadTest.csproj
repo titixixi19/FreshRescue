@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Chỉ dùng DbContext để dựng dữ liệu đo và đọc lại tồn kho — không đi qua Business. -->
+    <ProjectReference Include="..\..\src\FreshRescue.DataAccess\FreshRescue.DataAccess.csproj" />
+  </ItemGroup>
+
+</Project>

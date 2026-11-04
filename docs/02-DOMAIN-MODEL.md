@@ -476,6 +476,21 @@ WHERE  oi.OfferId = @offerId
 
 Phần quan trọng nhất của cả đồ án. Đọc kỹ trước khi code.
 
+> **Chốt 05/10 — bi quan là mặc định, lạc quan giữ để so sánh.** Số liệu đo lại ngày 15/10
+> bằng `tools/FreshRescue.LoadTest` (chi tiết trong `README.md` của công cụ), mỗi kịch bản 5
+> lượt trên SQL Server LocalDB. **Không chế độ nào bán lố** ở bất kỳ lượt nào.
+>
+> | Kịch bản | Bi quan (§6.3) | Lạc quan (§6.1, thử lại 3 lần có chờ ngẫu nhiên) |
+> | --- | --- | --- |
+> | 50 khách / 10 suất (`NFR-01`) | **10/10** cả 5 lượt, p50 140 ms | 10/10 cả 5 lượt nhưng p50 655 ms, 552 lần thử lại |
+> | 50 khách / 30 suất | **30/30** cả 5 lượt | **9–24/30**, không lượt nào bán hết — còn hàng vẫn trả `CONCURRENCY_CONFLICT` |
+> | 100 khách / 10 suất | **10/10** cả 5 lượt, p50 224 ms | 9–10/10, p50 716 ms |
+>
+> Càng nhiều người cùng **được** mua, lạc quan càng mất đơn vì các lệnh ghi `RowVersion` đè
+> nhau; bi quan xếp hàng chờ khoá nên bán đúng số suất và nhanh hơn 2–4 lần. Chọn bằng
+> `Ordering:LockingStrategy` trong `appsettings.json` (`Pessimistic` | `Optimistic`).
+> Hai chế độ chỉ khác ở bước nạp offer; mọi bước còn lại của §6.1 dùng chung.
+
 ### 6.1. Giao dịch đặt hàng
 
 ```
@@ -507,8 +522,8 @@ BEGIN TRANSACTION (ReadCommitted)
 COMMIT
 ```
 
-Bắt `DbUpdateConcurrencyException` → nạp lại → thử lại, **tối đa 3 lần**. Hết lượt trả
-`409 Conflict` kèm thông điệp "Mặt hàng vừa được người khác mua hết".
+Bắt `DbUpdateConcurrencyException` → nạp lại → chờ ngẫu nhiên → thử lại, **tối đa 3
+lần**. Hết lượt trả `409 CONCURRENCY_CONFLICT`. Chỉ xảy ra ở chế độ lạc quan.
 
 ### 6.2. ⚠️ Cái bẫy chết người: deadlock khi đơn có nhiều dòng
 
@@ -524,20 +539,23 @@ Giao dịch B: khoá Offer#2 ──chờ──► Offer#1     ⇒ DEADLOCK
 kể cả lúc huỷ đơn và hoàn tồn kho. Một dòng `OrderBy(x => x.Id)` đặt đúng chỗ tránh
 được cả một lớp lỗi rất khó tái hiện.
 
-### 6.3. Phương án bi quan — để so sánh trong báo cáo
+### 6.3. Phương án bi quan — mặc định
+
+Thay bước nạp offer của §6.1 bằng:
 
 ```sql
-BEGIN TRAN
-SELECT Id, RemainingQuantity
-FROM   Offers WITH (UPDLOCK, ROWLOCK)
+SELECT * FROM Offers WITH (UPDLOCK, ROWLOCK)
 WHERE  Id IN (@ids)
-ORDER  BY Id;          -- vẫn phải sắp xếp, cùng lý do §6.2
--- kiểm tra rồi UPDATE
-COMMIT
 ```
 
-Cài đặt cả hai, đo bằng cùng một kịch bản tải, đưa số liệu vào báo cáo. Kỳ vọng:
-lạc quan thắng khi tranh chấp thấp, bi quan ổn định hơn khi tranh chấp cao.
+Khoá giữ tới `COMMIT`, các đơn tranh cùng offer xếp hàng chờ nhau nên không có xung đột
+để thử lại. Câu này **không** có `ORDER BY`: EF bọc nó thành truy vấn con để thêm bộ lọc
+xoá mềm, và SQL Server không cho `ORDER BY` trong truy vấn con. Thứ tự khoá vẫn nhất quán
+vì SQL Server tìm danh sách `IN` theo thứ tự khoá chính. Cài ở
+`OfferRepository.GetForUpdateAsync`.
+
+Cả hai chế độ đều được cài để `T6-TUNG-01` đo bằng cùng một kịch bản tải và đưa số liệu
+vào báo cáo.
 
 ### 6.4. Hoàn tồn kho cũng phải là giao dịch
 

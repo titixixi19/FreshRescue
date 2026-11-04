@@ -1,0 +1,19 @@
+@* Layout phía khách (T2-TV4-01): khung chung của site + modal Quick Checkout và script đặt hàng. *@
+@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+}
+
+@RenderBody()
+
+<partial name="_QuickCheckoutModal" />
+
+@section Head {
+    <link rel="stylesheet" href="~/css/customer.css" asp-append-version="true" />
+    @await RenderSectionAsync("Head", required: false)
+}
+
+@section Scripts {
+    <script src="~/lib/qrcode-generator/qrcode.min.js"></script>
+    <script src="~/js/checkout.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+}

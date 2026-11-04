@@ -1,0 +1,548 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="5700" height="3900" viewBox="0 0 5700 3900" font-family="Segoe UI, Arial, sans-serif">
+<rect width="5700" height="3900" fill="white"/>
+<text x="40" y="70" font-size="44" font-weight="bold" fill="#1f2937">FreshRescue — Entity Relationship Diagram (Chen notation)</text>
+<text x="40" y="115" font-size="26" fill="#4b5563">Rectangle = strong entity · double rectangle = weak entity · diamond = relationship · double diamond = identifying relationship · oval = attribute · underlined = key · dashed underline = partial key · dashed oval = derived · double oval = multivalued · double line = total participation</text>
+<line x1="500" y1="670" x2="460" y2="897" stroke="#374151" stroke-width="2"/>
+<line x1="500" y1="670" x2="324" y2="818" stroke="#374151" stroke-width="2"/>
+<line x1="500" y1="670" x2="270" y2="670" stroke="#374151" stroke-width="2"/>
+<line x1="500" y1="670" x2="324" y2="522" stroke="#374151" stroke-width="2"/>
+<line x1="500" y1="670" x2="460" y2="443" stroke="#374151" stroke-width="2"/>
+<line x1="1700" y1="670" x2="1439" y2="600" stroke="#374151" stroke-width="2"/>
+<line x1="1700" y1="670" x2="1376" y2="453" stroke="#374151" stroke-width="2"/>
+<line x1="1700" y1="670" x2="1536" y2="456" stroke="#374151" stroke-width="2"/>
+<line x1="1700" y1="670" x2="1575" y2="301" stroke="#374151" stroke-width="2"/>
+<line x1="1700" y1="670" x2="1700" y2="400" stroke="#374151" stroke-width="2"/>
+<line x1="1700" y1="670" x2="1825" y2="301" stroke="#374151" stroke-width="2"/>
+<line x1="1700" y1="670" x2="1864" y2="456" stroke="#374151" stroke-width="2"/>
+<line x1="1700" y1="670" x2="2024" y2="453" stroke="#374151" stroke-width="2"/>
+<line x1="1700" y1="670" x2="1961" y2="600" stroke="#374151" stroke-width="2"/>
+<line x1="2900" y1="670" x2="2965" y2="429" stroke="#374151" stroke-width="2"/>
+<line x1="2900" y1="670" x2="3138" y2="387" stroke="#374151" stroke-width="2"/>
+<line x1="2900" y1="670" x2="3127" y2="564" stroke="#374151" stroke-width="2"/>
+<line x1="2900" y1="670" x2="3270" y2="670" stroke="#374151" stroke-width="2"/>
+<line x1="2900" y1="670" x2="3127" y2="776" stroke="#374151" stroke-width="2"/>
+<line x1="2900" y1="670" x2="3138" y2="953" stroke="#374151" stroke-width="2"/>
+<line x1="2900" y1="670" x2="2965" y2="911" stroke="#374151" stroke-width="2"/>
+<line x1="500" y1="1670" x2="478" y2="1919" stroke="#374151" stroke-width="2"/>
+<line x1="500" y1="1670" x2="319" y2="1993" stroke="#374151" stroke-width="2"/>
+<line x1="500" y1="1670" x2="299" y2="1818" stroke="#374151" stroke-width="2"/>
+<line x1="500" y1="1670" x2="138" y2="1748" stroke="#374151" stroke-width="2"/>
+<line x1="500" y1="1670" x2="256" y2="1617" stroke="#374151" stroke-width="2"/>
+<line x1="500" y1="1670" x2="202" y2="1450" stroke="#374151" stroke-width="2"/>
+<line x1="500" y1="1670" x2="378" y2="1452" stroke="#374151" stroke-width="2"/>
+<line x1="500" y1="1670" x2="468" y2="1301" stroke="#374151" stroke-width="2"/>
+<line x1="1900" y1="1670" x2="2050" y2="1930" stroke="#374151" stroke-width="2"/>
+<line x1="1900" y1="1670" x2="2005" y2="2077" stroke="#374151" stroke-width="2"/>
+<line x1="1900" y1="1670" x2="1895" y2="1970" stroke="#374151" stroke-width="2"/>
+<line x1="1900" y1="1670" x2="1781" y2="2073" stroke="#374151" stroke-width="2"/>
+<line x1="1900" y1="1670" x2="1741" y2="1924" stroke="#374151" stroke-width="2"/>
+<line x1="1900" y1="1670" x2="1590" y2="1954" stroke="#374151" stroke-width="2"/>
+<line x1="1590" y1="1954" x2="1580" y2="2194" stroke="#374151" stroke-width="2"/>
+<line x1="1590" y1="1954" x2="1461" y2="2156" stroke="#374151" stroke-width="2"/>
+<line x1="1590" y1="1954" x2="1377" y2="2065" stroke="#374151" stroke-width="2"/>
+<line x1="1590" y1="1954" x2="1351" y2="1943" stroke="#374151" stroke-width="2"/>
+<line x1="1900" y1="1670" x2="1633" y2="1806" stroke="#374151" stroke-width="2"/>
+<line x1="1900" y1="1670" x2="1488" y2="1754" stroke="#374151" stroke-width="2"/>
+<line x1="1900" y1="1670" x2="1601" y2="1649" stroke="#374151" stroke-width="2"/>
+<line x1="1900" y1="1670" x2="1504" y2="1530" stroke="#374151" stroke-width="2"/>
+<line x1="1900" y1="1670" x2="1654" y2="1498" stroke="#374151" stroke-width="2"/>
+<line x1="500" y1="2470" x2="462" y2="2687" stroke="#374151" stroke-width="2"/>
+<line x1="500" y1="2470" x2="331" y2="2611" stroke="#374151" stroke-width="2"/>
+<line x1="500" y1="2470" x2="280" y2="2470" stroke="#374151" stroke-width="2"/>
+<line x1="500" y1="2470" x2="331" y2="2329" stroke="#374151" stroke-width="2"/>
+<line x1="500" y1="2470" x2="462" y2="2253" stroke="#374151" stroke-width="2"/>
+<line x1="1300" y1="2470" x2="1396" y2="2733" stroke="#374151" stroke-width="2"/>
+<line x1="1300" y1="2470" x2="1352" y2="2867" stroke="#374151" stroke-width="2"/>
+<line x1="1300" y1="2470" x2="1255" y2="2988" stroke="#374151" stroke-width="2"/>
+<line x1="1300" y1="2470" x2="1216" y2="2737" stroke="#374151" stroke-width="2"/>
+<line x1="1300" y1="2470" x2="1100" y2="2816" stroke="#374151" stroke-width="2"/>
+<line x1="1300" y1="2470" x2="949" y2="2853" stroke="#374151" stroke-width="2"/>
+<line x1="1300" y1="2470" x2="1071" y2="2631" stroke="#374151" stroke-width="2"/>
+<line x1="1300" y1="2470" x2="930" y2="2623" stroke="#374151" stroke-width="2"/>
+<line x1="1300" y1="2470" x2="788" y2="2560" stroke="#374151" stroke-width="2"/>
+<line x1="2500" y1="2470" x2="2575" y2="2190" stroke="#374151" stroke-width="2"/>
+<line x1="2500" y1="2470" x2="2717" y2="2122" stroke="#374151" stroke-width="2"/>
+<line x1="2500" y1="2470" x2="2718" y2="2279" stroke="#374151" stroke-width="2"/>
+<line x1="2500" y1="2470" x2="2873" y2="2301" stroke="#374151" stroke-width="2"/>
+<line x1="2500" y1="2470" x2="2788" y2="2432" stroke="#374151" stroke-width="2"/>
+<line x1="2500" y1="2470" x2="2905" y2="2537" stroke="#374151" stroke-width="2"/>
+<line x1="2500" y1="2470" x2="2760" y2="2598" stroke="#374151" stroke-width="2"/>
+<line x1="2500" y1="2470" x2="2799" y2="2750" stroke="#374151" stroke-width="2"/>
+<line x1="2500" y1="2470" x2="2645" y2="2721" stroke="#374151" stroke-width="2"/>
+<line x1="1900" y1="3270" x2="2045" y2="3521" stroke="#374151" stroke-width="2"/>
+<line x1="1900" y1="3270" x2="1990" y2="3670" stroke="#374151" stroke-width="2"/>
+<line x1="1900" y1="3270" x2="1858" y2="3798" stroke="#374151" stroke-width="2"/>
+<line x1="1900" y1="3270" x2="1792" y2="3539" stroke="#374151" stroke-width="2"/>
+<line x1="1900" y1="3270" x2="1641" y2="3588" stroke="#374151" stroke-width="2"/>
+<line x1="1900" y1="3270" x2="1459" y2="3564" stroke="#374151" stroke-width="2"/>
+<line x1="1900" y1="3270" x2="1622" y2="3352" stroke="#374151" stroke-width="2"/>
+<line x1="1900" y1="3270" x2="1490" y2="3263" stroke="#374151" stroke-width="2"/>
+<line x1="1900" y1="3270" x2="1396" y2="3105" stroke="#374151" stroke-width="2"/>
+<line x1="1900" y1="3270" x2="1664" y2="3102" stroke="#374151" stroke-width="2"/>
+<line x1="1900" y1="3270" x2="1652" y2="2944" stroke="#374151" stroke-width="2"/>
+<line x1="1900" y1="3270" x2="1719" y2="2772" stroke="#374151" stroke-width="2"/>
+<line x1="3800" y1="2470" x2="3717" y2="2161" stroke="#374151" stroke-width="2"/>
+<line x1="3800" y1="2470" x2="3756" y2="2032" stroke="#374151" stroke-width="2"/>
+<line x1="3800" y1="2470" x2="3834" y2="1911" stroke="#374151" stroke-width="2"/>
+<line x1="3800" y1="2470" x2="3870" y2="2158" stroke="#374151" stroke-width="2"/>
+<line x1="3800" y1="2470" x2="3964" y2="2062" stroke="#374151" stroke-width="2"/>
+<line x1="3800" y1="2470" x2="4090" y2="1991" stroke="#374151" stroke-width="2"/>
+<line x1="3800" y1="2470" x2="4007" y2="2226" stroke="#374151" stroke-width="2"/>
+<line x1="3800" y1="2470" x2="4135" y2="2185" stroke="#374151" stroke-width="2"/>
+<line x1="3800" y1="2470" x2="4279" y2="2180" stroke="#374151" stroke-width="2"/>
+<line x1="3800" y1="2470" x2="4097" y2="2351" stroke="#374151" stroke-width="2"/>
+<line x1="3800" y1="2470" x2="4229" y2="2373" stroke="#374151" stroke-width="2"/>
+<line x1="3800" y1="2470" x2="4359" y2="2436" stroke="#374151" stroke-width="2"/>
+<line x1="3800" y1="2470" x2="4118" y2="2502" stroke="#374151" stroke-width="2"/>
+<line x1="3800" y1="2470" x2="4225" y2="2584" stroke="#374151" stroke-width="2"/>
+<line x1="3300" y1="3270" x2="3508" y2="3390" stroke="#374151" stroke-width="2"/>
+<line x1="3300" y1="3270" x2="3512" y2="3561" stroke="#374151" stroke-width="2"/>
+<line x1="3300" y1="3270" x2="3350" y2="3505" stroke="#374151" stroke-width="2"/>
+<line x1="3300" y1="3270" x2="3225" y2="3622" stroke="#374151" stroke-width="2"/>
+<line x1="3300" y1="3270" x2="3159" y2="3464" stroke="#374151" stroke-width="2"/>
+<line x1="3300" y1="3270" x2="2988" y2="3450" stroke="#374151" stroke-width="2"/>
+<line x1="3900" y1="3270" x2="4108" y2="3390" stroke="#374151" stroke-width="2"/>
+<line x1="3900" y1="3270" x2="4112" y2="3561" stroke="#374151" stroke-width="2"/>
+<line x1="3900" y1="3270" x2="3950" y2="3505" stroke="#374151" stroke-width="2"/>
+<line x1="3900" y1="3270" x2="3825" y2="3622" stroke="#374151" stroke-width="2"/>
+<line x1="3900" y1="3270" x2="3759" y2="3464" stroke="#374151" stroke-width="2"/>
+<line x1="3900" y1="3270" x2="3588" y2="3450" stroke="#374151" stroke-width="2"/>
+<line x1="4500" y1="3270" x2="4708" y2="3390" stroke="#374151" stroke-width="2"/>
+<line x1="4500" y1="3270" x2="4680" y2="3582" stroke="#374151" stroke-width="2"/>
+<line x1="4500" y1="3270" x2="4500" y2="3510" stroke="#374151" stroke-width="2"/>
+<line x1="4500" y1="3270" x2="4320" y2="3582" stroke="#374151" stroke-width="2"/>
+<line x1="4500" y1="3270" x2="4292" y2="3390" stroke="#374151" stroke-width="2"/>
+<line x1="5100" y1="3270" x2="5335" y2="3356" stroke="#374151" stroke-width="2"/>
+<line x1="5100" y1="3270" x2="5383" y2="3508" stroke="#374151" stroke-width="2"/>
+<line x1="5100" y1="3270" x2="5225" y2="3487" stroke="#374151" stroke-width="2"/>
+<line x1="5100" y1="3270" x2="5164" y2="3634" stroke="#374151" stroke-width="2"/>
+<line x1="5100" y1="3270" x2="5057" y2="3516" stroke="#374151" stroke-width="2"/>
+<line x1="5100" y1="3270" x2="4915" y2="3590" stroke="#374151" stroke-width="2"/>
+<line x1="5100" y1="3270" x2="4908" y2="3431" stroke="#374151" stroke-width="2"/>
+<line x1="5100" y1="3270" x2="4752" y2="3397" stroke="#374151" stroke-width="2"/>
+<line x1="1700" y1="670" x2="1100" y2="670" stroke="#374151" stroke-width="2"/>
+<line x1="1100" y1="666" x2="500" y2="666" stroke="#374151" stroke-width="2"/>
+<line x1="1100" y1="674" x2="500" y2="674" stroke="#374151" stroke-width="2"/>
+<line x1="1700" y1="670" x2="2300" y2="670" stroke="#374151" stroke-width="2"/>
+<line x1="2300" y1="674" x2="2900" y2="674" stroke="#374151" stroke-width="2"/>
+<line x1="2300" y1="666" x2="2900" y2="666" stroke="#374151" stroke-width="2"/>
+<line x1="1700" y1="670" x2="1100" y2="1170" stroke="#374151" stroke-width="2"/>
+<line x1="1100" y1="1170" x2="500" y2="1670" stroke="#374151" stroke-width="2"/>
+<line x1="1900" y1="1670" x2="1500" y2="1170" stroke="#374151" stroke-width="2"/>
+<line x1="1500" y1="1170" x2="1700" y2="670" stroke="#374151" stroke-width="2"/>
+<line x1="1500" y1="1170" x2="1303" y2="1098" stroke="#374151" stroke-width="2"/>
+<line x1="1500" y1="1170" x2="1395" y2="988" stroke="#374151" stroke-width="2"/>
+<line x1="1700" y1="670" x2="2200" y2="1170" stroke="#374151" stroke-width="2"/>
+<line x1="2200" y1="1170" x2="1900" y2="1670" stroke="#374151" stroke-width="2"/>
+<line x1="2200" y1="1170" x2="2200" y2="1380" stroke="#374151" stroke-width="2"/>
+<line x1="1700" y1="670" x2="3000" y2="1170" stroke="#374151" stroke-width="2"/>
+<line x1="3000" y1="1170" x2="3800" y2="2470" stroke="#374151" stroke-width="2"/>
+<line x1="500" y1="1670" x2="1200" y2="1670" stroke="#374151" stroke-width="2"/>
+<line x1="1200" y1="1670" x2="1900" y2="1670" stroke="#374151" stroke-width="2"/>
+<line x1="500" y1="1670" x2="900" y2="2070" stroke="#374151" stroke-width="2"/>
+<line x1="900" y1="2070" x2="1300" y2="2470" stroke="#374151" stroke-width="2"/>
+<line x1="500" y1="2470" x2="900" y2="2470" stroke="#374151" stroke-width="2"/>
+<line x1="900" y1="2470" x2="1300" y2="2470" stroke="#374151" stroke-width="2"/>
+<line x1="1900" y1="1670" x2="2200" y2="2070" stroke="#374151" stroke-width="2"/>
+<line x1="2200" y1="2070" x2="2500" y2="2470" stroke="#374151" stroke-width="2"/>
+<line x1="1900" y1="1670" x2="2900" y2="1670" stroke="#374151" stroke-width="2"/>
+<line x1="2900" y1="1670" x2="3800" y2="2470" stroke="#374151" stroke-width="2"/>
+<line x1="1300" y1="2470" x2="1550" y2="2870" stroke="#374151" stroke-width="2"/>
+<line x1="1550" y1="2870" x2="1900" y2="3270" stroke="#374151" stroke-width="2"/>
+<line x1="2500" y1="2470" x2="2250" y2="2870" stroke="#374151" stroke-width="2"/>
+<line x1="2247" y1="2867" x2="1897" y2="3267" stroke="#374151" stroke-width="2"/>
+<line x1="2253" y1="2873" x2="1903" y2="3273" stroke="#374151" stroke-width="2"/>
+<line x1="2500" y1="2470" x2="3150" y2="2470" stroke="#374151" stroke-width="2"/>
+<line x1="3150" y1="2470" x2="3800" y2="2470" stroke="#374151" stroke-width="2"/>
+<line x1="3800" y1="2470" x2="2750" y2="3270" stroke="#374151" stroke-width="2"/>
+<line x1="2750" y1="3270" x2="1900" y2="3270" stroke="#374151" stroke-width="2"/>
+<line x1="2750" y1="3270" x2="2922" y2="3390" stroke="#374151" stroke-width="2"/>
+<line x1="2750" y1="3270" x2="2822" y2="3467" stroke="#374151" stroke-width="2"/>
+<line x1="2750" y1="3270" x2="2696" y2="3473" stroke="#374151" stroke-width="2"/>
+<line x1="2750" y1="3270" x2="2589" y2="3405" stroke="#374151" stroke-width="2"/>
+<line x1="3800" y1="2470" x2="3450" y2="2870" stroke="#374151" stroke-width="2"/>
+<line x1="3446" y1="2869" x2="3296" y2="3269" stroke="#374151" stroke-width="2"/>
+<line x1="3454" y1="2871" x2="3304" y2="3271" stroke="#374151" stroke-width="2"/>
+<line x1="3800" y1="2470" x2="3850" y2="2870" stroke="#374151" stroke-width="2"/>
+<line x1="3846" y1="2870" x2="3896" y2="3270" stroke="#374151" stroke-width="2"/>
+<line x1="3854" y1="2870" x2="3904" y2="3270" stroke="#374151" stroke-width="2"/>
+<line x1="3800" y1="2470" x2="4300" y2="2870" stroke="#374151" stroke-width="2"/>
+<line x1="4296" y1="2872" x2="4496" y2="3272" stroke="#374151" stroke-width="2"/>
+<line x1="4304" y1="2868" x2="4504" y2="3268" stroke="#374151" stroke-width="2"/>
+<line x1="3800" y1="2470" x2="4750" y2="2870" stroke="#374151" stroke-width="2"/>
+<line x1="4747" y1="2873" x2="5097" y2="3273" stroke="#374151" stroke-width="2"/>
+<line x1="4753" y1="2867" x2="5103" y2="3267" stroke="#374151" stroke-width="2"/>
+<ellipse cx="460" cy="897" rx="85" ry="22.0" fill="#fef3c7" stroke="#111827" stroke-width="2"/>
+<text x="460" y="904" font-size="22" text-anchor="middle" fill="#111827">Id</text>
+<line x1="448" y1="910" x2="472" y2="910" stroke="#111827" stroke-width="2" stroke-dasharray="6 4"/>
+<ellipse cx="324" cy="818" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="324" y="825" font-size="22" text-anchor="middle" fill="#111827">Token</text>
+<ellipse cx="270" cy="670" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="270" y="677" font-size="22" text-anchor="middle" fill="#111827">ExpiresAt</text>
+<ellipse cx="324" cy="522" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="324" y="529" font-size="22" text-anchor="middle" fill="#111827">RevokedAt</text>
+<ellipse cx="460" cy="443" rx="128" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="460" y="450" font-size="22" text-anchor="middle" fill="#111827">ReplacedByToken</text>
+<ellipse cx="1439" cy="600" rx="85" ry="22.0" fill="#fef3c7" stroke="#111827" stroke-width="2"/>
+<text x="1439" y="607" font-size="22" text-anchor="middle" fill="#111827" text-decoration="underline">Id</text>
+<ellipse cx="1376" cy="453" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="1376" y="460" font-size="22" text-anchor="middle" fill="#111827">Email</text>
+<ellipse cx="1536" cy="456" rx="105" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="1536" y="463" font-size="22" text-anchor="middle" fill="#111827">PasswordHash</text>
+<ellipse cx="1575" cy="301" rx="98" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="1575" y="308" font-size="22" text-anchor="middle" fill="#111827">PhoneNumber</text>
+<ellipse cx="1700" cy="400" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="1700" y="407" font-size="22" text-anchor="middle" fill="#111827">FullName</text>
+<ellipse cx="1825" cy="301" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="1825" y="308" font-size="22" text-anchor="middle" fill="#111827">AvatarUrl</text>
+<ellipse cx="1864" cy="456" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="1864" y="463" font-size="22" text-anchor="middle" fill="#111827">IsActive</text>
+<ellipse cx="2024" cy="453" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="2024" y="460" font-size="22" text-anchor="middle" fill="#111827">CreatedAt</text>
+<ellipse cx="1961" cy="600" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<ellipse cx="1961" cy="600" rx="79" ry="16.0" fill="none" stroke="#111827" stroke-width="2"/>
+<text x="1961" y="607" font-size="22" text-anchor="middle" fill="#111827">Roles</text>
+<ellipse cx="2965" cy="429" rx="85" ry="22.0" fill="#fef3c7" stroke="#111827" stroke-width="2"/>
+<text x="2965" y="436" font-size="22" text-anchor="middle" fill="#111827">Id</text>
+<line x1="2953" y1="442" x2="2977" y2="442" stroke="#111827" stroke-width="2" stroke-dasharray="6 4"/>
+<ellipse cx="3138" cy="387" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="3138" y="394" font-size="22" text-anchor="middle" fill="#111827">Title</text>
+<ellipse cx="3127" cy="564" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="3127" y="571" font-size="22" text-anchor="middle" fill="#111827">Body</text>
+<ellipse cx="3270" cy="670" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="3270" y="677" font-size="22" text-anchor="middle" fill="#111827">Type</text>
+<ellipse cx="3127" cy="776" rx="128" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="3127" y="783" font-size="22" text-anchor="middle" fill="#111827">RelatedEntityId</text>
+<ellipse cx="3138" cy="953" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="3138" y="960" font-size="22" text-anchor="middle" fill="#111827">IsRead</text>
+<ellipse cx="2965" cy="911" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="2965" y="918" font-size="22" text-anchor="middle" fill="#111827">CreatedAt</text>
+<ellipse cx="478" cy="1919" rx="85" ry="22.0" fill="#fef3c7" stroke="#111827" stroke-width="2"/>
+<text x="478" y="1926" font-size="22" text-anchor="middle" fill="#111827" text-decoration="underline">Id</text>
+<ellipse cx="319" cy="1993" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="319" y="2000" font-size="22" text-anchor="middle" fill="#111827">Name</text>
+<ellipse cx="299" cy="1818" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="299" y="1825" font-size="22" text-anchor="middle" fill="#111827">Slug</text>
+<ellipse cx="138" cy="1748" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="138" y="1755" font-size="22" text-anchor="middle" fill="#111827">LogoUrl</text>
+<ellipse cx="256" cy="1617" rx="98" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="256" y="1624" font-size="22" text-anchor="middle" fill="#111827">Description</text>
+<ellipse cx="202" cy="1450" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="202" y="1457" font-size="22" text-anchor="middle" fill="#111827">Status</text>
+<ellipse cx="378" cy="1452" rx="90" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="378" y="1459" font-size="22" text-anchor="middle" fill="#111827">ApprovedAt</text>
+<ellipse cx="468" cy="1301" rx="105" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="468" y="1308" font-size="22" text-anchor="middle" fill="#111827">StatusReason</text>
+<ellipse cx="2050" cy="1930" rx="85" ry="22.0" fill="#fef3c7" stroke="#111827" stroke-width="2"/>
+<text x="2050" y="1937" font-size="22" text-anchor="middle" fill="#111827" text-decoration="underline">Id</text>
+<ellipse cx="2005" cy="2077" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="2005" y="2084" font-size="22" text-anchor="middle" fill="#111827">Name</text>
+<ellipse cx="1895" cy="1970" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="1895" y="1977" font-size="22" text-anchor="middle" fill="#111827">Phone</text>
+<ellipse cx="1781" cy="2073" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="1781" y="2080" font-size="22" text-anchor="middle" fill="#111827">Latitude</text>
+<ellipse cx="1741" cy="1924" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="1741" y="1931" font-size="22" text-anchor="middle" fill="#111827">Longitude</text>
+<ellipse cx="1590" cy="1954" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="1590" y="1961" font-size="22" text-anchor="middle" fill="#111827">Address</text>
+<ellipse cx="1580" cy="2194" rx="98" ry="22.0" fill="#e0f2fe" stroke="#111827" stroke-width="2"/>
+<text x="1580" y="2201" font-size="22" text-anchor="middle" fill="#111827">AddressLine</text>
+<ellipse cx="1461" cy="2156" rx="85" ry="22.0" fill="#e0f2fe" stroke="#111827" stroke-width="2"/>
+<text x="1461" y="2163" font-size="22" text-anchor="middle" fill="#111827">Ward</text>
+<ellipse cx="1377" cy="2065" rx="85" ry="22.0" fill="#e0f2fe" stroke="#111827" stroke-width="2"/>
+<text x="1377" y="2072" font-size="22" text-anchor="middle" fill="#111827">District</text>
+<ellipse cx="1351" cy="1943" rx="85" ry="22.0" fill="#e0f2fe" stroke="#111827" stroke-width="2"/>
+<text x="1351" y="1950" font-size="22" text-anchor="middle" fill="#111827">City</text>
+<ellipse cx="1633" cy="1806" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="1633" y="1813" font-size="22" text-anchor="middle" fill="#111827">OpenTime</text>
+<ellipse cx="1488" cy="1754" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="1488" y="1761" font-size="22" text-anchor="middle" fill="#111827">CloseTime</text>
+<ellipse cx="1601" cy="1649" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="1601" y="1656" font-size="22" text-anchor="middle" fill="#111827">Status</text>
+<ellipse cx="1504" cy="1530" rx="112" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2" stroke-dasharray="8 6"/>
+<text x="1504" y="1537" font-size="22" text-anchor="middle" fill="#111827">RatingAverage</text>
+<ellipse cx="1654" cy="1498" rx="98" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2" stroke-dasharray="8 6"/>
+<text x="1654" y="1505" font-size="22" text-anchor="middle" fill="#111827">RatingCount</text>
+<ellipse cx="462" cy="2687" rx="85" ry="22.0" fill="#fef3c7" stroke="#111827" stroke-width="2"/>
+<text x="462" y="2694" font-size="22" text-anchor="middle" fill="#111827" text-decoration="underline">Id</text>
+<ellipse cx="331" cy="2611" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="331" y="2618" font-size="22" text-anchor="middle" fill="#111827">Name</text>
+<ellipse cx="280" cy="2470" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="280" y="2477" font-size="22" text-anchor="middle" fill="#111827">Slug</text>
+<ellipse cx="331" cy="2329" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="331" y="2336" font-size="22" text-anchor="middle" fill="#111827">IconUrl</text>
+<ellipse cx="462" cy="2253" rx="105" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="462" y="2260" font-size="22" text-anchor="middle" fill="#111827">DisplayOrder</text>
+<ellipse cx="1396" cy="2733" rx="85" ry="22.0" fill="#fef3c7" stroke="#111827" stroke-width="2"/>
+<text x="1396" y="2740" font-size="22" text-anchor="middle" fill="#111827" text-decoration="underline">Id</text>
+<ellipse cx="1352" cy="2867" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="1352" y="2874" font-size="22" text-anchor="middle" fill="#111827">Name</text>
+<ellipse cx="1255" cy="2988" rx="188" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="1255" y="2995" font-size="22" text-anchor="middle" fill="#111827">BrandMaxDiscountPercent</text>
+<ellipse cx="1216" cy="2737" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="1216" y="2744" font-size="22" text-anchor="middle" fill="#111827">OfferType</text>
+<ellipse cx="1100" cy="2816" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="1100" y="2823" font-size="22" text-anchor="middle" fill="#111827">ImageUrl</text>
+<ellipse cx="949" cy="2853" rx="188" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="949" y="2860" font-size="22" text-anchor="middle" fill="#111827">BrandMinDiscountPercent</text>
+<ellipse cx="1071" cy="2631" rx="112" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="1071" y="2638" font-size="22" text-anchor="middle" fill="#111827">OriginalPrice</text>
+<ellipse cx="930" cy="2623" rx="98" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="930" y="2630" font-size="22" text-anchor="middle" fill="#111827">Description</text>
+<ellipse cx="788" cy="2560" rx="120" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="788" y="2567" font-size="22" text-anchor="middle" fill="#111827">SuggestedPrice</text>
+<ellipse cx="2575" cy="2190" rx="85" ry="22.0" fill="#fef3c7" stroke="#111827" stroke-width="2"/>
+<text x="2575" y="2197" font-size="22" text-anchor="middle" fill="#111827" text-decoration="underline">Id</text>
+<ellipse cx="2717" cy="2122" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="2717" y="2129" font-size="22" text-anchor="middle" fill="#111827">Name</text>
+<ellipse cx="2718" cy="2279" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="2718" y="2286" font-size="22" text-anchor="middle" fill="#111827">Status</text>
+<ellipse cx="2873" cy="2301" rx="112" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="2873" y="2308" font-size="22" text-anchor="middle" fill="#111827">SaleStartTime</text>
+<ellipse cx="2788" cy="2432" rx="98" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="2788" y="2439" font-size="22" text-anchor="middle" fill="#111827">SaleEndTime</text>
+<ellipse cx="2905" cy="2537" rx="128" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="2905" y="2544" font-size="22" text-anchor="middle" fill="#111827">PickupStartTime</text>
+<ellipse cx="2760" cy="2598" rx="112" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="2760" y="2605" font-size="22" text-anchor="middle" fill="#111827">PickupEndTime</text>
+<ellipse cx="2799" cy="2750" rx="158" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="2799" y="2757" font-size="22" text-anchor="middle" fill="#111827">TotalUnsoldQuantity</text>
+<ellipse cx="2645" cy="2721" rx="105" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="2645" y="2728" font-size="22" text-anchor="middle" fill="#111827">CancelReason</text>
+<ellipse cx="2045" cy="3521" rx="85" ry="22.0" fill="#fef3c7" stroke="#111827" stroke-width="2"/>
+<text x="2045" y="3528" font-size="22" text-anchor="middle" fill="#111827" text-decoration="underline">Id</text>
+<ellipse cx="1990" cy="3670" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="1990" y="3677" font-size="22" text-anchor="middle" fill="#111827">Name</text>
+<ellipse cx="1858" cy="3798" rx="98" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="1858" y="3805" font-size="22" text-anchor="middle" fill="#111827">Description</text>
+<ellipse cx="1792" cy="3539" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="1792" y="3546" font-size="22" text-anchor="middle" fill="#111827">ImageUrl</text>
+<ellipse cx="1641" cy="3588" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="1641" y="3595" font-size="22" text-anchor="middle" fill="#111827">OfferType</text>
+<ellipse cx="1459" cy="3564" rx="112" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="1459" y="3571" font-size="22" text-anchor="middle" fill="#111827">OriginalPrice</text>
+<ellipse cx="1622" cy="3352" rx="98" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="1622" y="3359" font-size="22" text-anchor="middle" fill="#111827">ActualPrice</text>
+<ellipse cx="1490" cy="3263" rx="112" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="1490" y="3270" font-size="22" text-anchor="middle" fill="#111827">TotalQuantity</text>
+<ellipse cx="1396" cy="3105" rx="142" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="1396" y="3112" font-size="22" text-anchor="middle" fill="#111827">RemainingQuantity</text>
+<ellipse cx="1664" cy="3102" rx="120" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="1664" y="3109" font-size="22" text-anchor="middle" fill="#111827">MaxPerCustomer</text>
+<ellipse cx="1652" cy="2944" rx="120" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="1652" y="2951" font-size="22" text-anchor="middle" fill="#111827">UnsoldQuantity</text>
+<ellipse cx="1719" cy="2772" rx="90" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="1719" y="2779" font-size="22" text-anchor="middle" fill="#111827">RowVersion</text>
+<ellipse cx="3717" cy="2161" rx="85" ry="22.0" fill="#fef3c7" stroke="#111827" stroke-width="2"/>
+<text x="3717" y="2168" font-size="22" text-anchor="middle" fill="#111827" text-decoration="underline">Id</text>
+<ellipse cx="3756" cy="2032" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="3756" y="2039" font-size="22" text-anchor="middle" fill="#111827">OrderCode</text>
+<ellipse cx="3834" cy="1911" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="3834" y="1918" font-size="22" text-anchor="middle" fill="#111827">Status</text>
+<ellipse cx="3870" cy="2158" rx="98" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2" stroke-dasharray="8 6"/>
+<text x="3870" y="2165" font-size="22" text-anchor="middle" fill="#111827">TotalAmount</text>
+<ellipse cx="3964" cy="2062" rx="98" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="3964" y="2069" font-size="22" text-anchor="middle" fill="#111827">PlatformFee</text>
+<ellipse cx="4090" cy="1991" rx="142" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="4090" y="1998" font-size="22" text-anchor="middle" fill="#111827">StorePayoutAmount</text>
+<ellipse cx="4007" cy="2226" rx="128" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="4007" y="2233" font-size="22" text-anchor="middle" fill="#111827">PaymentDeadline</text>
+<ellipse cx="4135" cy="2185" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="4135" y="2192" font-size="22" text-anchor="middle" fill="#111827">PaidAt</text>
+<ellipse cx="4279" cy="2180" rx="90" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="4279" y="2187" font-size="22" text-anchor="middle" fill="#111827">RedeemedAt</text>
+<ellipse cx="4097" cy="2351" rx="98" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="4097" y="2358" font-size="22" text-anchor="middle" fill="#111827">CancelledAt</text>
+<ellipse cx="4229" cy="2373" rx="98" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="4229" y="2380" font-size="22" text-anchor="middle" fill="#111827">CancelledBy</text>
+<ellipse cx="4359" cy="2436" rx="105" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="4359" y="2443" font-size="22" text-anchor="middle" fill="#111827">CancelReason</text>
+<ellipse cx="4118" cy="2502" rx="105" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="4118" y="2509" font-size="22" text-anchor="middle" fill="#111827">RefundStatus</text>
+<ellipse cx="4225" cy="2584" rx="90" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="4225" y="2591" font-size="22" text-anchor="middle" fill="#111827">RowVersion</text>
+<ellipse cx="3508" cy="3390" rx="85" ry="22.0" fill="#fef3c7" stroke="#111827" stroke-width="2"/>
+<text x="3508" y="3397" font-size="22" text-anchor="middle" fill="#111827">Id</text>
+<line x1="3496" y1="3403" x2="3520" y2="3403" stroke="#111827" stroke-width="2" stroke-dasharray="6 4"/>
+<ellipse cx="3512" cy="3561" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="3512" y="3568" font-size="22" text-anchor="middle" fill="#111827">Token</text>
+<ellipse cx="3350" cy="3505" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="3350" y="3512" font-size="22" text-anchor="middle" fill="#111827">IssuedAt</text>
+<ellipse cx="3225" cy="3622" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="3225" y="3629" font-size="22" text-anchor="middle" fill="#111827">ExpiresAt</text>
+<ellipse cx="3159" cy="3464" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="3159" y="3471" font-size="22" text-anchor="middle" fill="#111827">Status</text>
+<ellipse cx="2988" cy="3450" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="2988" y="3457" font-size="22" text-anchor="middle" fill="#111827">UsedAt</text>
+<ellipse cx="4108" cy="3390" rx="85" ry="22.0" fill="#fef3c7" stroke="#111827" stroke-width="2"/>
+<text x="4108" y="3397" font-size="22" text-anchor="middle" fill="#111827">Id</text>
+<line x1="4096" y1="3403" x2="4120" y2="3403" stroke="#111827" stroke-width="2" stroke-dasharray="6 4"/>
+<ellipse cx="4112" cy="3561" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="4112" y="3568" font-size="22" text-anchor="middle" fill="#111827">Method</text>
+<ellipse cx="3950" cy="3505" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="3950" y="3512" font-size="22" text-anchor="middle" fill="#111827">Amount</text>
+<ellipse cx="3825" cy="3622" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="3825" y="3629" font-size="22" text-anchor="middle" fill="#111827">Status</text>
+<ellipse cx="3759" cy="3464" rx="120" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="3759" y="3471" font-size="22" text-anchor="middle" fill="#111827">TransactionRef</text>
+<ellipse cx="3588" cy="3450" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="3588" y="3457" font-size="22" text-anchor="middle" fill="#111827">CreatedAt</text>
+<ellipse cx="4708" cy="3390" rx="85" ry="22.0" fill="#fef3c7" stroke="#111827" stroke-width="2"/>
+<text x="4708" y="3397" font-size="22" text-anchor="middle" fill="#111827">Id</text>
+<line x1="4696" y1="3403" x2="4720" y2="3403" stroke="#111827" stroke-width="2" stroke-dasharray="6 4"/>
+<ellipse cx="4680" cy="3582" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="4680" y="3589" font-size="22" text-anchor="middle" fill="#111827">Rating</text>
+<ellipse cx="4500" cy="3510" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="4500" y="3517" font-size="22" text-anchor="middle" fill="#111827">Comment</text>
+<ellipse cx="4320" cy="3582" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="4320" y="3589" font-size="22" text-anchor="middle" fill="#111827">PhotoUrl</text>
+<ellipse cx="4292" cy="3390" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="4292" y="3397" font-size="22" text-anchor="middle" fill="#111827">CreatedAt</text>
+<ellipse cx="5335" cy="3356" rx="85" ry="22.0" fill="#fef3c7" stroke="#111827" stroke-width="2"/>
+<text x="5335" y="3363" font-size="22" text-anchor="middle" fill="#111827">Id</text>
+<line x1="5323" y1="3369" x2="5347" y2="3369" stroke="#111827" stroke-width="2" stroke-dasharray="6 4"/>
+<ellipse cx="5383" cy="3508" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="5383" y="3515" font-size="22" text-anchor="middle" fill="#111827">Reason</text>
+<ellipse cx="5225" cy="3487" rx="98" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="5225" y="3494" font-size="22" text-anchor="middle" fill="#111827">Description</text>
+<ellipse cx="5164" cy="3634" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="5164" y="3641" font-size="22" text-anchor="middle" fill="#111827">PhotoUrl</text>
+<ellipse cx="5057" cy="3516" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="5057" y="3523" font-size="22" text-anchor="middle" fill="#111827">Status</text>
+<ellipse cx="4915" cy="3590" rx="105" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="4915" y="3597" font-size="22" text-anchor="middle" fill="#111827">MerchantNote</text>
+<ellipse cx="4908" cy="3431" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="4908" y="3438" font-size="22" text-anchor="middle" fill="#111827">AdminNote</text>
+<ellipse cx="4752" cy="3397" rx="90" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="4752" y="3404" font-size="22" text-anchor="middle" fill="#111827">ResolvedAt</text>
+<ellipse cx="1303" cy="1098" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="1303" y="1105" font-size="22" text-anchor="middle" fill="#111827">Position</text>
+<ellipse cx="1395" cy="988" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="1395" y="995" font-size="22" text-anchor="middle" fill="#111827">IsActive</text>
+<ellipse cx="2200" cy="1380" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="2200" y="1387" font-size="22" text-anchor="middle" fill="#111827">CreatedAt</text>
+<ellipse cx="2922" cy="3390" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="2922" y="3397" font-size="22" text-anchor="middle" fill="#111827">Quantity</text>
+<ellipse cx="2822" cy="3467" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="2822" y="3474" font-size="22" text-anchor="middle" fill="#111827">UnitPrice</text>
+<ellipse cx="2696" cy="3473" rx="85" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="2696" y="3480" font-size="22" text-anchor="middle" fill="#111827">LineTotal</text>
+<ellipse cx="2589" cy="3405" rx="142" ry="22.0" fill="#f9fafb" stroke="#111827" stroke-width="2"/>
+<text x="2589" y="3412" font-size="22" text-anchor="middle" fill="#111827">OfferNameSnapshot</text>
+<polygon points="1100,625 1195,670 1100,715 1005,670" fill="#dcfce7" stroke="#111827" stroke-width="2.5"/>
+<polygon points="1100,634 1176,670 1100,706 1024,670" fill="none" stroke="#111827" stroke-width="2"/>
+<text x="1100" y="678" font-size="22" font-weight="bold" text-anchor="middle" fill="#111827">issues</text>
+<polygon points="2300,625 2395,670 2300,715 2205,670" fill="#dcfce7" stroke="#111827" stroke-width="2.5"/>
+<polygon points="2300,634 2376,670 2300,706 2224,670" fill="none" stroke="#111827" stroke-width="2"/>
+<text x="2300" y="678" font-size="22" font-weight="bold" text-anchor="middle" fill="#111827">receives</text>
+<polygon points="1100,1125 1195,1170 1100,1215 1005,1170" fill="#dcfce7" stroke="#111827" stroke-width="2.5"/>
+<text x="1100" y="1178" font-size="22" font-weight="bold" text-anchor="middle" fill="#111827">owns</text>
+<polygon points="1500,1125 1595,1170 1500,1215 1405,1170" fill="#dcfce7" stroke="#111827" stroke-width="2.5"/>
+<text x="1500" y="1178" font-size="22" font-weight="bold" text-anchor="middle" fill="#111827">works_at</text>
+<polygon points="2200,1125 2295,1170 2200,1215 2105,1170" fill="#dcfce7" stroke="#111827" stroke-width="2.5"/>
+<text x="2200" y="1178" font-size="22" font-weight="bold" text-anchor="middle" fill="#111827">favorites</text>
+<polygon points="3000,1125 3095,1170 3000,1215 2905,1170" fill="#dcfce7" stroke="#111827" stroke-width="2.5"/>
+<text x="3000" y="1178" font-size="22" font-weight="bold" text-anchor="middle" fill="#111827">places</text>
+<polygon points="1200,1625 1295,1670 1200,1715 1105,1670" fill="#dcfce7" stroke="#111827" stroke-width="2.5"/>
+<text x="1200" y="1678" font-size="22" font-weight="bold" text-anchor="middle" fill="#111827">has</text>
+<polygon points="900,2025 995,2070 900,2115 805,2070" fill="#dcfce7" stroke="#111827" stroke-width="2.5"/>
+<text x="900" y="2078" font-size="22" font-weight="bold" text-anchor="middle" fill="#111827">standardizes</text>
+<polygon points="900,2425 995,2470 900,2515 805,2470" fill="#dcfce7" stroke="#111827" stroke-width="2.5"/>
+<text x="900" y="2478" font-size="22" font-weight="bold" text-anchor="middle" fill="#111827">classifies</text>
+<polygon points="2200,2025 2295,2070 2200,2115 2105,2070" fill="#dcfce7" stroke="#111827" stroke-width="2.5"/>
+<text x="2200" y="2078" font-size="22" font-weight="bold" text-anchor="middle" fill="#111827">opens</text>
+<polygon points="2900,1625 2995,1670 2900,1715 2805,1670" fill="#dcfce7" stroke="#111827" stroke-width="2.5"/>
+<text x="2900" y="1678" font-size="22" font-weight="bold" text-anchor="middle" fill="#111827">fulfils</text>
+<polygon points="1550,2825 1645,2870 1550,2915 1455,2870" fill="#dcfce7" stroke="#111827" stroke-width="2.5"/>
+<text x="1550" y="2878" font-size="22" font-weight="bold" text-anchor="middle" fill="#111827">generates</text>
+<polygon points="2250,2825 2345,2870 2250,2915 2155,2870" fill="#dcfce7" stroke="#111827" stroke-width="2.5"/>
+<text x="2250" y="2878" font-size="22" font-weight="bold" text-anchor="middle" fill="#111827">contains</text>
+<polygon points="3150,2425 3245,2470 3150,2515 3055,2470" fill="#dcfce7" stroke="#111827" stroke-width="2.5"/>
+<text x="3150" y="2478" font-size="22" font-weight="bold" text-anchor="middle" fill="#111827">groups</text>
+<polygon points="2750,3225 2845,3270 2750,3315 2655,3270" fill="#dcfce7" stroke="#111827" stroke-width="2.5"/>
+<text x="2750" y="3278" font-size="22" font-weight="bold" text-anchor="middle" fill="#111827">buys</text>
+<polygon points="3450,2825 3545,2870 3450,2915 3355,2870" fill="#dcfce7" stroke="#111827" stroke-width="2.5"/>
+<polygon points="3450,2834 3526,2870 3450,2906 3374,2870" fill="none" stroke="#111827" stroke-width="2"/>
+<text x="3450" y="2878" font-size="22" font-weight="bold" text-anchor="middle" fill="#111827">gets_ticket</text>
+<polygon points="3850,2825 3945,2870 3850,2915 3755,2870" fill="#dcfce7" stroke="#111827" stroke-width="2.5"/>
+<polygon points="3850,2834 3926,2870 3850,2906 3774,2870" fill="none" stroke="#111827" stroke-width="2"/>
+<text x="3850" y="2878" font-size="22" font-weight="bold" text-anchor="middle" fill="#111827">records</text>
+<polygon points="4300,2825 4395,2870 4300,2915 4205,2870" fill="#dcfce7" stroke="#111827" stroke-width="2.5"/>
+<polygon points="4300,2834 4376,2870 4300,2906 4224,2870" fill="none" stroke="#111827" stroke-width="2"/>
+<text x="4300" y="2878" font-size="22" font-weight="bold" text-anchor="middle" fill="#111827">rated_by</text>
+<polygon points="4750,2825 4845,2870 4750,2915 4655,2870" fill="#dcfce7" stroke="#111827" stroke-width="2.5"/>
+<polygon points="4750,2834 4826,2870 4750,2906 4674,2870" fill="none" stroke="#111827" stroke-width="2"/>
+<text x="4750" y="2878" font-size="22" font-weight="bold" text-anchor="middle" fill="#111827">disputed_by</text>
+<rect x="405.0" y="635.0" width="190" height="70" fill="#dbeafe" stroke="#111827" stroke-width="3"/>
+<rect x="412.0" y="642.0" width="176" height="56" fill="none" stroke="#111827" stroke-width="2"/>
+<text x="500" y="679" font-size="26" font-weight="bold" text-anchor="middle" fill="#111827">RefreshToken</text>
+<rect x="1605.0" y="635.0" width="190" height="70" fill="#dbeafe" stroke="#111827" stroke-width="3"/>
+<text x="1700" y="679" font-size="26" font-weight="bold" text-anchor="middle" fill="#111827">AppUser</text>
+<rect x="2805.0" y="635.0" width="190" height="70" fill="#dbeafe" stroke="#111827" stroke-width="3"/>
+<rect x="2812.0" y="642.0" width="176" height="56" fill="none" stroke="#111827" stroke-width="2"/>
+<text x="2900" y="679" font-size="26" font-weight="bold" text-anchor="middle" fill="#111827">Notification</text>
+<rect x="405.0" y="1635.0" width="190" height="70" fill="#dbeafe" stroke="#111827" stroke-width="3"/>
+<text x="500" y="1679" font-size="26" font-weight="bold" text-anchor="middle" fill="#111827">Brand</text>
+<rect x="1805.0" y="1635.0" width="190" height="70" fill="#dbeafe" stroke="#111827" stroke-width="3"/>
+<text x="1900" y="1679" font-size="26" font-weight="bold" text-anchor="middle" fill="#111827">Store</text>
+<rect x="405.0" y="2435.0" width="190" height="70" fill="#dbeafe" stroke="#111827" stroke-width="3"/>
+<text x="500" y="2479" font-size="26" font-weight="bold" text-anchor="middle" fill="#111827">Category</text>
+<rect x="1205.0" y="2435.0" width="190" height="70" fill="#dbeafe" stroke="#111827" stroke-width="3"/>
+<text x="1300" y="2479" font-size="26" font-weight="bold" text-anchor="middle" fill="#111827">OfferTemplate</text>
+<rect x="2405.0" y="2435.0" width="190" height="70" fill="#dbeafe" stroke="#111827" stroke-width="3"/>
+<text x="2500" y="2479" font-size="26" font-weight="bold" text-anchor="middle" fill="#111827">SaleBatch</text>
+<rect x="1805.0" y="3235.0" width="190" height="70" fill="#dbeafe" stroke="#111827" stroke-width="3"/>
+<text x="1900" y="3279" font-size="26" font-weight="bold" text-anchor="middle" fill="#111827">Offer</text>
+<rect x="3705.0" y="2435.0" width="190" height="70" fill="#dbeafe" stroke="#111827" stroke-width="3"/>
+<text x="3800" y="2479" font-size="26" font-weight="bold" text-anchor="middle" fill="#111827">Order</text>
+<rect x="3205.0" y="3235.0" width="190" height="70" fill="#dbeafe" stroke="#111827" stroke-width="3"/>
+<rect x="3212.0" y="3242.0" width="176" height="56" fill="none" stroke="#111827" stroke-width="2"/>
+<text x="3300" y="3279" font-size="26" font-weight="bold" text-anchor="middle" fill="#111827">QrTicket</text>
+<rect x="3805.0" y="3235.0" width="190" height="70" fill="#dbeafe" stroke="#111827" stroke-width="3"/>
+<rect x="3812.0" y="3242.0" width="176" height="56" fill="none" stroke="#111827" stroke-width="2"/>
+<text x="3900" y="3279" font-size="26" font-weight="bold" text-anchor="middle" fill="#111827">Payment</text>
+<rect x="4405.0" y="3235.0" width="190" height="70" fill="#dbeafe" stroke="#111827" stroke-width="3"/>
+<rect x="4412.0" y="3242.0" width="176" height="56" fill="none" stroke="#111827" stroke-width="2"/>
+<text x="4500" y="3279" font-size="26" font-weight="bold" text-anchor="middle" fill="#111827">Review</text>
+<rect x="5005.0" y="3235.0" width="190" height="70" fill="#dbeafe" stroke="#111827" stroke-width="3"/>
+<rect x="5012.0" y="3242.0" width="176" height="56" fill="none" stroke="#111827" stroke-width="2"/>
+<text x="5100" y="3279" font-size="26" font-weight="bold" text-anchor="middle" fill="#111827">Dispute</text>
+<text x="1565" y="661" font-size="26" font-weight="bold" text-anchor="middle" fill="#b91c1c">1</text>
+<text x="635" y="697" font-size="26" font-weight="bold" text-anchor="middle" fill="#b91c1c">N</text>
+<text x="1835" y="697" font-size="26" font-weight="bold" text-anchor="middle" fill="#b91c1c">1</text>
+<text x="2765" y="661" font-size="26" font-weight="bold" text-anchor="middle" fill="#b91c1c">N</text>
+<text x="1585" y="752" font-size="26" font-weight="bold" text-anchor="middle" fill="#b91c1c">1</text>
+<text x="615" y="1606" font-size="26" font-weight="bold" text-anchor="middle" fill="#b91c1c">1</text>
+<text x="1830" y="1562" font-size="26" font-weight="bold" text-anchor="middle" fill="#b91c1c">1</text>
+<text x="1633" y="798" font-size="26" font-weight="bold" text-anchor="middle" fill="#b91c1c">N</text>
+<text x="1783" y="787" font-size="26" font-weight="bold" text-anchor="middle" fill="#b91c1c">M</text>
+<text x="1985" y="1572" font-size="26" font-weight="bold" text-anchor="middle" fill="#b91c1c">N</text>
+<text x="1820" y="744" font-size="26" font-weight="bold" text-anchor="middle" fill="#b91c1c">1</text>
+<text x="3745" y="2355" font-size="26" font-weight="bold" text-anchor="middle" fill="#b91c1c">N</text>
+<text x="635" y="1697" font-size="26" font-weight="bold" text-anchor="middle" fill="#b91c1c">1</text>
+<text x="1765" y="1661" font-size="26" font-weight="bold" text-anchor="middle" fill="#b91c1c">N</text>
+<text x="583" y="1787" font-size="26" font-weight="bold" text-anchor="middle" fill="#b91c1c">1</text>
+<text x="1217" y="2371" font-size="26" font-weight="bold" text-anchor="middle" fill="#b91c1c">N</text>
+<text x="635" y="2497" font-size="26" font-weight="bold" text-anchor="middle" fill="#b91c1c">1</text>
+<text x="1165" y="2461" font-size="26" font-weight="bold" text-anchor="middle" fill="#b91c1c">N</text>
+<text x="1967" y="1798" font-size="26" font-weight="bold" text-anchor="middle" fill="#b91c1c">1</text>
+<text x="2433" y="2360" font-size="26" font-weight="bold" text-anchor="middle" fill="#b91c1c">N</text>
+<text x="2035" y="1697" font-size="26" font-weight="bold" text-anchor="middle" fill="#b91c1c">1</text>
+<text x="3711" y="2376" font-size="26" font-weight="bold" text-anchor="middle" fill="#b91c1c">N</text>
+<text x="1356" y="2603" font-size="26" font-weight="bold" text-anchor="middle" fill="#b91c1c">1</text>
+<text x="1825" y="3166" font-size="26" font-weight="bold" text-anchor="middle" fill="#b91c1c">N</text>
+<text x="2413" y="2584" font-size="26" font-weight="bold" text-anchor="middle" fill="#b91c1c">1</text>
+<text x="2002" y="3189" font-size="26" font-weight="bold" text-anchor="middle" fill="#b91c1c">N</text>
+<text x="2635" y="2497" font-size="26" font-weight="bold" text-anchor="middle" fill="#b91c1c">1</text>
+<text x="3665" y="2461" font-size="26" font-weight="bold" text-anchor="middle" fill="#b91c1c">N</text>
+<text x="3682" y="2546" font-size="26" font-weight="bold" text-anchor="middle" fill="#b91c1c">M</text>
+<text x="2035" y="3297" font-size="26" font-weight="bold" text-anchor="middle" fill="#b91c1c">N</text>
+<text x="3698" y="2569" font-size="26" font-weight="bold" text-anchor="middle" fill="#b91c1c">1</text>
+<text x="3364" y="3159" font-size="26" font-weight="bold" text-anchor="middle" fill="#b91c1c">1</text>
+<text x="3799" y="2615" font-size="26" font-weight="bold" text-anchor="middle" fill="#b91c1c">1</text>
+<text x="3901" y="3143" font-size="26" font-weight="bold" text-anchor="middle" fill="#b91c1c">N</text>
+<text x="3894" y="2577" font-size="26" font-weight="bold" text-anchor="middle" fill="#b91c1c">1</text>
+<text x="4456" y="3150" font-size="26" font-weight="bold" text-anchor="middle" fill="#b91c1c">1</text>
+<text x="3917" y="2548" font-size="26" font-weight="bold" text-anchor="middle" fill="#b91c1c">1</text>
+<text x="5025" y="3166" font-size="26" font-weight="bold" text-anchor="middle" fill="#b91c1c">1</text>
+</svg>

@@ -1,0 +1,90 @@
+@model BrandProfileViewModel
+@using FreshRescue.WebClient.Helpers
+@inject FreshRescue.WebClient.Services.ApiOptions Api
+@{
+    ViewData["Title"] = "Hồ sơ thương hiệu";
+    var logoUrl = Api.ResolveUrl(Model.LogoUrl);
+    var statusLabel = Model.Status switch
+    {
+        "Approved" => "Đã duyệt",
+        "PendingApproval" => "Chờ duyệt",
+        "Rejected" => "Bị từ chối",
+        "Suspended" => "Tạm khoá",
+        _ => Model.Status
+    };
+}
+
+<div class="dash-toolbar">
+    <div>
+        <h2>Hồ sơ thương hiệu</h2>
+        <p class="muted small">FR-B01 · <code>GET/PUT brand/profile</code></p>
+    </div>
+</div>
+
+@if (TempData["Success"] is string ok)
+{
+    <div class="dash-alert dash-alert-ok">@ok</div>
+}
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="dash-alert dash-alert-err">
+        @Model.ErrorMessage
+        @if (Model.FieldErrors.Count > 0)
+        {
+            <ul class="small" style="margin: 0.5rem 0 0 1rem;">
+                @foreach (var e in Model.FieldErrors)
+                {
+                    <li>@e</li>
+                }
+            </ul>
+        }
+    </div>
+}
+
+@if (Model.Status is not null)
+{
+    <div class="dash-card" style="margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: center;">
+        @if (logoUrl is not null)
+        {
+            <img src="@logoUrl" alt="Logo" style="height: 56px; width: 56px; object-fit: cover; border-radius: 8px;" />
+        }
+        <div>
+            <strong>@Model.Name</strong>
+            <span class="badge">@statusLabel</span>
+            <div class="muted small">
+                @(Model.ApprovedAt is { } at ? "Duyệt lúc " + Display.DateAndTime(at) : "Chưa được duyệt")
+                @if (!string.IsNullOrWhiteSpace(Model.StatusReason))
+                {
+                    <span> · Lý do: @Model.StatusReason</span>
+                }
+            </div>
+        </div>
+    </div>
+
+    <form asp-action="Profile" method="post" enctype="multipart/form-data" class="dash-card dash-form">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="LogoUrl" value="@Model.LogoUrl" />
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="dash-field">
+                <label class="muted small" for="Name">Tên thương hiệu *</label>
+                <input id="Name" name="Name" value="@Model.Name" class="dash-input" required maxlength="150" />
+            </div>
+            <div class="dash-field">
+                <label class="muted small" for="Slug">Slug (đường dẫn) *</label>
+                <input id="Slug" name="Slug" value="@Model.Slug" class="dash-input" required maxlength="160"
+                       pattern="[a-z0-9]+(-[a-z0-9]+)*" title="Viết thường, không dấu, nối bằng dấu gạch ngang" />
+            </div>
+            <div class="dash-field" style="grid-column: 1 / -1;">
+                <label class="muted small" for="Description">Giới thiệu</label>
+                <textarea id="Description" name="Description" class="dash-input" rows="3" maxlength="1000">@Model.Description</textarea>
+            </div>
+            <div class="dash-field">
+                <label class="muted small" for="Logo">Logo mới (jpg/png/webp)</label>
+                <input id="Logo" type="file" name="Logo" class="dash-input" accept="image/jpeg,image/png,image/webp" />
+            </div>
+        </div>
+        <div style="margin-top: 1rem;">
+            <button type="submit" class="dash-btn">Lưu hồ sơ</button>
+        </div>
+    </form>
+}

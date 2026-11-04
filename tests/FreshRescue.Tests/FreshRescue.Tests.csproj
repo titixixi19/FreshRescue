@@ -7,6 +7,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\FreshRescue.Business\FreshRescue.Business.csproj" />
+    <ProjectReference Include="..\..\src\FreshRescue.API\FreshRescue.API.csproj" />
+    <ProjectReference Include="..\..\src\FreshRescue.QrService\FreshRescue.QrService.csproj" />
   </ItemGroup>
 
   <ItemGroup>

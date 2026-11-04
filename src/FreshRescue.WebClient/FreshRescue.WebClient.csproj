@@ -5,4 +5,9 @@
     Chủ sở hữu hạ tầng: Đức Anh. Areas/Customer: Đức Anh · Areas/Dashboard: Hoàng Huy (07-WORK-BREAKDOWN.md §12.3).
   -->
 
+  <ItemGroup>
+    <!-- Validator cho form, kèm adapter để jQuery Validation kiểm phía trình duyệt (06-CODING-STANDARDS.md §7). -->
+    <PackageReference Include="FluentValidation.AspNetCore" />
+  </ItemGroup>
+
 </Project>

@@ -160,7 +160,7 @@ CRUD Store chạy end-to-end.
 
 | Người | Mã | Việc | Liên quan | pd |
 | --- | --- | --- | --- | --- |
-| **Tùng** | `T4-TUNG-01` | **`POST /orders`: transaction + optimistic locking + retry 3 lần + `409`** | `NFR-01`, `BR-01`…`BR-06` | 2.5 |
+| **Tùng** | `T4-TUNG-01` | **`POST /orders`: transaction + pessimistic locking (mặc định) + optimistic + retry 3 lần (để so sánh) + `409`** | `NFR-01`, `BR-01`…`BR-06` | 2.5 |
 | **Tùng** | `T4-TUNG-02` | Sắp `Offer` theo `Id` chống deadlock + kiểm giới hạn mua cộng dồn | `02` §6.2, `BR-06` | 0.5 |
 | **Tùng** | `T4-TUNG-03` | Thanh toán mock + cấp `QrTicket` (gọi gRPC) | `OQ-17`, `FR-C07` | 0.5 |
 | **Tùng** | `T4-TUNG-04` | **`POST /staff/redemptions` idempotent** | `BR-08`, `BR-09`, `BR-10` | 1.0 |
@@ -174,8 +174,11 @@ CRUD Store chạy end-to-end.
 | **Đức Anh** | `T4-TV4-02` | **Quick Checkout: đặt → thanh toán → hiện QR** | `01` §9.3 | 1.5 |
 | **Hoàng Huy** | `T4-TV5-01` | Màn Staff: tạo đợt bán 4 bước + quản lý offer | `FR-S02`, `FR-S03` | 1.5 |
 | **Hoàng Huy** | `T4-TV5-02` | Màn "đơn phải trả trong đợt" | `FR-S04` | 1.0 |
-| **Quang Huy** | `T4-TV6-01` | **gRPC QrService**: `IssueTicket` + `VerifyTicket`, ký HMAC, **không chạm DB** | `03` §11, `OQ-22` | 1.5 |
-| **Quang Huy** | `T4-TV6-02` | Đăng ký gRPC client ở API | | 0.5 |
+| **Tùng** *(nhận thay 14/10)* | `T4-TV6-01` | **gRPC QrService**: `IssueTicket` + `VerifyTicket`, ký HMAC, **không chạm DB** | `03` §11, `OQ-22` | 1.5 |
+| **Tùng** *(nhận thay 14/10)* | `T4-TV6-02` | Đăng ký gRPC client ở API | | 0.5 |
+
+> **14/10:** Tùng nhận luôn `T4-TV6-01` và `T4-TV6-02` vì gắn chặt với thanh toán (`T4-TUNG-03`).
+> Quang Huy dồn sức cho `T3-TV6-01` (SaleBatch — đang chặn cả nhóm), seed pha 2 và deploy.
 
 **Chốt 06/10 — kịch bản bắt buộc chạy được:**
 50 request đồng thời mua 10 suất → **đúng 10 đơn thành công, 40 đơn `409`**, tồn kho về 0

@@ -1,0 +1,21 @@
+@model CategoryFormViewModel
+@{
+    ViewData["Title"] = "Sửa danh mục";
+}
+
+<div class="dash-toolbar">
+    <div>
+        <h2>Sửa danh mục</h2>
+        <p class="muted small">FR-A03 · <code>PUT admin/categories/{id}</code></p>
+    </div>
+    <a class="dash-btn-secondary" asp-action="Index">← Danh mục</a>
+</div>
+
+<form asp-action="Edit" method="post" class="dash-card dash-form">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="Id" value="@Model.Id" />
+    <partial name="_CategoryFields" model="Model" />
+    <div style="margin-top: 0.75rem;">
+        <button type="submit" class="dash-btn">Lưu thay đổi</button>
+    </div>
+</form>

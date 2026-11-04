@@ -1,0 +1,75 @@
+@model BrandStatsViewModel
+@using FreshRescue.WebClient.Helpers
+@{
+    ViewData["Title"] = "Thống kê thương hiệu";
+}
+
+<div class="dash-toolbar">
+    <div>
+        <h2>Thống kê thương hiệu</h2>
+        <p class="muted small">FR-B06 · BR-25 · <code>GET brand/stats</code> · lọc theo ngày tạo đơn</p>
+    </div>
+</div>
+
+<form method="get" asp-action="Stats" class="dash-filters">
+    <label class="muted small">Từ ngày</label>
+    <input type="date" name="from" value="@Model.FromDate?.ToString("yyyy-MM-dd")" class="dash-input" />
+    <label class="muted small">Đến ngày</label>
+    <input type="date" name="to" value="@Model.ToDate?.ToString("yyyy-MM-dd")" class="dash-input" />
+    <button type="submit" class="dash-btn dash-btn-sm">Xem</button>
+    <a class="dash-btn-secondary" asp-action="Stats">Toàn thời gian</a>
+</form>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="dash-alert dash-alert-err">@Model.ErrorMessage</div>
+}
+else if (Model.Stats is { } stats)
+{
+    <div class="dash-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+        <div class="dash-card">
+            <p class="muted small">Doanh thu chi nhánh nhận</p>
+            <h3>@Display.Money(stats.TotalRevenue)</h3>
+        </div>
+        <div class="dash-card">
+            <p class="muted small">Số suất đã giải cứu</p>
+            <h3>@stats.TotalRescuedPortions.ToString("N0") suất</h3>
+        </div>
+    </div>
+
+    @if (stats.ByStore.Count == 0)
+    {
+        <div class="dash-empty">
+            <p>Thương hiệu chưa có chi nhánh nào.</p>
+        </div>
+    }
+    else
+    {
+        <div class="dash-table-wrap">
+            <table class="dash-table">
+                <thead>
+                    <tr>
+                        <th>Chi nhánh</th>
+                        <th>Doanh thu</th>
+                        <th>Suất đã cứu</th>
+                        <th>Tỉ lệ không đến lấy</th>
+                        <th>Điểm đánh giá</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var s in stats.ByStore)
+                    {
+                        <tr>
+                            <td><strong>@s.StoreName</strong></td>
+                            <td>@Display.Money(s.Revenue)</td>
+                            <td>@s.RescuedPortions</td>
+                            <td>@((s.NoShowRate * 100).ToString("0.#"))%</td>
+                            <td>@(s.RatingAverage > 0 ? s.RatingAverage.ToString("0.0") + " ★" : "—")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <p class="muted small">Tỉ lệ không đến lấy = NoShow / (Redeemed + NoShow). Điểm đánh giá là điểm hiện tại của chi nhánh, không lọc theo ngày.</p>
+    }
+}

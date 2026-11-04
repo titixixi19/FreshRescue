@@ -1,0 +1,140 @@
+@model StorefrontViewModel
+@{
+    ViewData["Title"] = "Săn đồ ăn giá tốt";
+    var query = Model.Query;
+    double[] radiusOptions = [1, 2, 5, 10, 20];
+}
+
+<section class="fr-hero mb-4">
+    <div>
+        <h1 class="fr-hero-title">Giải cứu đồ ăn ngon cuối ngày</h1>
+        <p class="fr-hero-text mb-0">
+            Túi mù giảm 65–75%, món xả kho giảm 40–50%. Đặt trước, đến quầy đưa mã QR và mang về —
+            vừa tiết kiệm, vừa bớt một phần thức ăn bị bỏ đi.
+        </p>
+    </div>
+    <div class="fr-hero-stat">
+        <strong>@Model.Offers.TotalCount</strong>
+        <span>món đang chờ giải cứu</span>
+    </div>
+</section>
+
+<form method="get" asp-action="Index" class="card fr-filter mb-4" id="fr-filter">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            @if (Model.Categories.Count > 0)
+            {
+                <div class="col-6 col-md-3 col-lg-2">
+                    <label class="form-label small" for="categoryId">Danh mục</label>
+                    <select class="form-select" id="categoryId" name="categoryId">
+                        <option value="">Tất cả</option>
+                        @foreach (var category in Model.Categories)
+                        {
+                            <option value="@category.Id" selected="@(query.CategoryId == category.Id)">@category.Name</option>
+                        }
+                    </select>
+                </div>
+            }
+            <div class="col-6 col-md-3 col-lg-2">
+                <label class="form-label small" for="offerType">Loại</label>
+                <select class="form-select" id="offerType" name="offerType">
+                    <option value="">Tất cả</option>
+                    @foreach (var type in Enum.GetValues<OfferType>())
+                    {
+                        <option value="@type" selected="@(query.OfferType == type)">@Display.OfferTypeLabel(type)</option>
+                    }
+                </select>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <label class="form-label small" for="minPrice">Giá từ (₫)</label>
+                <input class="form-control" type="number" min="0" step="1000" id="minPrice" name="minPrice" value="@query.MinPrice" placeholder="0" />
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <label class="form-label small" for="maxPrice">đến (₫)</label>
+                <input class="form-control" type="number" min="0" step="1000" id="maxPrice" name="maxPrice" value="@query.MaxPrice" placeholder="200000" />
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <label class="form-label small" for="radiusKm">Khoảng cách</label>
+                <div class="input-group">
+                    <select class="form-select" id="radiusKm" name="radiusKm">
+                        @foreach (var radius in radiusOptions)
+                        {
+                            <option value="@radius" selected="@((query.RadiusKm ?? 5) == radius)">≤ @radius km</option>
+                        }
+                    </select>
+                    <button type="button" class="btn btn-outline-success" id="fr-locate" title="Dùng vị trí của tôi">📍</button>
+                </div>
+                <input type="hidden" name="lat" id="lat" value="@query.Lat?.ToString(System.Globalization.CultureInfo.InvariantCulture)" />
+                <input type="hidden" name="lng" id="lng" value="@query.Lng?.ToString(System.Globalization.CultureInfo.InvariantCulture)" />
+                <input type="hidden" name="storeId" value="@query.StoreId" />
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="inStockOnly" name="inStockOnly" value="true" checked="@query.InStockOnly" />
+                    <label class="form-check-label small" for="inStockOnly">Chỉ món còn suất</label>
+                </div>
+                <button type="submit" class="btn btn-success w-100">Lọc</button>
+            </div>
+        </div>
+        <div class="small mt-2 d-flex flex-wrap gap-3" id="fr-filter-status">
+            @if (query.StoreId is not null && Model.Offers.Items.FirstOrDefault() is { } first)
+            {
+                <span class="text-success">🏪 Đang xem món của @first.StoreName</span>
+            }
+            @if (query.HasLocation)
+            {
+                <span class="text-success">📍 Đang tìm quanh vị trí của bạn (≤ @(query.RadiusKm ?? 5) km)</span>
+            }
+            @if (query.HasFilter)
+            {
+                <a asp-action="Index">Xoá bộ lọc</a>
+            }
+        </div>
+    </div>
+</form>
+
+@if (Model.Offers.Items.Count == 0)
+{
+    <div class="fr-empty my-5">
+        <div class="fr-empty-icon">🥡</div>
+        <h2 class="h5">Chưa có món nào khớp bộ lọc</h2>
+        <p class="text-muted">Các cửa hàng thường mở đợt bán vào cuối ngày. Thử nới bộ lọc hoặc quay lại sau nhé.</p>
+        @if (query.HasFilter)
+        {
+            <a class="btn btn-outline-success" asp-action="Index">Xem tất cả món</a>
+        }
+    </div>
+}
+else
+{
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-3">
+        @foreach (var offer in Model.Offers.Items)
+        {
+            <partial name="_OfferCard" model="offer" />
+        }
+    </div>
+
+    <partial name="_Pager" model="@(new PagerModel(Model.Offers.Page, Model.Offers.TotalPages, page => Url.Action("Index", query.ToRouteValues(page))))" />
+}
+
+@section Scripts {
+    <script>
+        // "Gần tôi" (FR-C03): lấy toạ độ từ trình duyệt rồi lọc lại — API tự tính khoảng cách.
+        document.getElementById('fr-locate').addEventListener('click', () => {
+            const status = document.getElementById('fr-filter-status');
+            if (!navigator.geolocation) {
+                status.textContent = 'Trình duyệt không hỗ trợ lấy vị trí.';
+                return;
+            }
+            status.textContent = 'Đang lấy vị trí…';
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    document.getElementById('lat').value = position.coords.latitude.toFixed(6);
+                    document.getElementById('lng').value = position.coords.longitude.toFixed(6);
+                    document.getElementById('fr-filter').submit();
+                },
+                () => { status.textContent = 'Không lấy được vị trí — hãy cho phép trình duyệt truy cập vị trí.'; },
+                { timeout: 10000 });
+        });
+    </script>
+}

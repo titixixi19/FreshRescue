@@ -323,6 +323,7 @@ nghiệp vụ trả `BRAND_NOT_APPROVED` cho tới khi Admin duyệt.
 | `PURCHASE_LIMIT_EXCEEDED` | "Mỗi người chỉ mua tối đa 3 suất" |
 | `OFFER_CROSS_BATCH` | Lỗi lập trình phía client, không phải lỗi người dùng |
 | `CONCURRENCY_CONFLICT` | "Hệ thống đang bận" — cho phép thử lại |
+| `VALIDATION_FAILED` | `items` sai định dạng — client nên chặn trước khi gửi: từ **1 đến 20** dòng, mỗi `offerId` **chỉ một dòng** (không gộp), `quantity` từ **1 đến 10** |
 
 ### 4.2. `POST /orders/{id}/payment`
 
@@ -361,6 +362,30 @@ giữ cho tới hết hạn (`OQ-17`).
 > to để nhân viên nhập tay khi webcam trục trặc
 > (`FR-S06`, `OQ-32`). `token` tự chứa dữ liệu và đã ký (`NFR-04`) — đừng cắt ngắn hay
 > định dạng lại chuỗi.
+
+### 4.4. `POST /orders/{id}/cancel` — khách huỷ *(chốt 14/10)*
+
+Không có body. Trả `200` + `OrderDto` với `status: "Cancelled"` và bốn trường huỷ:
+
+```json
+{ "...": "OrderDto", "status": "Cancelled",
+  "cancelledBy": "Customer", "cancelReason": null,
+  "cancelledAt": "2026-09-17T13:05:00Z", "refundStatus": "Refunded" }
+```
+
+| Trạng thái đơn | Kết quả |
+| --- | --- |
+| `PendingPayment` | Huỷ, trả tồn kho, `refundStatus: "None"` |
+| `Paid`, `now ≤ min(paidAt + 15', pickupStartTime − 5')` | Huỷ, trả tồn kho, `refundStatus: "Refunded"`, vé QR hết hiệu lực (`BR-13`) |
+| `Paid`, quá hạn trên · `Cancelled` · `NoShow` | `409 CANCEL_WINDOW_PASSED` |
+| `Redeemed` | `409 ORDER_ALREADY_REDEEMED` |
+| Đơn vừa đổi trạng thái giữa lúc đọc và lúc huỷ | `409 CONCURRENCY_CONFLICT` — tải lại đơn rồi thử lại |
+
+### 4.5. `GET /me/orders`, `GET /me/orders/{id}` *(chốt 14/10)*
+
+`GET /me/orders?status=Paid&page=1&pageSize=20` trả `PagedResponse<OrderDto>` (§1.1), mới nhất
+trước; bỏ `status` để lấy mọi trạng thái. `GET /me/orders/{id}` trả một `OrderDto`, `404` nếu
+không phải đơn của mình. Đơn của chi nhánh đã xoá mềm vẫn hiện đủ (`BR-22`).
 
 ---
 
@@ -414,6 +439,7 @@ Yêu cầu role `StoreStaff` **hoặc** `BrandManager`. Phạm vi kiểm theo `B
 ```json
 {
   "name": "Xả bánh tối thứ Năm",
+  "storeId": "7c0a...",
   "saleStartTime":   "2026-09-17T12:30:00Z",
   "saleEndTime":     "2026-09-17T14:00:00Z",
   "pickupStartTime": "2026-09-17T13:30:00Z",
@@ -425,19 +451,31 @@ Yêu cầu role `StoreStaff` **hoặc** `BrandManager`. Phạm vi kiểm theo `B
 }
 ```
 
+`storeId` chỉ dùng khi **Brand Manager** tạo thay chi nhánh (`BR-11`), bắt buộc với role này;
+Store Staff lấy chi nhánh từ token, trường này bị bỏ qua *(chốt 15/10)*.
+
+Danh sách mẫu để chọn `offerTemplateId` lấy từ `GET /brand/offer-templates` — cả Store Staff lẫn
+Brand Manager đều gọi được (§7) *(chốt 27/10)*.
+
 Lỗi: `BATCH_TIME_INVALID` (`BR-15`), `BATCH_OVERLAP` (`OQ-11`),
-`PRICE_OUT_OF_BAND` (`BR-07`), `BRAND_NOT_APPROVED` (`BR-14`).
+`PRICE_OUT_OF_BAND` (`BR-07`), `BRAND_NOT_APPROVED` (`BR-14`), `409 BATCH_LOCKED` khi chi nhánh
+đang `Inactive` hoặc kích hoạt đợt không ở trạng thái `Draft`.
 
 ### 6.2. `PUT /staff/sale-batches/{id}` — cái bẫy phân quyền theo thời gian
 
-Sau khi có đơn `Paid` đầu tiên, endpoint này trả `409 BATCH_LOCKED` nếu cố:
+Sau khi có đơn `Paid` đầu tiên, endpoint này (và `PUT /staff/offers/{id}`) trả `409 BATCH_LOCKED`
+nếu cố:
 
-- hạ `totalQuantity` xuống dưới số đã bán
 - đổi `actualPrice`
 - đổi **bất kỳ mốc nào trong 4 mốc thời gian**, kể cả lùi `PickupEndTime` về sau
 
-Chỉ còn cho phép **tăng** `totalQuantity`. Lý do cấm lùi `PickupEndTime`:
-`01-REQUIREMENTS.md` §9.4.
+Lý do cấm lùi `PickupEndTime`: `01-REQUIREMENTS.md` §9.4.
+
+**Số lượng** chỉnh riêng qua `PATCH /staff/offers/{id}/quantity`, body `{ "totalQuantity": 12 }`
+*(chốt 15/10)*. Tăng hay hạ đều được, bất kể đợt đã có đơn `Paid` hay chưa, miễn tổng mới **không
+thấp hơn số đã giữ chỗ / đã bán** — thấp hơn thì `409 OFFER_HAS_ORDERS`. Hạ về đúng số đã bán
+(`remainingQuantity = 0`) chính là cách ngừng bán giữa chừng của `BR-24`. `OfferService` kiểm phạm vi
+và trạng thái đợt rồi gọi `IOrderService.AdjustOfferStockAsync` (`07` §12.2).
 
 ### 6.3. `POST /staff/redemptions` — đối soát
 
@@ -466,25 +504,72 @@ Chỉ còn cho phép **tăng** `totalQuantity`. Lý do cấm lùi `PickupEndTime
 | `REDEEM_WINDOW_CLOSED` | Tới quá sớm (`BR-08`) |
 | `ORDER_ALREADY_REDEEMED` | **Đã quét rồi** (`BR-09`) |
 
+### 6.4. `POST /staff/orders/{id}/cancel` — cửa hàng huỷ *(chốt 14/10)*
+
+```json
+// request — lý do bắt buộc, tối đa 500 ký tự (BR-16)
+{ "reason": "Lò hỏng, không đủ bánh" }
+```
+
+Trả `200` + `OrderDto` (`cancelledBy: "Store"`, `refundStatus: "Refunded"`). Khách nhận một
+`Notification` loại `OrderCancelledByStore` kèm lý do. Phạm vi theo `BR-10` như §6.3.
+
+| Lỗi | Nghĩa |
+| --- | --- |
+| `VALIDATION_FAILED` | Thiếu `reason` hoặc quá 500 ký tự |
+| `FORBIDDEN_SCOPE` | Đơn của chi nhánh khác |
+| `CANCEL_WINDOW_PASSED` | Đơn chưa thanh toán (để job `FR-X03` tự thu hồi), đã huỷ, hoặc `NoShow` |
+| `ORDER_ALREADY_REDEEMED` | Đã trao hàng — chỉ còn đường khiếu nại (`BR-17`) |
+
+**Huỷ cả đợt** (`POST /staff/sale-batches/{id}/cancel`, `BR-23`) dùng cùng body `{ "reason" }`
+và cùng luồng này cho từng đơn `PendingPayment` / `Paid` của đợt.
+
+### 6.5. `GET /staff/sale-batches/{id}/orders` — đơn phải trả *(chốt 14/10)*
+
+`?status=&page=&pageSize=` như §1.1. Bỏ `status` thì trả mọi đơn **trừ `PendingPayment`**;
+sắp đơn `Paid` (chờ trao) lên đầu theo `paidAt`, rồi tới các đơn còn lại. Phạm vi `BR-10`.
+
+```json
+// PagedResponse<StaffOrderDto> — không có số điện thoại hay email của khách
+{ "items": [ {
+    "id": "0c4d...", "orderCode": "FR-8A3K9MQ2", "customerName": "Nguyễn Văn An",
+    "status": "Paid", "totalAmount": 70000,
+    "paidAt": "2026-09-17T13:05:00Z", "redeemedAt": null, "cancelledAt": null,
+    "items": [ { "offerId": "e91b...", "offerName": "Túi mù bánh ngọt",
+                 "quantity": 2, "unitPrice": 35000, "lineTotal": 70000 } ] } ],
+  "page": 1, "pageSize": 20, "totalCount": 1, "totalPages": 1 }
+```
+
+Lỗi: `FORBIDDEN_SCOPE` (đợt của chi nhánh khác), `NOT_FOUND` (không có đợt).
+
 ---
 
 ## 7. Thương hiệu — `/brand`
 
 Yêu cầu role `BrandManager`. Mọi endpoint ngầm lọc theo `brand_id` trong token.
+Ngoại lệ duy nhất: `StoreStaff` được **xem** mẫu mặt hàng (hai dòng `GET` đánh dấu ★) *(chốt 27/10)*.
 
 | Method | Đường dẫn | Mô tả |
 | --- | --- | --- |
 | GET / PUT | `/brand/profile` | Hồ sơ thương hiệu |
 | GET / POST | `/brand/stores` | Danh sách / tạo chi nhánh |
 | PUT / DELETE | `/brand/stores/{id}` | Sửa / xoá mềm |
-| GET / POST | `/brand/offer-templates` | **Mẫu mặt hàng** (`FR-B04`) |
-| PUT / DELETE | `/brand/offer-templates/{id}` | |
+| GET ★ | `/brand/offer-templates` | Danh sách **mẫu mặt hàng** (`FR-B04`), lọc `search`, `categoryId`, `offerType` |
+| POST | `/brand/offer-templates` | Tạo mẫu |
+| GET ★ | `/brand/offer-templates/{id}` | Chi tiết một mẫu |
+| PUT / DELETE | `/brand/offer-templates/{id}` | Sửa / xoá mềm |
 | GET / POST | `/brand/staff` | Danh sách / tạo tài khoản nhân viên |
 | DELETE | `/brand/staff/{id}` | Gỡ nhân viên khỏi chi nhánh |
 | GET | `/brand/stats` | 2 biểu đồ (`FR-B06`), số liệu theo `BR-25` |
 | GET | `/brand/offer-templates/import-template` | Tải file Excel mẫu để điền (`FR-B07`) |
 | POST | `/brand/offer-templates/import` | Import mẫu mặt hàng từ `.xlsx` (`FR-B07`, `BR-26`) |
 | GET | `/brand/orders/export` | Export đơn + thống kê ra `.xlsx`, `?from=&to=` (`FR-B08`, `BR-27`) |
+
+★ `BrandManager` **hoặc** `StoreStaff`. Staff cần danh sách mẫu để chọn `offerTemplateId` khi tạo
+đợt bán (§6.1), mà `/staff` không có endpoint nào trả mẫu. Phạm vi vẫn theo `brand_id` trong token
+(`BR-11`): staff chỉ thấy mẫu của thương hiệu sở hữu chi nhánh mình; mẫu của thương hiệu khác trả
+`403 FORBIDDEN_SCOPE` như với Brand Manager. Mọi thao tác ghi (tạo, sửa, xoá, import) vẫn **chỉ**
+`BrandManager` — staff gọi nhận `403`.
 
 ```json
 // POST /brand/offer-templates
@@ -504,6 +589,43 @@ Yêu cầu role `BrandManager`. Mọi endpoint ngầm lọc theo `brand_id` tron
 Biên độ của brand phải **nằm trong** biên độ của sàn theo `offerType`, nếu không →
 `400 PRICE_OUT_OF_BAND` (`BR-07`).
 
+#### Nhân viên — `/brand/staff` *(chốt 27/10)*
+
+```json
+// POST /brand/staff
+{
+  "fullName": "Trần Thị Bình",
+  "email": "binh@example.com",
+  "password": "matkhau123",
+  "phoneNumber": "0901234567",     // không bắt buộc
+  "storeId": "b77d...",
+  "position": "Thu ngân"           // không bắt buộc
+}
+
+// 201 — và là một phần tử của GET /brand/staff (PagedResponse, lọc ?storeId=)
+{
+  "id": "5e9a...",                 // Id của StoreStaff, dùng cho DELETE
+  "userId": "3f2a...",
+  "fullName": "Trần Thị Bình",
+  "email": "binh@example.com",
+  "storeId": "b77d...",
+  "storeName": "Nguyễn Huệ",
+  "position": "Thu ngân",
+  "isActive": true
+}
+```
+
+- `POST` tạo **tài khoản mới** với role `StoreStaff` và bản ghi `StoreStaff`, nên lần đăng nhập
+  sau token mang `store_id`. Email đã có tài khoản (kể cả tài khoản `Customer`) →
+  `400 VALIDATION_FAILED`, **không** gắn thêm vai vào tài khoản cũ.
+- `storeId` không thuộc thương hiệu trong token → `403 FORBIDDEN_SCOPE` (`BR-11`).
+- `DELETE /brand/staff/{id}` = gỡ khỏi chi nhánh: đặt `StoreStaff.IsActive = false`, giữ tài
+  khoản và lịch sử đối soát. Token đang dùng vẫn mang `store_id` cũ tới khi hết hạn (tối đa 15
+  phút, `02` §3.2). Không có endpoint chuyển chi nhánh — muốn chuyển thì gỡ rồi tạo tài khoản khác,
+  vì mỗi tài khoản chỉ thuộc một chi nhánh (`OQ-07`).
+
+#### Thống kê — `/brand/stats` *(chốt 27/10)*
+
 ```json
 // GET /brand/stats?from=2026-09-01&to=2026-09-30
 {
@@ -516,6 +638,15 @@ Biên độ của brand phải **nằm trong** biên độ của sàn theo `offe
   ]
 }
 ```
+
+- `from`, `to`: ngày, cả hai đầu tính trọn ngày, lọc theo `Order.CreatedAt` — **giống hệt**
+  `/brand/orders/export` (sheet `Summary` phải ra cùng số). Không truyền thì không giới hạn phía đó;
+  `from > to` → `400 VALIDATION_FAILED`.
+- `noShowRate` = số đơn `NoShow` / số đơn `Redeemed` + `NoShow` trong khoảng ngày; mẫu bằng 0 thì
+  trả `0`. Làm tròn 2 chữ số thập phân.
+- `ratingAverage` = `Store.RatingAverage` hiện tại — **không** lọc theo khoảng ngày.
+- `byStore` có **mọi** chi nhánh của thương hiệu, kể cả chi nhánh chưa có đơn (số liệu `0`) và
+  chi nhánh đã xoá mềm nhưng có đơn trong khoảng (`BR-22`).
 
 ### 7.1. Import / Export Excel
 
