@@ -154,9 +154,10 @@ public sealed class TransactionSeeder
                     .CancelByStoreAsync(orders[4].Id, new CancelOrderByStoreRequest("Hết hàng thực tế, xin lỗi khách"), ct));
         }
 
-        // Nhận hàng: lúc quét mã QR (chi nhánh chẵn), lúc nhập mã đơn thủ công (chi nhánh lẻ).
+        // Nhận hàng bằng mã đơn: QrService kiểm hạn vé theo giờ thật, nên vé của đợt quá khứ
+        // luôn bị coi là hết hạn dù đồng hồ seeder đã lùi. Quét QR thật chỉ dùng ở đợt đang mở.
         _clock.Set(times.PickupStart.AddMinutes(10));
-        await RedeemAsync(store, orders[0], storeCancels ? tickets[0] : null, ct);
+        await RedeemAsync(store, orders[0], null, ct);
         if (!storeCancels)
         {
             await RedeemAsync(store, orders[4], null, ct);
