@@ -1,0 +1,88 @@
+@model CategoryListViewModel
+@{
+    ViewData["Title"] = "Danh mục";
+}
+
+<div class="dash-toolbar">
+    <div>
+        <h2>Danh mục</h2>
+        <p class="muted small">FR-A03 · <code>GET/POST/PUT/DELETE admin/categories</code></p>
+    </div>
+</div>
+
+@if (TempData["Success"] is string ok)
+{
+    <div class="dash-alert dash-alert-ok">@ok</div>
+}
+@if (TempData["Error"] is string err)
+{
+    <div class="dash-alert dash-alert-err">@err</div>
+}
+
+<details class="dash-card" style="margin-bottom: 1.5rem;" @(Model.NewCategory.ErrorMessage is null ? "" : "open")>
+    <summary><strong>+ Thêm danh mục</strong></summary>
+    <form asp-action="Create" method="post" class="dash-form" style="margin-top: 1rem;">
+        @Html.AntiForgeryToken()
+        <partial name="_CategoryFields" model="Model.NewCategory" />
+        <div style="margin-top: 0.75rem;">
+            <button type="submit" class="dash-btn">Tạo danh mục</button>
+        </div>
+    </form>
+</details>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="dash-alert dash-alert-err">@Model.ErrorMessage</div>
+}
+else if (Model.Items.Count == 0)
+{
+    <div class="dash-empty">
+        <p>Chưa có danh mục nào.</p>
+    </div>
+}
+else
+{
+    <div class="dash-table-wrap">
+        <table class="dash-table">
+            <thead>
+                <tr>
+                    <th>Thứ tự</th>
+                    <th>Tên</th>
+                    <th>Slug</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var c in Model.Items)
+                {
+                    <tr>
+                        <td class="muted small">@c.DisplayOrder</td>
+                        <td><strong>@c.Name</strong></td>
+                        <td><code>@c.Slug</code></td>
+                        <td class="dash-actions">
+                            <a asp-action="Edit" asp-route-id="@c.Id">Sửa</a>
+                            <form asp-action="Delete" method="post" class="inline-form">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@c.Id" />
+                                <button type="submit" class="link-danger"
+                                        onclick="return confirm('Xoá danh mục này?');">
+                                    Xoá
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav class="dash-pager" aria-label="Phân trang">
+            @for (var p = 1; p <= Model.TotalPages; p++)
+            {
+                <a class="@(p == Model.Page ? "active" : null)" asp-action="Index" asp-route-page="@p">@p</a>
+            }
+        </nav>
+    }
+}

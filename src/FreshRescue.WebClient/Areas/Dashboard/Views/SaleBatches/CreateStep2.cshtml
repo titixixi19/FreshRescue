@@ -1,0 +1,79 @@
+@model FreshRescue.WebClient.Areas.Dashboard.Models.SaleBatchWizardViewModel
+@{
+    ViewData["Title"] = "Tạo đợt bán — Bước 2";
+}
+
+<div class="dash-toolbar">
+    <div>
+        <h2>Bước 2 / 4 — Số lượng &amp; giá</h2>
+        <p class="muted small">Nhập <code>totalQuantity</code>, <code>actualPrice</code>, <code>maxPerCustomer</code>.</p>
+    </div>
+</div>
+
+<div asp-validation-summary="ModelOnly" class="dash-alert dash-alert-err"></div>
+
+@if (Model.Offers is null || Model.Offers.Count == 0)
+{
+    <div class="dash-empty">
+        <p>Thiếu danh sách offer. Quay lại bước 1.</p>
+        <a class="dash-btn" asp-action="CreateStep1">Về bước 1</a>
+    </div>
+}
+else
+{
+    <form asp-action="CreateStep2" method="post" class="dash-form" style="max-width:800px;">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Step" />
+        <input type="hidden" asp-for="IsBrandManager" />
+        <input type="hidden" asp-for="StoreId" />
+        <input type="hidden" asp-for="Name" />
+
+        <div class="dash-table-wrap" style="margin-bottom:1rem;">
+            <table class="dash-table">
+                <thead>
+                    <tr>
+                        <th>Mẫu</th>
+                        <th>Giá gốc</th>
+                        <th>Giá gợi ý</th>
+                        <th>Giá bán *</th>
+                        <th>Số lượng *</th>
+                        <th>Max/khách</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (var i = 0; i < Model.Offers.Count; i++)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@Model.Offers[i].TemplateName</strong>
+                                <input type="hidden" asp-for="Offers[i].OfferTemplateId" />
+                                <input type="hidden" asp-for="Offers[i].TemplateName" />
+                                <input type="hidden" asp-for="Offers[i].OriginalPrice" />
+                                <input type="hidden" asp-for="Offers[i].SuggestedPrice" />
+                            </td>
+                            <td class="muted">@Model.Offers[i].OriginalPrice.ToString("N0")</td>
+                            <td class="muted">@Model.Offers[i].SuggestedPrice.ToString("N0")</td>
+                            <td>
+                                <input asp-for="Offers[i].ActualPrice" class="dash-input dash-input-sm" />
+                                <span asp-validation-for="Offers[i].ActualPrice" class="field-error"></span>
+                            </td>
+                            <td>
+                                <input asp-for="Offers[i].TotalQuantity" class="dash-input dash-input-sm" />
+                                <span asp-validation-for="Offers[i].TotalQuantity" class="field-error"></span>
+                            </td>
+                            <td>
+                                <input asp-for="Offers[i].MaxPerCustomer" class="dash-input dash-input-sm" />
+                                <span asp-validation-for="Offers[i].MaxPerCustomer" class="field-error"></span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="dash-form-actions">
+            <button type="submit" name="nav" value="back" class="dash-btn-secondary">← Bước 1</button>
+            <button type="submit" name="nav" value="next" class="dash-btn">Tiếp — Bước 3</button>
+        </div>
+    </form>
+}

@@ -1,0 +1,120 @@
+@model OfferTemplateFormViewModel
+@inject FreshRescue.WebClient.Services.ApiOptions Api
+@{
+    ViewData["Title"] = Model.IsEdit ? "Sửa mẫu mặt hàng" : "Tạo mẫu mặt hàng";
+    var imageUrl = Api.ResolveUrl(Model.ImageUrl);
+}
+
+<div class="dash-toolbar">
+    <div>
+        <h2>@ViewData["Title"]</h2>
+        <p class="muted small">
+            FR-B04 · BR-07 · <code>@(Model.IsEdit ? "PUT brand/offer-templates/{id}" : "POST brand/offer-templates")</code>
+            · mẫu không có số lượng, số lượng chốt khi đưa vào đợt bán
+        </p>
+    </div>
+    <a class="dash-btn-secondary" asp-action="OfferTemplates">← Danh sách mẫu</a>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="dash-alert dash-alert-err">
+        @Model.ErrorMessage
+        @if (Model.FieldErrors.Count > 0)
+        {
+            <ul class="small" style="margin: 0.5rem 0 0 1rem;">
+                @foreach (var e in Model.FieldErrors)
+                {
+                    <li>@e</li>
+                }
+            </ul>
+        }
+    </div>
+}
+
+<form asp-action="SaveOfferTemplate" method="post" enctype="multipart/form-data" class="dash-card dash-form">
+    @Html.AntiForgeryToken()
+    @if (Model.IsEdit)
+    {
+        <input type="hidden" name="Id" value="@Model.Id" />
+    }
+    <input type="hidden" name="ImageUrl" value="@Model.ImageUrl" />
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="dash-field">
+            <label class="muted small" for="Name">Tên mẫu *</label>
+            <input id="Name" name="Name" value="@Model.Name" class="dash-input" required maxlength="200" />
+        </div>
+        <div class="dash-field">
+            <label class="muted small" for="CategoryId">Danh mục *</label>
+            <select id="CategoryId" name="CategoryId" class="dash-input" required>
+                <option value="">— Chọn danh mục —</option>
+                @foreach (var c in Model.Categories)
+                {
+                    if (c.Id == Model.CategoryId)
+                    {
+                        <option value="@c.Id" selected>@c.Name</option>
+                    }
+                    else
+                    {
+                        <option value="@c.Id">@c.Name</option>
+                    }
+                }
+            </select>
+        </div>
+
+        <div class="dash-field" style="grid-column: 1 / -1;">
+            <label class="muted small" for="Description">Mô tả</label>
+            <textarea id="Description" name="Description" class="dash-input" rows="2" maxlength="1000">@Model.Description</textarea>
+        </div>
+
+        <div class="dash-field">
+            <label class="muted small" for="OfferType">Loại *</label>
+            <select id="OfferType" name="OfferType" class="dash-input">
+                @foreach (var (value, label) in new[] { ("SurpriseBag", "Túi mù (giảm 65–75%)"), ("ClearanceItem", "Món lẻ xả kho (giảm 40–50%)") })
+                {
+                    if (Model.OfferType == value)
+                    {
+                        <option value="@value" selected>@label</option>
+                    }
+                    else
+                    {
+                        <option value="@value">@label</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="dash-field">
+            <label class="muted small" for="Image">Ảnh (jpg/png/webp)</label>
+            <input id="Image" type="file" name="Image" class="dash-input" accept="image/jpeg,image/png,image/webp" />
+            @if (imageUrl is not null)
+            {
+                <img src="@imageUrl" alt="Ảnh hiện tại" style="max-height: 64px; margin-top: 0.5rem; border-radius: 6px;" />
+            }
+        </div>
+
+        <div class="dash-field">
+            <label class="muted small" for="OriginalPrice">Giá gốc (đ) *</label>
+            <input id="OriginalPrice" type="number" name="OriginalPrice" value="@Model.OriginalPrice.ToString("0")" class="dash-input" min="1" step="500" required />
+        </div>
+        <div class="dash-field">
+            <label class="muted small" for="SuggestedPrice">Giá gợi ý (đ) *</label>
+            <input id="SuggestedPrice" type="number" name="SuggestedPrice" value="@Model.SuggestedPrice.ToString("0")" class="dash-input" min="1" step="500" required />
+        </div>
+        <div class="dash-field">
+            <label class="muted small" for="BrandMinDiscountPercent">Giảm tối thiểu (%) *</label>
+            <input id="BrandMinDiscountPercent" type="number" name="BrandMinDiscountPercent" value="@Model.BrandMinDiscountPercent.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)" class="dash-input" min="0" max="100" step="0.5" required />
+        </div>
+        <div class="dash-field">
+            <label class="muted small" for="BrandMaxDiscountPercent">Giảm tối đa (%) *</label>
+            <input id="BrandMaxDiscountPercent" type="number" name="BrandMaxDiscountPercent" value="@Model.BrandMaxDiscountPercent.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)" class="dash-input" min="0" max="100" step="0.5" required />
+        </div>
+    </div>
+
+    <p class="muted small" style="margin-top: 1rem;">
+        BR-07: khung giảm giá của mẫu chỉ được hẹp hơn, không được rộng hơn mức sàn theo loại — túi mù 65–75%, món lẻ 40–50%.
+    </p>
+    <div style="margin-top: 1rem;">
+        <button type="submit" class="dash-btn">@(Model.IsEdit ? "Lưu thay đổi" : "Tạo mẫu")</button>
+    </div>
+</form>

@@ -227,6 +227,36 @@ public class HttpApiClient : IApiClient
         throw new ApiException(status, errorCode, ApiErrorMessages.Resolve(status, errorCode, detail), errors);
     }
 
+    public async Task<Stream> DownloadFileAsync(string path, CancellationToken cancellationToken = default)
+    {
+        using var response = await SendWithTokenAsync(() => new HttpRequestMessage(HttpMethod.Get, path), cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+
+        // Đọc stream phản hồi dưới dạng Stream (Caller tự dispose stream/response nếu cần, hoặc đọc bytes)
+        var memoryStream = new MemoryStream();
+        await response.Content.CopyToAsync(memoryStream, cancellationToken);
+        memoryStream.Position = 0;
+        return memoryStream;
+    }
+
+    public async Task<T> UploadFileAsync<T>(string path, IFormFile file, string paramName = "file", CancellationToken cancellationToken = default)
+    {
+        return await SendAsync<T>(
+            () =>
+            {
+                var fileContent = new StreamContent(file.OpenReadStream());
+                fileContent.Headers.ContentType = new MediaTypeHeaderValue(
+                    string.IsNullOrEmpty(file.ContentType) ? "application/octet-stream" : file.ContentType);
+
+                var form = new MultipartFormDataContent
+                {
+                    { fileContent, paramName, file.FileName }
+                };
+
+                return new HttpRequestMessage(HttpMethod.Post, path) { Content = form };
+            },
+            cancellationToken);
+    }
     private static string? ReadString(JsonElement element, string name)
         => element.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()

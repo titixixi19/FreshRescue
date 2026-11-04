@@ -4,17 +4,28 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FreshRescue.WebClient.Controllers;
 
+/// <summary>
+/// Trang chủ gốc (/) — chuyển vào storefront Customer.
+/// Không chứa Dashboard.
+/// </summary>
 public class HomeController : Controller
 {
-    /// <summary>Trang chủ của site chính là storefront.</summary>
+    [HttpGet]
     public IActionResult Index()
     {
-        return RedirectToAction("Index", "Storefront", new { area = "Customer" });
+        return RedirectToAction(
+            actionName: "Index",
+            controllerName: "Storefront",
+            routeValues: new { area = "Customer" });
     }
 
+    [HttpGet]
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
     {
-        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        return View(new ErrorViewModel
+        {
+            RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
+        });
     }
 }

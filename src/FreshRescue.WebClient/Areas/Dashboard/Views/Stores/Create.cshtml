@@ -1,0 +1,91 @@
+@model FreshRescue.WebClient.Areas.Dashboard.Models.StoreFormViewModel
+
+@{
+    ViewData["Title"] = "Tạo chi nhánh";
+}
+
+<div class="container py-4">
+    <div class="mb-4">
+        <h1 class="h3">Tạo chi nhánh</h1>
+        <p class="text-muted">Nhập thông tin chi nhánh mới.</p>
+    </div>
+
+    <form asp-area="Dashboard" asp-controller="Stores" asp-action="Create" method="post">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="mb-3">
+                    <label asp-for="Name" class="form-label">Tên chi nhánh *</label>
+                    <input asp-for="Name" class="form-control" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="AddressLine" class="form-label">Địa chỉ *</label>
+                    <input asp-for="AddressLine" class="form-control" />
+                    <span asp-validation-for="AddressLine" class="text-danger"></span>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="Ward" class="form-label">Phường/Xã</label>
+                        <input asp-for="Ward" class="form-control" />
+                        <span asp-validation-for="Ward" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="District" class="form-label">Quận/Huyện</label>
+                        <input asp-for="District" class="form-control" />
+                        <span asp-validation-for="District" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="City" class="form-label">Thành phố *</label>
+                        <input asp-for="City" class="form-control" />
+                        <span asp-validation-for="City" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Latitude" class="form-label">Vĩ độ</label>
+                        <input asp-for="Latitude" type="number" step="any" class="form-control" />
+                        <span asp-validation-for="Latitude" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Longitude" class="form-label">Kinh độ</label>
+                        <input asp-for="Longitude" type="number" step="any" class="form-control" />
+                        <span asp-validation-for="Longitude" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Phone" class="form-label">Số điện thoại</label>
+                    <input asp-for="Phone" class="form-control" />
+                    <span asp-validation-for="Phone" class="text-danger"></span>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="OpenTime" class="form-label">Giờ mở cửa</label>
+                        <input asp-for="OpenTime" type="time" class="form-control" />
+                        <span asp-validation-for="OpenTime" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="CloseTime" class="form-label">Giờ đóng cửa</label>
+                        <input asp-for="CloseTime" type="time" class="form-control" />
+                        <span asp-validation-for="CloseTime" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-footer bg-white d-flex justify-content-end gap-2">
+                <a asp-area="Dashboard"
+                   asp-controller="Stores"
+                   asp-action="Index"
+                   class="btn btn-outline-secondary">Huỷ</a>
+                <button type="submit" class="btn btn-primary">Tạo chi nhánh</button>
+            </div>
+        </div>
+    </form>
+</div>

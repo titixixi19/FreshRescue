@@ -1,0 +1,118 @@
+@model OfferTemplateListViewModel
+@using FreshRescue.WebClient.Helpers
+@{
+    ViewData["Title"] = "Mẫu mặt hàng";
+}
+
+<div class="dash-toolbar">
+    <div>
+        <h2>Mẫu mặt hàng</h2>
+        <p class="muted small">FR-B04 · <code>GET brand/offer-templates</code> · mẫu không có số lượng, số lượng chốt ở từng đợt bán</p>
+    </div>
+    <div>
+        <a class="dash-btn-secondary" asp-area="Dashboard" asp-controller="ImportExport" asp-action="Index">Import từ Excel</a>
+        <a class="dash-btn" asp-action="CreateOfferTemplate">+ Tạo mẫu</a>
+    </div>
+</div>
+
+@if (TempData["Success"] is string ok)
+{
+    <div class="dash-alert dash-alert-ok">@ok</div>
+}
+@if (TempData["Error"] is string err)
+{
+    <div class="dash-alert dash-alert-err">@err</div>
+}
+
+<form method="get" asp-action="OfferTemplates" class="dash-filters">
+    <input type="text" name="search" value="@Model.SearchQuery" class="dash-input" placeholder="Tìm theo tên" />
+    <select name="offerType" class="dash-input">
+        <option value="">— Mọi loại —</option>
+        @foreach (var (value, label) in new[] { (1, "Túi mù"), (2, "Món lẻ xả kho") })
+        {
+            if (Model.OfferType == value)
+            {
+                <option value="@value" selected>@label</option>
+            }
+            else
+            {
+                <option value="@value">@label</option>
+            }
+        }
+    </select>
+    <button type="submit" class="dash-btn dash-btn-sm">Lọc</button>
+</form>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="dash-alert dash-alert-err">@Model.ErrorMessage</div>
+}
+else if (Model.Items.Count == 0)
+{
+    <div class="dash-empty">
+        <p>Chưa có mẫu mặt hàng nào khớp bộ lọc.</p>
+    </div>
+}
+else
+{
+    <p class="muted small">Tổng cộng @Model.TotalCount mẫu.</p>
+    <div class="dash-table-wrap">
+        <table class="dash-table">
+            <thead>
+                <tr>
+                    <th>Tên</th>
+                    <th>Loại</th>
+                    <th>Giá gốc</th>
+                    <th>Giá gợi ý</th>
+                    <th>Khung giảm giá</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var t in Model.Items)
+                {
+                    <tr>
+                        <td>
+                            <strong>@t.Name</strong>
+                            @if (!string.IsNullOrWhiteSpace(t.Description))
+                            {
+                                <div class="muted small">@t.Description</div>
+                            }
+                        </td>
+                        <td>
+                            <span class="badge">@(t.OfferType == "SurpriseBag" ? "Túi mù" : t.OfferType == "ClearanceItem" ? "Món lẻ xả kho" : t.OfferType)</span>
+                        </td>
+                        <td>@Display.Money(t.OriginalPrice)</td>
+                        <td>@Display.Money(t.SuggestedPrice)</td>
+                        <td class="muted small">@t.BrandMinDiscountPercent.ToString("0.#")% – @t.BrandMaxDiscountPercent.ToString("0.#")%</td>
+                        <td class="dash-actions">
+                            <a asp-action="EditOfferTemplate" asp-route-id="@t.Id">Sửa</a>
+                            <form asp-action="DeleteOfferTemplate" method="post" class="inline-form">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@t.Id" />
+                                <button type="submit" class="link-danger"
+                                        onclick="return confirm('Xoá mẫu mặt hàng này? Đơn cũ vẫn giữ tên và giá đã chụp.');">
+                                    Xoá
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav class="dash-pager" aria-label="Phân trang">
+            @for (var p = 1; p <= Model.TotalPages; p++)
+            {
+                <a class="@(p == Model.Page ? "active" : null)"
+                   asp-action="OfferTemplates"
+                   asp-route-page="@p"
+                   asp-route-search="@Model.SearchQuery"
+                   asp-route-offerType="@Model.OfferType">@p</a>
+            }
+        </nav>
+    }
+}
