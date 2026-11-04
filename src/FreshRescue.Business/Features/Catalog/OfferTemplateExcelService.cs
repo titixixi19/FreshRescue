@@ -79,6 +79,7 @@ public sealed class OfferTemplateExcelService : IOfferTemplateExcelService
 
         // Check authorization before using any data from the uploaded workbook.
         var brandId = await GetOwnedBrandIdAsync(ct);
+        await BrandApproval.EnsureApprovedAsync(_unitOfWork, brandId, ct);
 
         XLWorkbook workbook;
         try

@@ -20,7 +20,10 @@
                 <span asp-validation-for="Email" class="text-danger small"></span>
             </div>
             <div class="mb-4">
-                <label asp-for="Password" class="form-label">Mật khẩu</label>
+                <div class="d-flex justify-content-between">
+                    <label asp-for="Password" class="form-label">Mật khẩu</label>
+                    <a class="small" asp-action="ForgotPassword">Quên mật khẩu?</a>
+                </div>
                 <input asp-for="Password" class="form-control" type="password" autocomplete="current-password" />
                 <span asp-validation-for="Password" class="text-danger small"></span>
             </div>
@@ -31,6 +34,10 @@
         <p class="text-center small mt-4 mb-0">
             Chưa có tài khoản?
             <a asp-action="Register" asp-route-returnUrl="@Model.ReturnUrl">Đăng ký ngay</a>
+        </p>
+        <p class="text-center small mt-2 mb-0">
+            Bạn là chủ cửa hàng?
+            <a asp-action="RegisterBrand">Đăng ký thương hiệu</a>
         </p>
     </div>
 </div>

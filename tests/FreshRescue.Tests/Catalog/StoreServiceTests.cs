@@ -94,6 +94,43 @@ public class StoreServiceTests
         stored.RatingAverage.Should().Be(0);
     }
 
+    [Theory]
+    [InlineData(BrandStatus.PendingApproval)]
+    [InlineData(BrandStatus.Suspended)]
+    public async Task CreateAsync_ThuongHieuChuaDuyetHoacBiKhoa_Bao403BrandNotApprovedAsync(BrandStatus status)
+    {
+        _brand.Status = status;
+        await _context.SaveChangesAsync();
+        var request = new CreateStoreRequest
+        {
+            Name = "Chi nhánh mới",
+            AddressLine = "12 Nguyễn Huệ",
+            Ward = "Bến Nghé",
+            District = "Quận 1",
+            City = "TP.HCM",
+            Latitude = 10.775m,
+            Longitude = 106.703m,
+            Phone = "0901234567"
+        };
+
+        var act = () => CreateService().CreateAsync(request, CancellationToken.None);
+
+        await act.Should().ThrowAsync<AppException>()
+            .Where(e => e.ErrorCode == ErrorCodes.BrandNotApproved && e.StatusCode == 403);
+        (await _context.Stores.CountAsync()).Should().Be(0);
+    }
+
+    [Fact]
+    public async Task GetAllAsync_ThuongHieuChoDuyet_VanXemDuocAsync()
+    {
+        _brand.Status = BrandStatus.PendingApproval;
+        await _context.SaveChangesAsync();
+
+        var result = await CreateService().GetAllAsync(new GetBrandStoresRequest(), CancellationToken.None);
+
+        result.TotalCount.Should().Be(0);
+    }
+
     [Fact]
     public async Task UpdateAsync_ChiNhanhThuocBrandKhac_Bao403Async()
     {

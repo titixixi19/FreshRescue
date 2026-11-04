@@ -1,6 +1,31 @@
 using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace FreshRescue.API.Extensions;
+
+/// <summary>Hai endpoint OData tự sinh không có XML comment để Swagger đọc — gắn mô tả tay (NFR-07).</summary>
+public sealed class ODataMetadataDescriptionFilter : IDocumentFilter
+{
+    private static readonly Dictionary<string, string> _summaries = new()
+    {
+        ["/odata"] = "Service document OData: liệt kê các entity set công khai (Stores, Offers) — Ch.04.",
+        ["/odata/$metadata"] = "Metadata CSDL của OData: kiểu, thuộc tính và quan hệ để client dựng truy vấn — Ch.04.",
+    };
+
+    public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
+    {
+        foreach (var (path, summary) in _summaries)
+        {
+            if (swaggerDoc.Paths.TryGetValue(path, out var item))
+            {
+                foreach (var operation in item.Operations.Values.Where(op => string.IsNullOrEmpty(op.Summary)))
+                {
+                    operation.Summary = summary;
+                }
+            }
+        }
+    }
+}
 
 /// <summary>Chủ sở hữu: Hiếu (T2-HIEU-02). Thêm nút Authorize (Bearer) khi làm JWT.</summary>
 public static class SwaggerExtensions
@@ -40,6 +65,7 @@ public static class SwaggerExtensions
             };
 
             o.AddSecurityDefinition("Bearer", securityScheme);
+            o.DocumentFilter<ODataMetadataDescriptionFilter>();
 
             o.AddSecurityRequirement(new OpenApiSecurityRequirement
             {

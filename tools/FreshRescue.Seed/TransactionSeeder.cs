@@ -1,9 +1,14 @@
+using FreshRescue.Business.Features.Auth.Dtos;
+using FreshRescue.Business.Features.Auth.Services;
+using FreshRescue.Business.Features.Engagement;
+using FreshRescue.Business.Features.Engagement.Dtos;
 using FreshRescue.Business.Features.Ordering;
 using FreshRescue.Business.Features.Ordering.Dtos;
 using FreshRescue.Business.Features.Sales;
 using FreshRescue.Business.Features.Sales.Dtos;
 using FreshRescue.DataAccess;
 using FreshRescue.Entities.Constants;
+using FreshRescue.Entities.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -17,7 +22,8 @@ namespace FreshRescue.Seed;
 /// <remarks>
 /// Đặt đơn chỉ hợp lệ trong khung bán nên seeder tua <see cref="SeedClock"/> về đúng thời điểm của từng bước.
 /// Kết quả: 20 đợt đã đóng (đủ Redeemed / NoShow / Cancelled), 10 đợt đang bán, 2 đợt bị huỷ,
-/// 5 đợt Scheduled và 3 bản nháp.
+/// 5 đợt Scheduled và 3 bản nháp. Kèm theo đánh giá, khiếu nại (đủ các trạng thái), cửa hàng yêu thích,
+/// thông báo đợt bán mới và phiên đăng nhập — để mọi bảng có ít nhất 20 bản ghi (NFR-09).
 /// </remarks>
 public sealed class TransactionSeeder
 {
@@ -33,16 +39,37 @@ public sealed class TransactionSeeder
     private readonly SeedClock _clock;
     private readonly SeedCurrentUser _user;
     private readonly Func<string, Task> _log;
+    private readonly string? _demoPassword;
 
     private List<StoreInfo> _stores = [];
     private List<Guid> _customers = [];
+    private Guid _adminUserId;
 
-    public TransactionSeeder(IServiceProvider root, SeedClock clock, SeedCurrentUser user, Func<string, Task>? log = null)
+    private static readonly string[] _reviewComments =
+    [
+        "Bánh còn tươi, đáng tiền.",
+        "Túi mù nhiều món hơn mong đợi.",
+        "Nhân viên thân thiện, lấy hàng nhanh.",
+        "Ổn so với giá, sẽ quay lại.",
+        "Hơi ít món nhưng vẫn ngon.",
+    ];
+
+    private static readonly (DisputeReason Reason, string Description)[] _disputeReasons =
+    [
+        (DisputeReason.Spoiled, "Một chiếc bánh bị chua, có vẻ đã để quá lâu."),
+        (DisputeReason.WrongCategory, "Đặt túi bánh ngọt nhưng nhận toàn đồ mặn."),
+        (DisputeReason.Missing, "Thiếu một món so với mô tả trên ứng dụng."),
+        (DisputeReason.Other, "Hộp đựng bị móp, bánh dập nát."),
+    ];
+
+    public TransactionSeeder(
+        IServiceProvider root, SeedClock clock, SeedCurrentUser user, Func<string, Task>? log = null, string? demoPassword = null)
     {
         _root = root;
         _clock = clock;
         _user = user;
         _log = log ?? (_ => Task.CompletedTask);
+        _demoPassword = demoPassword;
     }
 
     /// <summary>Đã có đợt demo thì bỏ qua, chạy lại không nhân đôi dữ liệu.</summary>
@@ -60,6 +87,10 @@ public sealed class TransactionSeeder
         var now = TruncateToMinute(_clock.GetUtcNow().UtcDateTime);
         try
         {
+            // 0. Khách theo dõi cửa hàng trước khi có đợt bán, để lúc mở đợt sinh thông báo (FR-C12, FR-C13).
+            await SeedFavoritesAsync(now.Date.AddDays(-7), ct);
+            await _log("Đã dựng cửa hàng yêu thích.");
+
             // 1. Lịch sử: mỗi chi nhánh một đợt đã đóng, rải trong 5 ngày trước.
             for (var i = 0; i < _stores.Count; i++)
             {
@@ -99,6 +130,9 @@ public sealed class TransactionSeeder
         {
             _clock.Release();
         }
+
+        // 4. Phiên đăng nhập thật (bảng RefreshTokens) — sau khi trả đồng hồ về giờ thật để token còn hạn.
+        await SeedSessionsAsync(ct);
     }
 
     private async Task SeedClosedBatchAsync(int storeIndex, DateTime saleStart, CancellationToken ct)
@@ -109,7 +143,7 @@ public sealed class TransactionSeeder
         var batch = await CreateScheduledAsync(store, times, saleStart.AddHours(-2), "Xả hàng cuối ngày", ct);
 
         _clock.Set(times.SaleStart.AddMinutes(1));
-        await InScopeAsync(AsSystem(), s => s.GetRequiredService<ISaleBatchService>().ActivateDueBatchesAsync(ct));
+        await ActivateAndNotifyAsync(store, batch.Id, ct);
 
         var offerId = batch.Offers[0].Id;
         var customers = CustomersOf(storeIndex);
@@ -163,6 +197,17 @@ public sealed class TransactionSeeder
             await RedeemAsync(store, orders[4], null, ct);
         }
 
+        // Đánh giá đơn đã nhận (FR-C11, BR-12) và một khiếu nại trong 2 giờ (FR-C15, BR-17).
+        _clock.Set(times.PickupStart.AddMinutes(25));
+        await ReviewAsync(customers[0], orders[0].Id, (byte)(3 + storeIndex % 3), storeIndex, ct);
+        if (!storeCancels)
+        {
+            await ReviewAsync(customers[4], orders[4].Id, 5, storeIndex + 1, ct);
+        }
+
+        _clock.Set(times.PickupStart.AddMinutes(40));
+        await SeedDisputeAsync(storeIndex, store, customers[0], orders[0].Id, times, ct);
+
         // Quá giờ nhận: job đánh dấu NoShow cho khách 1 rồi đóng đợt (FR-X04 rồi FR-X02).
         _clock.Set(times.PickupEnd.AddMinutes(1));
         await InScopeAsync(AsSystem(), s => s.GetRequiredService<ISaleBatchService>().CloseDueBatchesAsync(ct));
@@ -176,7 +221,7 @@ public sealed class TransactionSeeder
         var batch = await CreateScheduledAsync(store, times, now.AddMinutes(-120), "Đợt chiều hôm nay", ct);
 
         _clock.Set(times.SaleStart.AddMinutes(1));
-        await InScopeAsync(AsSystem(), s => s.GetRequiredService<ISaleBatchService>().ActivateDueBatchesAsync(ct));
+        await ActivateAndNotifyAsync(store, batch.Id, ct);
 
         var offerId = batch.Offers[0].Id;
         var customers = CustomersOf(storeIndex);
@@ -218,6 +263,104 @@ public sealed class TransactionSeeder
                 s => s.GetRequiredService<ISaleBatchService>()
                     .CancelAsync(batch.Id, new CancelSaleBatchRequest("Cửa hàng đóng cửa đột xuất"), ct));
         }
+    }
+
+    private async Task SeedFavoritesAsync(DateTime at, CancellationToken ct)
+    {
+        _clock.Set(at);
+        for (var i = 0; i < _customers.Count; i++)
+        {
+            foreach (var storeIndex in new[] { i % _stores.Count, (i + 7) % _stores.Count })
+            {
+                var storeId = _stores[storeIndex].Id;
+                await InScopeAsync(AsCustomer(_customers[i]), s => s.GetRequiredService<IFavoriteService>().AddFavoriteAsync(storeId, ct));
+            }
+        }
+    }
+
+    // Giống SaleBatchSchedulerService của API: kích hoạt đợt tới giờ rồi báo cho người theo dõi chi nhánh.
+    private async Task ActivateAndNotifyAsync(StoreInfo store, Guid batchId, CancellationToken ct)
+    {
+        await InScopeAsync(AsSystem(), s => s.GetRequiredService<ISaleBatchService>().ActivateDueBatchesAsync(ct));
+        await InScopeAsync(
+            AsSystem(),
+            s => s.GetRequiredService<INotificationService>().NotifyNewSaleBatchAsync(batchId, store.Id, store.Name, ct));
+    }
+
+    private Task<ReviewDto> ReviewAsync(Guid customerId, Guid orderId, byte rating, int seed, CancellationToken ct)
+        => InScopeAsync(
+            AsCustomer(customerId),
+            s => s.GetRequiredService<IReviewService>().CreateAsync(
+                orderId, new CreateReviewRequest(rating, _reviewComments[seed % _reviewComments.Length], null), ct));
+
+    // Rải đủ trạng thái để màn hình duyệt khiếu nại có dữ liệu: duyệt (hoàn tiền), từ chối, chờ kèm giải trình, chờ.
+    private async Task SeedDisputeAsync(
+        int storeIndex, StoreInfo store, Guid customerId, Guid orderId, BatchTimes times, CancellationToken ct)
+    {
+        var (reason, description) = _disputeReasons[storeIndex % _disputeReasons.Length];
+        var dispute = await InScopeAsync(
+            AsCustomer(customerId),
+            s => s.GetRequiredService<IDisputeService>().CreateAsync(
+                orderId, new CreateDisputeRequest(reason, description, SeedImages.DisputePhotoUrl), ct));
+
+        var outcome = storeIndex % 4;
+        if (outcome == 3)
+        {
+            return;
+        }
+
+        _clock.Set(times.PickupStart.AddMinutes(55));
+        await InScopeAsync(
+            AsStaff(store),
+            s => s.GetRequiredService<IDisputeService>().SetMerchantNoteAsync(
+                dispute.Id, new MerchantNoteRequest("Cửa hàng đã kiểm tra lại lô hàng và xin lỗi khách."), ct));
+
+        _clock.Set(times.PickupStart.AddMinutes(90));
+        if (outcome == 0)
+        {
+            await InScopeAsync(AsAdmin(), s => s.GetRequiredService<IDisputeService>().ApproveAsync(dispute.Id, ct));
+        }
+        else if (outcome == 1)
+        {
+            await InScopeAsync(
+                AsAdmin(),
+                s => s.GetRequiredService<IDisputeService>().RejectAsync(
+                    dispute.Id, new RejectDisputeRequest("Ảnh chưa cho thấy lỗi của cửa hàng."), ct));
+        }
+    }
+
+    // Mỗi lần đăng nhập ghi một refresh token — đúng luồng của POST /auth/login.
+    private async Task SeedSessionsAsync(CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(_demoPassword))
+        {
+            return;
+        }
+
+        List<string> emails;
+        using (var scope = _root.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<FreshRescueDbContext>();
+            var roles = await db.Roles
+                .Where(r => r.Name == AppRoles.Customer || r.Name == AppRoles.StoreStaff)
+                .Select(r => r.Id)
+                .ToListAsync(ct);
+            emails = await db.Users
+                .Where(u => u.Email != null && u.Email.EndsWith("@freshrescue.test")
+                    && db.UserRoles.Any(ur => ur.UserId == u.Id && roles.Contains(ur.RoleId)))
+                .OrderBy(u => u.Email)
+                .Select(u => u.Email!)
+                .ToListAsync(ct);
+        }
+
+        foreach (var email in emails)
+        {
+            await InScopeAsync(
+                AsSystem(),
+                s => s.GetRequiredService<IAuthService>().LoginAsync(new LoginRequest { Email = email, Password = _demoPassword }, ct));
+        }
+
+        await _log($"Đã tạo {emails.Count} phiên đăng nhập (refresh token).");
     }
 
     private async Task SeedUpcomingBatchAsync(int storeIndex, DateTime now, bool activate, CancellationToken ct)
@@ -280,6 +423,8 @@ public sealed class TransactionSeeder
 
     private Action AsCustomer(Guid customerId) => () => _user.Act(customerId, AppRoles.Customer);
 
+    private Action AsAdmin() => () => _user.Act(_adminUserId, AppRoles.SystemAdmin);
+
     // Job nền không có người dùng đăng nhập.
     private static Action AsSystem() => () => { };
 
@@ -299,7 +444,7 @@ public sealed class TransactionSeeder
         var stores = await db.Stores
             .Where(s => s.Name.StartsWith("Chi nhánh Demo"))
             .OrderBy(s => s.Name)
-            .Select(s => new { s.Id, s.BrandId, OwnerUserId = s.Brand.OwnerUserId })
+            .Select(s => new { s.Id, s.Name, s.BrandId, OwnerUserId = s.Brand.OwnerUserId })
             .ToListAsync(ct);
 
         var staff = await db.StoreStaff.ToDictionaryAsync(x => x.StoreId, x => x.UserId, ct);
@@ -312,6 +457,7 @@ public sealed class TransactionSeeder
             .Where(s => staff.ContainsKey(s.Id))
             .Select(s => new StoreInfo(
                 s.Id,
+                s.Name,
                 s.BrandId,
                 s.OwnerUserId,
                 staff[s.Id],
@@ -322,6 +468,9 @@ public sealed class TransactionSeeder
             .Where(s => s.Templates.Count > 0)
             .Take(StoreCount)
             .ToList();
+
+        var adminRole = await db.Roles.SingleAsync(r => r.Name == AppRoles.SystemAdmin, ct);
+        _adminUserId = await db.UserRoles.Where(ur => ur.RoleId == adminRole.Id).Select(ur => ur.UserId).FirstAsync(ct);
 
         var customerRole = await db.Roles.SingleAsync(r => r.Name == AppRoles.Customer, ct);
         _customers = await db.UserRoles
@@ -354,5 +503,5 @@ public sealed class TransactionSeeder
 
     private sealed record TemplateLine(Guid TemplateId, decimal ActualPrice);
 
-    private sealed record StoreInfo(Guid Id, Guid BrandId, Guid ManagerUserId, Guid StaffUserId, List<TemplateLine> Templates);
+    private sealed record StoreInfo(Guid Id, string Name, Guid BrandId, Guid ManagerUserId, Guid StaffUserId, List<TemplateLine> Templates);
 }

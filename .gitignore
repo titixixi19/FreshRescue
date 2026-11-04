@@ -487,3 +487,5 @@ appsettings.Development.json
 # Ảnh upload lúc chạy thử
 **/wwwroot/uploads/*
 !**/wwwroot/uploads/.gitkeep
+# Email đặt lại mật khẩu ghi ra file khi chạy không có SMTP
+**/App_Data/emails/

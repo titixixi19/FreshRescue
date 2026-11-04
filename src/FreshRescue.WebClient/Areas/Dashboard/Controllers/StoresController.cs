@@ -78,8 +78,8 @@ public class StoresController : Controller
                 Latitude = model.Latitude,
                 Longitude = model.Longitude,
                 Phone = model.Phone,
-                OpenTime = model.OpenTime,
-                CloseTime = model.CloseTime
+                OpenTime = ToApiTime(model.OpenTime),
+                CloseTime = ToApiTime(model.CloseTime)
             };
 
             await _api.PostAsync<StoreDto>("brand/stores", request, cancellationToken);
@@ -138,8 +138,8 @@ public class StoresController : Controller
                 Latitude = model.Latitude,
                 Longitude = model.Longitude,
                 Phone = model.Phone,
-                OpenTime = model.OpenTime,
-                CloseTime = model.CloseTime,
+                OpenTime = ToApiTime(model.OpenTime),
+                CloseTime = ToApiTime(model.CloseTime),
                 Status = model.Status
             };
 
@@ -221,13 +221,16 @@ public class StoresController : Controller
         Status = s.Status
     };
 
+    // Ô <input type="time"> gửi "07:00", còn API nhận TimeOnly dạng "07:00:00" — thiếu giây là 400.
+    private static string? ToApiTime(string? value)
+        => TimeOnly.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, out var time)
+            ? time.ToString("HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture)
+            : value;
+
     private static string FormatApiError(ApiException ex)
     {
-        if (!string.IsNullOrWhiteSpace(ex.Message))
-        {
-            return ex.Message;
-        }
-
-        return "Thao tác API thất bại.";
+        var message = string.IsNullOrWhiteSpace(ex.Message) ? "Thao tác API thất bại." : ex.Message;
+        // Kèm lỗi theo từng trường để người dùng biết sửa ô nào, không chỉ "Dữ liệu không hợp lệ".
+        return ex.Errors.Count == 0 ? message : message + ": " + string.Join(" ", ex.Errors.SelectMany(e => e.Value));
     }
 }

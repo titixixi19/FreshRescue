@@ -8,7 +8,7 @@ namespace FreshRescue.API.Controllers;
 
 [ApiController]
 [Route("api/v1/orders")]
-[Produces("application/json")]
+[Produces("application/json", "application/xml")]
 public sealed class OrderReviewsController : ControllerBase
 {
     private readonly IReviewService _reviewService;

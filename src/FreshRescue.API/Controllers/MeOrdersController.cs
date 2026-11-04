@@ -9,7 +9,7 @@ namespace FreshRescue.API.Controllers;
 
 [ApiController]
 [Route("api/v1/me/orders")]
-[Produces("application/json")]
+[Produces("application/json", "application/xml")]
 [Authorize(Roles = AppRoles.Customer)]
 public class MeOrdersController : ControllerBase
 {

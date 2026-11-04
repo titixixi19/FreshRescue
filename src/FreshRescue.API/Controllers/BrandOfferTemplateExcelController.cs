@@ -20,6 +20,7 @@ public sealed class BrandOfferTemplateExcelController : ControllerBase
         _excelService = excelService;
     }
 
+    /// <summary>Tải file Excel mẫu để điền mẫu mặt hàng (FR-B07).</summary>
     [HttpGet("import-template")]
     public IActionResult DownloadTemplate()
     {
@@ -27,6 +28,7 @@ public sealed class BrandOfferTemplateExcelController : ControllerBase
             "FreshRescue_OfferTemplate_Import.xlsx");
     }
 
+    /// <summary>Import mẫu mặt hàng từ .xlsx — tất cả hoặc không, lỗi trả theo số dòng (FR-B07, BR-26).</summary>
     [HttpPost("import")]
     [Consumes("multipart/form-data")]
     [RequestSizeLimit(6 * 1024 * 1024)] // 5 MB for file + multipart form overhead.

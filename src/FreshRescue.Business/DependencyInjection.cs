@@ -5,6 +5,7 @@ using FreshRescue.Business.Features.Engagement;
 using FreshRescue.Business.Features.Ordering;
 using FreshRescue.DataAccess.Repositories;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace FreshRescue.Business;
 
@@ -21,6 +22,8 @@ public static class DependencyInjection
         // --- Auth & Engagement (Hiếu) ---
         services.AddScoped<Features.Auth.Services.ITokenService, Features.Auth.Services.TokenService>();
         services.AddScoped<Features.Auth.Services.IAuthService, Features.Auth.Services.AuthService>();
+        // API đăng ký bản gửi email thật; TryAdd để seeder/test vẫn dựng được AuthService.
+        services.TryAddScoped<Features.Auth.Services.IPasswordResetSender, Features.Auth.Services.LogOnlyPasswordResetSender>();
         services.AddScoped<IFavoriteService, FavoriteService>();
         services.AddScoped<INotificationService, NotificationService>();
 

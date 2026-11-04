@@ -1,15 +1,20 @@
+using FreshRescue.WebClient.Models.Api;
+
 namespace FreshRescue.WebClient.Areas.Dashboard.Models;
 
+/// <summary>Một dòng của <c>GET admin/disputes</c>. Enum về dạng chuỗi (03 §1) — khai báo int là vỡ khi đọc JSON.</summary>
 public class AdminDisputeDto
 {
     public Guid Id { get; set; }
     public Guid OrderId { get; set; }
-    public string OrderCode { get; set; } = default!;
-    public string CustomerName { get; set; } = default!;
-    public int Reason { get; set; }
+    public string? OrderCode { get; set; }
+    public string? CustomerName { get; set; }
+    public DisputeReason Reason { get; set; }
     public string Description { get; set; } = default!;
     public string PhotoUrl { get; set; } = default!;
-    public int Status { get; set; } // 0: Open, 1: Approved, 2: Rejected
+
+    /// <summary>Open · Approved · Rejected.</summary>
+    public string Status { get; set; } = "Open";
     public string? MerchantNote { get; set; }
     public string? AdminNote { get; set; }
     public DateTime CreatedAt { get; set; }

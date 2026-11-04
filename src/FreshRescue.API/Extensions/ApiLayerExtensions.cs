@@ -20,6 +20,8 @@ public static class ApiLayerExtensions
             // Enum ra JSON là chuỗi — trả số là vỡ Web Client khi thêm giá trị enum (03-API-CONTRACT.md §1).
             .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()))
             .AddODataConfig()
+            // Đứng sau formatter XmlSerializer của AddODataConfig: chỉ nhận những kiểu XmlSerializer bó tay.
+            .AddMvcOptions(o => o.OutputFormatters.Add(new JsonXmlOutputFormatter()))
             .ConfigureApiBehaviorOptions(o => o.InvalidModelStateResponseFactory = BuildValidationProblem);
 
         services.AddFluentValidationAutoValidation();
@@ -38,7 +40,8 @@ public static class ApiLayerExtensions
             .AddRealtime()
             .AddBackgroundJobs()
             .AddQrServiceClient(configuration)
-            .AddUploads();
+            .AddUploads()
+            .AddPasswordResetEmail();
 
         return services;
     }

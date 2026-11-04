@@ -87,6 +87,7 @@ public class BrandStaffService : IBrandStaffService
         CancellationToken cancellationToken)
     {
         var brandId = await GetOwnedBrandIdAsync(cancellationToken);
+        await BrandApproval.EnsureApprovedAsync(_unitOfWork, brandId, cancellationToken);
 
         var store = await _unitOfWork.Stores
             .Query()
@@ -165,6 +166,7 @@ public class BrandStaffService : IBrandStaffService
         CancellationToken cancellationToken)
     {
         var brandId = await GetOwnedBrandIdAsync(cancellationToken);
+        await BrandApproval.EnsureApprovedAsync(_unitOfWork, brandId, cancellationToken);
 
         var staff = await _unitOfWork.StoreStaff
             .Query()

@@ -62,6 +62,7 @@ public class StoreService : IStoreService
     {
         var brandId = await GetOwnedBrandIdAsync(
             cancellationToken);
+        await BrandApproval.EnsureApprovedAsync(_unitOfWork, brandId, cancellationToken);
 
         var store = new Store
         {
@@ -104,6 +105,7 @@ public class StoreService : IStoreService
     {
         var brandId = await GetOwnedBrandIdAsync(
             cancellationToken);
+        await BrandApproval.EnsureApprovedAsync(_unitOfWork, brandId, cancellationToken);
 
         var store = await _unitOfWork.Stores
             .Query()
@@ -151,6 +153,7 @@ public class StoreService : IStoreService
     {
         var brandId = await GetOwnedBrandIdAsync(
             cancellationToken);
+        await BrandApproval.EnsureApprovedAsync(_unitOfWork, brandId, cancellationToken);
 
         var store = await _unitOfWork.Stores
             .Query()

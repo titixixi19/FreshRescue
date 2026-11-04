@@ -7,7 +7,7 @@ namespace FreshRescue.API.Controllers;
 
 [ApiController]
 [Route("api/v1/uploads")]
-[Produces("application/json")]
+[Produces("application/json", "application/xml")]
 [Authorize]
 public class UploadsController : ControllerBase
 {

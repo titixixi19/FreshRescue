@@ -88,6 +88,7 @@ public sealed class OfferTemplateService : IOfferTemplateService
     public async Task<OfferTemplateDto> CreateAsync(UpsertOfferTemplateRequest request, CancellationToken ct)
     {
         var brandId = await GetOwnedBrandIdAsync(ct);
+        await BrandApproval.EnsureApprovedAsync(_unitOfWork, brandId, ct);
         await ValidateRequestAsync(request, ct);
 
         var template = new OfferTemplate
@@ -113,6 +114,7 @@ public sealed class OfferTemplateService : IOfferTemplateService
         Guid id, UpsertOfferTemplateRequest request, CancellationToken ct)
     {
         var brandId = await GetOwnedBrandIdAsync(ct);
+        await BrandApproval.EnsureApprovedAsync(_unitOfWork, brandId, ct);
         var template = await FindOwnedTemplateAsync(id, brandId, ct);
         await ValidateRequestAsync(request, ct);
 
@@ -133,6 +135,7 @@ public sealed class OfferTemplateService : IOfferTemplateService
     public async Task DeleteAsync(Guid id, CancellationToken ct)
     {
         var brandId = await GetOwnedBrandIdAsync(ct);
+        await BrandApproval.EnsureApprovedAsync(_unitOfWork, brandId, ct);
         var template = await FindOwnedTemplateAsync(id, brandId, ct);
         _unitOfWork.OfferTemplates.Remove(template);
         await _unitOfWork.SaveChangesAsync(ct);
