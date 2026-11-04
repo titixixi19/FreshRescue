@@ -101,7 +101,13 @@ var transactions = new TransactionSeeder(
     {
         Console.WriteLine(message);
         return Task.CompletedTask;
-    });
+    },
+    demoPassword);
+
+if (SeedImages.EnsurePlaceholders() is null)
+{
+    Console.WriteLine("Không tìm thấy src/FreshRescue.API/wwwroot — ảnh mẫu của khiếu nại sẽ không hiển thị. Hãy chạy seeder từ thư mục gốc repo.");
+}
 
 if (await transactions.AlreadySeededAsync())
 {
@@ -110,7 +116,7 @@ if (await transactions.AlreadySeededAsync())
 else
 {
     await transactions.SeedAsync();
-    Console.WriteLine("Seeder pha 2 hoàn tất: đợt bán, offer, đơn hàng, thanh toán, vé QR do QrService thật ký.");
+    Console.WriteLine("Seeder pha 2 hoàn tất: đợt bán, offer, đơn hàng, thanh toán, vé QR do QrService thật ký, đánh giá, khiếu nại, yêu thích, thông báo.");
 }
 
 Console.WriteLine("Seeder dùng email @freshrescue.test và mật khẩu demo được cấp qua Seed__DemoPassword.");
