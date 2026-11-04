@@ -1,3 +1,7 @@
+using FreshRescue.Business;
+using FreshRescue.Business.Common;
+using FreshRescue.API.Extensions;
+using FreshRescue.Seed;
 using FreshRescue.DataAccess;
 using FreshRescue.DataAccess.Seeding;
 using FreshRescue.Entities.Identity;
@@ -27,6 +31,7 @@ if (!File.Exists(settingsPath))
 }
 
 var configuration = new ConfigurationBuilder()
+    .AddJsonFile(Path.Combine(Path.GetDirectoryName(settingsPath)!, "appsettings.json"), optional: false)
     .AddJsonFile(settingsPath, optional: false)
     .AddEnvironmentVariables()
     .Build();
@@ -46,7 +51,18 @@ if (string.IsNullOrWhiteSpace(adminEmail) || string.IsNullOrWhiteSpace(demoPassw
 
 var services = new ServiceCollection();
 services.AddLogging();
+services.AddSingleton<IConfiguration>(configuration);
+
+// Pha 2 gọi service thật nên cần đồng hồ tua được, người dùng đặt tay và QrService thật qua gRPC (phải chạy sẵn QrService).
+// Đăng ký TimeProvider trước AddDataAccessLayer vì nó chỉ TryAdd.
+var seedClock = new SeedClock();
+var seedUser = new SeedCurrentUser();
+services.AddSingleton<TimeProvider>(seedClock);
+services.AddSingleton<ICurrentUser>(seedUser);
+services.AddQrServiceClient(configuration);
+
 services.AddDataAccessLayer(connectionString);
+services.AddBusinessLayer();
 services.AddIdentityCore<AppUser>(options =>
 {
     options.User.RequireUniqueEmail = true;
@@ -79,4 +95,22 @@ await DbSeeder.SeedStaticDataAsync(
     scope.ServiceProvider.GetRequiredService<TimeProvider>());
 
 Console.WriteLine("Seeder pha 1 hoàn tất: 4 role, 20 Brand, 20 Store, 20 Category, 25 OfferTemplate, 20 Staff, 20 Customer (tối thiểu).");
+
+var transactions = new TransactionSeeder(
+    provider, seedClock, seedUser, message =>
+    {
+        Console.WriteLine(message);
+        return Task.CompletedTask;
+    });
+
+if (await transactions.AlreadySeededAsync())
+{
+    Console.WriteLine("Seeder pha 2 đã chạy trước đó (có đợt bán '[Demo] ...'), bỏ qua.");
+}
+else
+{
+    await transactions.SeedAsync();
+    Console.WriteLine("Seeder pha 2 hoàn tất: đợt bán, offer, đơn hàng, thanh toán, vé QR do QrService thật ký.");
+}
+
 Console.WriteLine("Seeder dùng email @freshrescue.test và mật khẩu demo được cấp qua Seed__DemoPassword.");

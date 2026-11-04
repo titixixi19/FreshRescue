@@ -37,7 +37,8 @@ public static class ApiLayerExtensions
             .AddJwtAuth(configuration)
             .AddRealtime()
             .AddBackgroundJobs()
-            .AddQrServiceClient(configuration);
+            .AddQrServiceClient(configuration)
+            .AddUploads();
 
         return services;
     }
