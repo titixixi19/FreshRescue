@@ -86,12 +86,20 @@ public sealed class EmailPasswordResetSender : IPasswordResetSender
             }
         }
 
-        await client.SendMailAsync(message, cancellationToken);
-
         if (_env.IsDevelopment())
         {
             // Chỉ in link ở môi trường phát triển — đây là cách duy nhất để demo khi không có hộp thư thật.
             _logger.LogInformation("Link đặt lại mật khẩu cho {Email}: {Link}", email, link);
+        }
+
+        try
+        {
+            await client.SendMailAsync(message, cancellationToken);
+        }
+        catch (Exception ex) when (ex is SmtpException or IOException or InvalidOperationException or UnauthorizedAccessException)
+        {
+            // Nuốt lỗi gửi: nếu để 500 lọt ra thì chỉ email có thật mới lỗi — kẻ dò sẽ biết email nào đã đăng ký.
+            _logger.LogError(ex, "Gửi email đặt lại mật khẩu cho {Email} thất bại.", email);
         }
     }
 }
