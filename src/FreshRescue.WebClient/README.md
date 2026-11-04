@@ -32,6 +32,8 @@ Gọi API thật: chạy `FreshRescue.API` (cổng 7001), rồi đặt `"UseMock
 UseMockApi=false dotnet run --project src/FreshRescue.WebClient
 ```
 
+> **Lưu ý quan trọng khi demo:** Hôm demo phải đặt `"UseMockApi": false` để WebClient kết nối với `FreshRescue.API` thật.
+
 ## Gọi API — dùng `IApiClient`, đừng tự new `HttpClient`
 
 ```csharp
