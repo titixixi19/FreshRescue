@@ -1,7 +1,6 @@
 namespace FreshRescue.WebClient.Models.Api;
 
-/// <summary>— Application roles used by WebClient authorization.— These values must match the roles returned by the API.
-/// </c>.</summary>
+/// <summary>Tên role dùng cho phân quyền ở WebClient; phải khớp đúng chuỗi role API trả trong token.</summary>
 public static class AppRoles
 {
     public const string Admin = "SystemAdmin";

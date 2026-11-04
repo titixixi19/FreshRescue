@@ -140,7 +140,8 @@ public class SaleBatchesController : Controller
             return View("CreateStep1", model);
         }
 
-        var selectedIds = model.SelectedTemplateIds
+        // Form không chọn ô nào thì model binder để null.
+        var selectedIds = (model.SelectedTemplateIds ?? [])
             .Where(id => id != Guid.Empty)
             .Distinct()
             .ToHashSet();

@@ -1,0 +1,135 @@
+@model BrandStaffListViewModel
+@{
+    ViewData["Title"] = "Nhân viên";
+}
+
+<div class="dash-toolbar">
+    <div>
+        <h2>Nhân viên chi nhánh</h2>
+        <p class="muted small">FR-B03 · BR-11 · <code>GET/POST brand/staff</code> · <code>DELETE brand/staff/{id}</code></p>
+    </div>
+</div>
+
+@if (TempData["Success"] is string ok)
+{
+    <div class="dash-alert dash-alert-ok">@ok</div>
+}
+@if (TempData["Error"] is string err)
+{
+    <div class="dash-alert dash-alert-err">@err</div>
+}
+
+<details class="dash-card" style="margin-bottom: 1.5rem;">
+    <summary><strong>+ Thêm nhân viên</strong></summary>
+    @if (Model.Stores.Count == 0)
+    {
+        <p class="muted small">Cần có ít nhất một chi nhánh trước khi thêm nhân viên.</p>
+    }
+    else
+    {
+        <form asp-action="CreateStaff" method="post" class="dash-form" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1rem;">
+            @Html.AntiForgeryToken()
+            <input type="text" name="FullName" class="dash-input" placeholder="Họ tên *" required />
+            <input type="email" name="Email" class="dash-input" placeholder="Email *" required />
+            <input type="password" name="Password" class="dash-input" placeholder="Mật khẩu *" required autocomplete="new-password" />
+            <input type="tel" name="PhoneNumber" class="dash-input" placeholder="Số điện thoại" />
+            <select name="StoreId" class="dash-input" required>
+                <option value="">— Chọn chi nhánh * —</option>
+                @foreach (var s in Model.Stores)
+                {
+                    <option value="@s.Id">@s.Name</option>
+                }
+            </select>
+            <input type="text" name="Position" class="dash-input" placeholder="Vị trí (VD: Thu ngân)" />
+            <div>
+                <button type="submit" class="dash-btn">Tạo nhân viên</button>
+            </div>
+        </form>
+    }
+</details>
+
+<form method="get" asp-action="Staff" class="dash-filters">
+    <select name="storeId" class="dash-input">
+        <option value="">— Mọi chi nhánh —</option>
+        @foreach (var s in Model.Stores)
+        {
+            if (Model.StoreIdFilter == s.Id)
+            {
+                <option value="@s.Id" selected>@s.Name</option>
+            }
+            else
+            {
+                <option value="@s.Id">@s.Name</option>
+            }
+        }
+    </select>
+    <button type="submit" class="dash-btn dash-btn-sm">Lọc</button>
+</form>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="dash-alert dash-alert-err">@Model.ErrorMessage</div>
+}
+else if (Model.Items.Count == 0)
+{
+    <div class="dash-empty">
+        <p>Chưa có nhân viên nào.</p>
+    </div>
+}
+else
+{
+    <div class="dash-table-wrap">
+        <table class="dash-table">
+            <thead>
+                <tr>
+                    <th>Họ tên</th>
+                    <th>Email</th>
+                    <th>Chi nhánh</th>
+                    <th>Vị trí</th>
+                    <th>Trạng thái</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var st in Model.Items)
+                {
+                    <tr>
+                        <td><strong>@st.FullName</strong></td>
+                        <td>@st.Email</td>
+                        <td>@st.StoreName</td>
+                        <td class="muted small">@(string.IsNullOrWhiteSpace(st.Position) ? "—" : st.Position)</td>
+                        <td>
+                            <span class="badge">@(st.IsActive ? "Đang làm" : "Đã nghỉ")</span>
+                        </td>
+                        <td class="dash-actions">
+                            @if (st.IsActive)
+                            {
+                                <form asp-action="DeleteStaff" method="post" class="inline-form">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@st.Id" />
+                                    <button type="submit" class="link-danger"
+                                            onclick="return confirm('Cho nhân viên này nghỉ? Tài khoản vẫn còn nhưng không thao tác được ở chi nhánh.');">
+                                        Cho nghỉ
+                                    </button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav class="dash-pager" aria-label="Phân trang">
+            @for (var p = 1; p <= Model.TotalPages; p++)
+            {
+                <a class="@(p == Model.Page ? "active" : null)"
+                   asp-action="Staff"
+                   asp-route-page="@p"
+                   asp-route-storeId="@Model.StoreIdFilter">@p</a>
+            }
+        </nav>
+    }
+}

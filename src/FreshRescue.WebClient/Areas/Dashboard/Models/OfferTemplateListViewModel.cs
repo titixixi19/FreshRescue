@@ -1,5 +1,3 @@
-using FreshRescue.WebClient.Models.Api;
-
 namespace FreshRescue.WebClient.Areas.Dashboard.Models;
 
 public class OfferTemplateListViewModel

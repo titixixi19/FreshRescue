@@ -82,6 +82,7 @@ else
                             <br />→ @b.PickupEndTime.ToString("yyyy-MM-dd HH:mm")
                         </td>
                         <td class="dash-actions">
+                            <a asp-area="Dashboard" asp-controller="StaffOffers" asp-action="Manage" asp-route-saleBatchId="@b.Id">Offer</a>
                             <a asp-area="Dashboard" asp-controller="StaffOrders" asp-action="Index" asp-route-saleBatchId="@b.Id">Đơn</a>
                             @if (string.Equals(b.Status, "Draft", StringComparison.OrdinalIgnoreCase))
                             {

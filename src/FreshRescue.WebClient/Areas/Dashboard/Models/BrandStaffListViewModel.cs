@@ -11,4 +11,5 @@ public class BrandStaffListViewModel
     public int TotalCount { get; set; }
     public int TotalPages { get; set; }
     public string? ErrorMessage { get; set; }
+    public IReadOnlyList<StoreDto> Stores { get; set; } = Array.Empty<StoreDto>();
 }

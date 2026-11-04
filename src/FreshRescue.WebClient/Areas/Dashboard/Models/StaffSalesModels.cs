@@ -125,6 +125,7 @@ public class StaffOrderListViewModel
 {
     public Guid SaleBatchId { get; set; }
     public string? BatchName { get; set; }
+    public SaleBatchDto? Batch { get; set; }
     public IReadOnlyList<StaffOrderDto> Items { get; set; } = Array.Empty<StaffOrderDto>();
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 20;

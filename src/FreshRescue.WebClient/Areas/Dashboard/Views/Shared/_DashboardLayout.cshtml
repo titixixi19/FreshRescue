@@ -39,6 +39,21 @@
                        asp-area="Dashboard" asp-controller="Stores" asp-action="Index">
                         <span class="dash-nav-icon">🏪</span> Chi nhánh
                     </a>
+                    @if (isBrand)
+                    {
+                        <a class="dash-nav-item @(currentController == "BrandManagement" && currentAction == "OfferTemplates" ? "active" : null)"
+                           asp-area="Dashboard" asp-controller="BrandManagement" asp-action="OfferTemplates">
+                            <span class="dash-nav-icon">🧺</span> Mẫu mặt hàng
+                        </a>
+                        <a class="dash-nav-item @(currentController == "BrandManagement" && currentAction == "Staff" ? "active" : null)"
+                           asp-area="Dashboard" asp-controller="BrandManagement" asp-action="Staff">
+                            <span class="dash-nav-icon">🧑‍🍳</span> Nhân viên
+                        </a>
+                        <a class="dash-nav-item @(currentController == "BrandManagement" && currentAction == "Stats" ? "active" : null)"
+                           asp-area="Dashboard" asp-controller="BrandManagement" asp-action="Stats">
+                            <span class="dash-nav-icon">📈</span> Thống kê
+                        </a>
+                    }
                 }
 
                 @if (isAdmin)
@@ -51,6 +66,14 @@
                     <a class="dash-nav-item @(currentController == "Users" ? "active" : null)"
                        asp-area="Dashboard" asp-controller="Users" asp-action="Index">
                         <span class="dash-nav-icon">👤</span> Người dùng
+                    </a>
+                    <a class="dash-nav-item @(currentController == "ImportExport" ? "active" : null)"
+                       asp-area="Dashboard" asp-controller="ImportExport" asp-action="Index">
+                        <span class="dash-nav-icon">📊</span> Export đơn hàng
+                    </a>
+                    <a class="dash-nav-item @(currentController == "Disputes" ? "active" : null)"
+                       asp-area="Dashboard" asp-controller="Disputes" asp-action="Index">
+                        <span class="dash-nav-icon">⚖</span> Khiếu nại
                     </a>
                 }
 

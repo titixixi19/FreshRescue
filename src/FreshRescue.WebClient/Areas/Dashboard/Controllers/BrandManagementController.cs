@@ -24,7 +24,13 @@ public class BrandManagementController : Controller
     // ——— 1. Quản lý mẫu mặt hàng (/brand/offer-templates) ———
 
     [HttpGet]
-    public async Task<IActionResult> OfferTemplates(string? search, Guid? categoryId, int? offerType, int page = 1, CancellationToken cancellationToken = default)
+    [ActionName("OfferTemplates")]
+    public async Task<IActionResult> OfferTemplatesAsync(
+        string? search,
+        Guid? categoryId,
+        int? offerType,
+        int page = 1,
+        CancellationToken cancellationToken = default)
     {
         page = page < 1 ? 1 : page;
         var query = new Dictionary<string, string?>
@@ -32,9 +38,18 @@ public class BrandManagementController : Controller
             ["page"] = page.ToString(),
             ["pageSize"] = "20"
         };
-        if (!string.IsNullOrWhiteSpace(search)) query["search"] = search.Trim();
-        if (categoryId.HasValue && categoryId.Value != Guid.Empty) query["categoryId"] = categoryId.Value.ToString();
-        if (offerType.HasValue) query["offerType"] = offerType.Value.ToString();
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            query["search"] = search.Trim();
+        }
+        if (categoryId.HasValue && categoryId.Value != Guid.Empty)
+        {
+            query["categoryId"] = categoryId.Value.ToString();
+        }
+        if (offerType.HasValue)
+        {
+            query["offerType"] = offerType.Value.ToString();
+        }
 
         var path = QueryHelpers.AddQueryString("brand/offer-templates", query);
         var vm = new OfferTemplateListViewModel { SearchQuery = search, CategoryId = categoryId, OfferType = offerType, Page = page };
@@ -53,12 +68,13 @@ public class BrandManagementController : Controller
             vm.ErrorMessage = string.IsNullOrWhiteSpace(ex.Message) ? "Không thể tải danh sách mẫu mặt hàng." : ex.Message;
         }
 
-        return View(vm);
+        return View("OfferTemplates", vm);
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> DeleteOfferTemplate(Guid id, CancellationToken cancellationToken = default)
+    [ActionName("DeleteOfferTemplate")]
+    public async Task<IActionResult> DeleteOfferTemplateAsync(Guid id, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -69,38 +85,45 @@ public class BrandManagementController : Controller
         {
             TempData["Error"] = string.IsNullOrWhiteSpace(ex.Message) ? "Xoá mẫu mặt hàng thất bại." : ex.Message;
         }
-        return RedirectToAction(nameof(OfferTemplates));
+        return RedirectToAction("OfferTemplates");
     }
 
     // ——— 2. Thống kê Brand (/brand/stats) ———
 
     [HttpGet]
-    public async Task<IActionResult> Stats(DateTime? from, DateTime? to, CancellationToken cancellationToken = default)
+    [ActionName("Stats")]
+    public async Task<IActionResult> StatsAsync(DateTime? from, DateTime? to, CancellationToken cancellationToken = default)
     {
         var query = new Dictionary<string, string?>();
-        if (from.HasValue) query["from"] = from.Value.ToString("yyyy-MM-dd");
-        if (to.HasValue) query["to"] = to.Value.ToString("yyyy-MM-dd");
+        if (from.HasValue)
+        {
+            query["from"] = from.Value.ToString("yyyy-MM-dd");
+        }
+        if (to.HasValue)
+        {
+            query["to"] = to.Value.ToString("yyyy-MM-dd");
+        }
 
         var path = QueryHelpers.AddQueryString("brand/stats", query);
         var vm = new BrandStatsViewModel { FromDate = from, ToDate = to };
 
         try
         {
-            var data = await _api.GetAsync<BrandStatsDto>(path, cancellationToken);
-            vm.Stats = data;
+            vm.Stats = await _api.GetAsync<BrandStatsDto>(path, cancellationToken);
         }
         catch (ApiException ex)
         {
             vm.ErrorMessage = string.IsNullOrWhiteSpace(ex.Message) ? "Không thể tải dữ liệu thống kê." : ex.Message;
         }
 
-        return View(vm);
+        return View("Stats", vm);
     }
 
     // ——— 3. Quản lý nhân viên (/brand/staff) ———
 
     [HttpGet]
-    public async Task<IActionResult> Staff(Guid? storeId, int page = 1, CancellationToken cancellationToken = default)
+    [ActionName("Staff")]
+    public async Task<IActionResult> StaffAsync(Guid? storeId, int page = 1, CancellationToken cancellationToken = default)
     {
         page = page < 1 ? 1 : page;
         var query = new Dictionary<string, string?>
@@ -108,7 +131,10 @@ public class BrandManagementController : Controller
             ["page"] = page.ToString(),
             ["pageSize"] = "20"
         };
-        if (storeId.HasValue && storeId.Value != Guid.Empty) query["storeId"] = storeId.Value.ToString();
+        if (storeId.HasValue && storeId.Value != Guid.Empty)
+        {
+            query["storeId"] = storeId.Value.ToString();
+        }
 
         var path = QueryHelpers.AddQueryString("brand/staff", query);
         var vm = new BrandStaffListViewModel { StoreIdFilter = storeId, Page = page };
@@ -127,12 +153,31 @@ public class BrandManagementController : Controller
             vm.ErrorMessage = string.IsNullOrWhiteSpace(ex.Message) ? "Không thể tải danh sách nhân viên." : ex.Message;
         }
 
-        return View(vm);
+        vm.Stores = await LoadStoresAsync(cancellationToken);
+        return View("Staff", vm);
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> DeleteStaff(Guid id, CancellationToken cancellationToken = default)
+    [ActionName("CreateStaff")]
+    public async Task<IActionResult> CreateStaffAsync(CreateBrandStaffRequest request, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var created = await _api.PostAsync<BrandStaffDto>("brand/staff", request, cancellationToken);
+            TempData["Success"] = $"Đã tạo nhân viên {created.FullName} cho {created.StoreName}.";
+        }
+        catch (ApiException ex)
+        {
+            TempData["Error"] = FormatApiError(ex, "Tạo nhân viên thất bại.");
+        }
+        return RedirectToAction("Staff");
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [ActionName("DeleteStaff")]
+    public async Task<IActionResult> DeleteStaffAsync(Guid id, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -143,6 +188,35 @@ public class BrandManagementController : Controller
         {
             TempData["Error"] = string.IsNullOrWhiteSpace(ex.Message) ? "Gỡ nhân viên thất bại." : ex.Message;
         }
-        return RedirectToAction(nameof(Staff));
+        return RedirectToAction("Staff");
+    }
+
+    // Form tạo nhân viên cần chọn chi nhánh; lỗi tải chi nhánh không được chặn cả trang danh sách.
+    private async Task<IReadOnlyList<StoreDto>> LoadStoresAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var path = QueryHelpers.AddQueryString("brand/stores", new Dictionary<string, string?>
+            {
+                ["page"] = "1",
+                ["pageSize"] = "100"
+            });
+            var data = await _api.GetAsync<PagedResponse<StoreDto>>(path, cancellationToken);
+            return data.Items;
+        }
+        catch (ApiException)
+        {
+            return Array.Empty<StoreDto>();
+        }
+    }
+
+    private static string FormatApiError(ApiException ex, string fallback)
+    {
+        var message = string.IsNullOrWhiteSpace(ex.Message) ? fallback : ex.Message;
+        if (ex.Errors.Count == 0)
+        {
+            return message;
+        }
+        return message + " " + string.Join(" ", ex.Errors.SelectMany(e => e.Value));
     }
 }

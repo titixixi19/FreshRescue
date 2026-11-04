@@ -67,6 +67,17 @@ public class StaffOrdersController : Controller
                 : ex.Message;
         }
 
+        // Tên và khung giờ đợt chỉ để hiển thị; lỗi ở đây không được che danh sách đơn.
+        try
+        {
+            vm.Batch = await _api.GetAsync<SaleBatchDto>($"staff/sale-batches/{saleBatchId}", cancellationToken);
+            vm.BatchName = vm.Batch.Name;
+        }
+        catch (ApiException)
+        {
+            vm.Batch = null;
+        }
+
         return View(vm);
     }
 }

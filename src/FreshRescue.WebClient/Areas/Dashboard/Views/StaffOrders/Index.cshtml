@@ -1,0 +1,122 @@
+@model StaffOrderListViewModel
+@using FreshRescue.WebClient.Helpers
+@{
+    ViewData["Title"] = "Đơn trong đợt";
+    string Vn(DateTime? utc) => utc is null ? "—" : Display.DateAndTime(utc.Value);
+    var statuses = new[]
+    {
+        ("", "Mặc định (ẩn đơn chưa thanh toán)"),
+        ("Paid", "Chờ trao"),
+        ("Redeemed", "Đã trao"),
+        ("NoShow", "Không đến lấy"),
+        ("Cancelled", "Đã huỷ"),
+        ("PendingPayment", "Chưa thanh toán")
+    };
+    string StatusLabel(string s) => s switch
+    {
+        "Paid" => "Chờ trao",
+        "Redeemed" => "Đã trao",
+        "NoShow" => "Không đến lấy",
+        "Cancelled" => "Đã huỷ",
+        "PendingPayment" => "Chưa thanh toán",
+        _ => s
+    };
+}
+
+<div class="dash-toolbar">
+    <div>
+        <h2>Đơn trong đợt @(Model.BatchName ?? "")</h2>
+        <p class="muted small">
+            FR-S04 · <code>GET staff/sale-batches/{id}/orders</code>
+            @if (Model.Batch is { } b)
+            {
+                <span> · @(b.StoreName) · nhận hàng @Vn(b.PickupStartTime) – @Vn(b.PickupEndTime)</span>
+            }
+        </p>
+    </div>
+    <div>
+        <a class="dash-btn-secondary" asp-area="Dashboard" asp-controller="SaleBatches" asp-action="Index">← Đợt bán</a>
+        <a class="dash-btn" asp-area="Dashboard" asp-controller="Redemptions" asp-action="Index">Quét QR</a>
+    </div>
+</div>
+
+<form method="get" asp-action="Index" class="dash-filters">
+    <input type="hidden" name="saleBatchId" value="@Model.SaleBatchId" />
+    <select name="status" class="dash-input">
+        @foreach (var (value, label) in statuses)
+        {
+            if ((Model.StatusFilter ?? "") == value)
+            {
+                <option value="@value" selected>@label</option>
+            }
+            else
+            {
+                <option value="@value">@label</option>
+            }
+        }
+    </select>
+    <button type="submit" class="dash-btn dash-btn-sm">Lọc</button>
+</form>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="dash-alert dash-alert-err">@Model.ErrorMessage</div>
+}
+else if (Model.Items.Count == 0)
+{
+    <div class="dash-empty">
+        <p>Đợt này chưa có đơn nào khớp bộ lọc.</p>
+    </div>
+}
+else
+{
+    <p class="muted small">Tổng cộng @Model.TotalCount đơn. Đơn chờ trao xếp lên đầu.</p>
+    <div class="dash-table-wrap">
+        <table class="dash-table">
+            <thead>
+                <tr>
+                    <th>Mã đơn</th>
+                    <th>Khách</th>
+                    <th>Món</th>
+                    <th>Tổng tiền</th>
+                    <th>Trạng thái</th>
+                    <th>Thanh toán</th>
+                    <th>Đã trao</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var o in Model.Items)
+                {
+                    <tr>
+                        <td><code>@o.OrderCode</code></td>
+                        <td>@o.CustomerName</td>
+                        <td class="small">
+                            @foreach (var i in o.Items)
+                            {
+                                <div>@i.Quantity × @i.OfferName</div>
+                            }
+                        </td>
+                        <td>@Display.Money(o.TotalAmount)</td>
+                        <td><span class="badge">@StatusLabel(o.Status)</span></td>
+                        <td class="muted small">@Vn(o.PaidAt)</td>
+                        <td class="muted small">@Vn(o.RedeemedAt)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav class="dash-pager" aria-label="Phân trang">
+            @for (var p = 1; p <= Model.TotalPages; p++)
+            {
+                <a class="@(p == Model.Page ? "active" : null)"
+                   asp-action="Index"
+                   asp-route-saleBatchId="@Model.SaleBatchId"
+                   asp-route-status="@Model.StatusFilter"
+                   asp-route-page="@p">@p</a>
+            }
+        </nav>
+    }
+}
