@@ -32,7 +32,8 @@
                     <span class="dash-nav-icon">⌂</span> Tổng quan
                 </a>
 
-                @if (isAdmin || isBrand)
+                @* Admin không có endpoint chi nhánh: brand/stores chỉ dành cho BrandManager (03 §7). *@
+                @if (isBrand)
                 {
                     <div class="dash-nav-section">Thương hiệu</div>
                     <a class="dash-nav-item @(currentController == "Stores" ? "active" : null)"
