@@ -693,8 +693,8 @@ Yêu cầu role `SystemAdmin`.
 | --- | --- | --- |
 | GET | `/admin/brands` | Lọc `status` |
 | POST | `/admin/brands/{id}/approve` | `PendingApproval → Approved` (`OQ-01`) |
-| POST | `/admin/brands/{id}/reject` | Kèm lý do |
-| POST | `/admin/brands/{id}/suspend` | |
+| POST | `/admin/brands/{id}/reject` | `PendingApproval → Rejected`, kèm lý do |
+| POST | `/admin/brands/{id}/suspend` | `Approved → Suspended`, kèm lý do *(bổ sung 07/11)* |
 | GET | `/admin/users` | Lọc `role`, `isActive`, `q` |
 | PATCH | `/admin/users/{id}/status` | Khoá / mở khoá |
 | GET / POST | `/admin/categories` | |
@@ -704,8 +704,23 @@ Yêu cầu role `SystemAdmin`.
 | POST | `/admin/disputes/{id}/reject` | Kèm `adminNote` |
 | GET | `/admin/orders/export` | Export đơn toàn sàn ra `.xlsx`, `?from=&to=` (`FR-A07`) — khuôn file ở §7.1 |
 
+`reject` và `suspend` dùng chung một body. Lý do lưu vào `Brand.StatusReason`, lần sau
+ghi đè lần trước (`02-DOMAIN-MODEL.md` §3):
+
+```json
+// request — lý do bắt buộc, tối đa 500 ký tự
+{ "reason": "Nhiều khiếu nại về vệ sinh an toàn thực phẩm" }
+```
+
+Trả `200` + `AdminBrandDto`. Thiếu `reason` hoặc quá 500 ký tự → `400 VALIDATION_FAILED`.
+
 > Brand Manager và Staff **không** có endpoint duyệt khiếu nại. Họ chỉ ghi giải trình
 > qua `PATCH /staff/disputes/{id}/merchant-note` — tránh xung đột lợi ích (`OQ-25`).
+>
+> Admin **không** có endpoint quản lý chi nhánh: `/brand/stores` (§7) chỉ dành cho Brand
+> Manager của chính thương hiệu đó, nên Web Client không hiện mục "Chi nhánh" cho Admin.
+> Việc khoá brand hay xoá chi nhánh khi còn đơn đã thanh toán **chưa có quy tắc** — xem
+> `04-OPEN-QUESTIONS.md` `OQ-36`.
 
 ---
 

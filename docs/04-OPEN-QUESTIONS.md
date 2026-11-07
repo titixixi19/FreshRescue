@@ -9,6 +9,9 @@
 >
 > Hai câu được chốt **khác** với mặc định đề xuất ở đây: `OQ-08` (biên độ giá) và
 > `OQ-31` (phạm vi web client) — xem `01-REQUIREMENTS.md` §9.3.
+>
+> ⚠️ **Ngoại lệ:** `OQ-36` (mục K) phát sinh ngày 07/11 khi rà soát code, **chưa chốt** và
+> **chưa có phương án mặc định**.
 
 > Cập nhật: 2026-09-17 · Liên quan: `01-REQUIREMENTS.md`
 >
@@ -264,6 +267,29 @@ vào contract.*
 
 ### 🟢 OQ-35. Web client có cần đa ngôn ngữ không?
 *Mặc định: **không** — chỉ tiếng Việt.*
+
+---
+
+## K. Phát sinh sau khi chốt
+
+### 🟡 OQ-36. Xoá chi nhánh / khoá thương hiệu khi còn đơn đã thanh toán thì sao? *(07/11, chưa chốt)*
+Brand Manager xoá mềm một chi nhánh, hoặc Admin tạm khoá cả thương hiệu, đúng lúc còn
+đợt bán `Scheduled` / `Active` và đơn `Paid` chưa trao hàng.
+**Vì sao quan trọng:** khách đã trả tiền và đang cầm vé QR. Hiện tại xoá chi nhánh chỉ
+đặt `IsDeleted`, khoá brand chỉ đổi `Status` — đơn `Paid` nằm nguyên, không hoàn tiền,
+không thông báo. `BR-22` / `OQ-06` chỉ nói về giữ **lịch sử**, `BR-23` chỉ nói về huỷ
+**một đợt bán**; không quy tắc nào nói hai thao tác này phải kéo theo gì.
+
+| Phương án | Xoá chi nhánh | Khoá thương hiệu |
+| --- | --- | --- |
+| **A. Chặn** | Không cho xoá khi còn đợt `Scheduled`/`Active` hoặc đơn `Paid` chưa trao | Khó áp dụng — Admin khoá thường vì vi phạm, không thể bắt chờ |
+| **B. Huỷ kéo theo** | Huỷ các đợt đang mở bằng đúng luồng `BR-23` (hoàn 100% đơn `Paid`) | Như bên trái, cho mọi chi nhánh của brand |
+| **C. Cho trao nốt** | — | Ngừng bán ngay, đơn `Paid` vẫn nhận hàng tới hết `PickupEndTime` |
+
+Cả ba phương án đều **không** cần migration.
+
+*Chưa có mặc định — nhóm cần chốt, rồi thêm `BR` mới vào `01-REQUIREMENTS.md` §7 trước
+khi code.* Đề xuất (chưa duyệt): xoá chi nhánh theo **A**, khoá thương hiệu theo **B**.
 
 ---
 
