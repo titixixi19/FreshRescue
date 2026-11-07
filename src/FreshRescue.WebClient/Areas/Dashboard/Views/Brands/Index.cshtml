@@ -112,12 +112,13 @@ else
                             }
                             @if (string.Equals(b.Status, "Approved", StringComparison.OrdinalIgnoreCase))
                             {
-                                <form asp-action="Suspend" method="post" class="inline-form"
-                                      onsubmit="return confirm('Tạm khoá thương hiệu này?');">
+                                <form asp-action="Suspend" method="post" class="reject-form"
+                                      onsubmit="return (this.reason.value.trim().length > 0 || (alert('Nhập lý do tạm khoá'), false)) && confirm('Tạm khoá thương hiệu này?');">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="id" value="@b.Id" />
                                     <input type="hidden" name="status" value="@Model.StatusFilter" />
                                     <input type="hidden" name="page" value="@Model.Page" />
+                                    <input type="text" name="reason" class="dash-input dash-input-sm" placeholder="Lý do tạm khoá" maxlength="500" />
                                     <button type="submit" class="link-danger">Tạm khoá</button>
                                 </form>
                             }

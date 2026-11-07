@@ -149,6 +149,11 @@ public class RejectBrandRequest
     public string Reason { get; set; } = string.Empty;
 }
 
+public class SuspendBrandRequest
+{
+    public string Reason { get; set; } = string.Empty;
+}
+
 public class BrandListViewModel
 {
     public IReadOnlyList<AdminBrandDto> Items { get; set; } = Array.Empty<AdminBrandDto>();
