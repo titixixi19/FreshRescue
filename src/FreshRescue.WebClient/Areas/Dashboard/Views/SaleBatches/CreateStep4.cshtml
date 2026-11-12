@@ -6,7 +6,7 @@
 <div class="dash-toolbar">
     <div>
         <h2>Bước 4 / 4 — Xác nhận &amp; lưu</h2>
-        <p class="muted small">Gửi <code>POST staff/sale-batches</code>. Có thể kích hoạt ngay (<code>.../activate</code>).</p>
+        <p class="muted small">Kiểm tra lại rồi lưu. Có thể kích hoạt ngay để mở bán.</p>
     </div>
 </div>
 
@@ -21,7 +21,6 @@
         Tên: <strong>@(string.IsNullOrWhiteSpace(Model.Name) ? "(không đặt)" : Model.Name)</strong><br />
         @if (Model.IsBrandManager)
         {
-            <text>StoreId: <code>@Model.StoreId</code><br /></text>
         }
         Bán: @Model.SaleStartTime → @Model.SaleEndTime<br />
         Nhận: @Model.PickupStartTime → @Model.PickupEndTime

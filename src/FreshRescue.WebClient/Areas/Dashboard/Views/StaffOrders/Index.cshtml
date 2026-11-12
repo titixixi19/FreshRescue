@@ -27,10 +27,9 @@
     <div>
         <h2>Đơn trong đợt @(Model.BatchName ?? "")</h2>
         <p class="muted small">
-            FR-S04 · <code>GET staff/sale-batches/{id}/orders</code>
             @if (Model.Batch is { } b)
             {
-                <span> · @(b.StoreName) · nhận hàng @Vn(b.PickupStartTime) – @Vn(b.PickupEndTime)</span>
+                <span>@(b.StoreName) · nhận hàng @Vn(b.PickupStartTime) – @Vn(b.PickupEndTime)</span>
             }
         </p>
     </div>

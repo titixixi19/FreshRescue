@@ -89,9 +89,11 @@
     object-fit: cover;
 }
 
+/* Ảnh lớn lấp theo chiều cao cột: bỏ aspect-ratio, nếu không trình duyệt tính bề ngang theo chiều cao và ảnh tràn sang cột chữ. */
 .fr-offer-media-lg {
     height: 100%;
     min-height: 260px;
+    aspect-ratio: auto;
 }
 
 .fr-offer-emoji {

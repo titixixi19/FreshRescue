@@ -20,9 +20,17 @@ html {
     }
 }
 
+/* Trang ít nội dung thì main giãn ra, đẩy footer xuống đáy màn hình thay vì lơ lửng giữa trang. */
 body {
     color: var(--fr-ink);
     background: #f7faf8;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+body > main {
+    flex: 1 0 auto;
 }
 
 .btn-success {
