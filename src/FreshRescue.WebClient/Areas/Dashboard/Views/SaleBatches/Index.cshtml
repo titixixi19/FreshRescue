@@ -30,11 +30,11 @@
         {
             if (Model.StatusFilter == s)
             {
-                <option value="@s" selected>@s</option>
+                <option value="@s" selected>@Display.SaleBatchStatus(s).Label</option>
             }
             else
             {
-                <option value="@s">@s</option>
+                <option value="@s">@Display.SaleBatchStatus(s).Label</option>
             }
         }
     </select>
@@ -73,7 +73,7 @@ else
                             <strong>@(string.IsNullOrEmpty(b.Name) ? "—" : b.Name)</strong>
                             <div class="muted small">@b.StoreName</div>
                         </td>
-                        <td><span class="badge">@b.Status</span></td>
+                        <td><span class="@Display.SaleBatchStatus(b.Status).Css">@Display.SaleBatchStatus(b.Status).Label</span></td>
                         <td class="muted small">
                             @Display.DateAndTime(b.SaleStartTime)
                             <br />→ @Display.DateAndTime(b.SaleEndTime)
@@ -83,7 +83,7 @@ else
                             <br />→ @Display.DateAndTime(b.PickupEndTime)
                         </td>
                         <td class="dash-actions">
-                            <a asp-area="Dashboard" asp-controller="StaffOffers" asp-action="Manage" asp-route-saleBatchId="@b.Id">Offer</a>
+                            <a asp-area="Dashboard" asp-controller="StaffOffers" asp-action="Manage" asp-route-saleBatchId="@b.Id">Món</a>
                             <a asp-area="Dashboard" asp-controller="StaffOrders" asp-action="Index" asp-route-saleBatchId="@b.Id">Đơn</a>
                             @if (string.Equals(b.Status, "Draft", StringComparison.OrdinalIgnoreCase))
                             {
