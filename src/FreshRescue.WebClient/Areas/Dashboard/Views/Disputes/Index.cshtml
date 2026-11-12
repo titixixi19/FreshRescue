@@ -24,9 +24,9 @@
 <form method="get" asp-action="Index" class="dash-filters">
     <select name="status" class="dash-input">
         <option value="">— Mọi trạng thái —</option>
-        <option value="0" selected="@(Model.StatusFilter == 0)">Open (Chờ duyệt)</option>
-        <option value="1" selected="@(Model.StatusFilter == 1)">Approved (Đã duyệt / Hoàn tiền)</option>
-        <option value="2" selected="@(Model.StatusFilter == 2)">Rejected (Đã từ chối)</option>
+        <option value="0" selected="@(Model.StatusFilter == 0)">Chờ xử lý</option>
+        <option value="1" selected="@(Model.StatusFilter == 1)">Đã hoàn tiền</option>
+        <option value="2" selected="@(Model.StatusFilter == 2)">Đã từ chối</option>
     </select>
     <button type="submit" class="dash-btn dash-btn-sm">Lọc</button>
 </form>
@@ -80,18 +80,7 @@ else
                             }
                         </td>
                         <td>
-                            @if (d.Status == "Open")
-                            {
-                                <span class="badge bg-warning text-dark">Open</span>
-                            }
-                            else if (d.Status == "Approved")
-                            {
-                                <span class="badge bg-success">Approved</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-secondary">Rejected</span>
-                            }
+                            <span class="@Display.DisputeStatus(d.Status).Css">@Display.DisputeStatus(d.Status).Label</span>
                         </td>
                         <td>
                             @if (d.Status == "Open")

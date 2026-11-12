@@ -1,15 +1,16 @@
 @model FreshRescue.WebClient.Areas.Dashboard.Controllers.StaffOfferManageViewModel
+@using FreshRescue.WebClient.Helpers
 @inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 @{
-    ViewData["Title"] = "Offer trong đợt";
+    ViewData["Title"] = "Món trong đợt";
     var apiBaseUrl = (Configuration["Api:BaseUrl"] ?? string.Empty).Trim().TrimEnd('/');
 }
 
 <div class="dash-toolbar">
     <div>
-        <h2>Offer — @Model.BatchName</h2>
+        <h2>Món trong đợt — @Model.BatchName</h2>
         <p class="muted small">
-            Trạng thái <span class="badge">@Model.BatchStatus</span>
+            Trạng thái <span class="@Display.SaleBatchStatus(Model.BatchStatus).Css">@Display.SaleBatchStatus(Model.BatchStatus).Label</span>
             · SignalR: <span id="signalr-status-badge" class="badge badge-warn">Chưa kết nối</span>
         </p>
     </div>

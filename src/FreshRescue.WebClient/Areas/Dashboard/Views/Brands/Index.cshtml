@@ -27,11 +27,11 @@
         {
             if (Model.StatusFilter == s)
             {
-                <option value="@s" selected>@s</option>
+                <option value="@s" selected>@Display.BrandStatus(s).Label</option>
             }
             else
             {
-                <option value="@s">@s</option>
+                <option value="@s">@Display.BrandStatus(s).Label</option>
             }
         }
     </select>
@@ -79,7 +79,7 @@ else
                         <td class="muted small">
                             @(string.IsNullOrEmpty(b.OwnerEmail) ? "—" : b.OwnerEmail)
                         </td>
-                        <td><span class="badge">@b.Status</span></td>
+                        <td><span class="@Display.BrandStatus(b.Status).Css">@Display.BrandStatus(b.Status).Label</span></td>
                         <td class="muted small">
                             @if (b.CreatedAt is not null)
                             {

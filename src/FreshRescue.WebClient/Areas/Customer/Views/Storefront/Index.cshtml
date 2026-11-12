@@ -14,8 +14,8 @@
         </p>
     </div>
     <div class="fr-hero-stat">
-        <strong>@Model.Offers.TotalCount</strong>
-        <span>món đang chờ giải cứu</span>
+        <strong>@Model.Stats.PortionCount.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))@(Model.Stats.IsPartial ? "+" : "")</strong>
+        <span>suất · @Model.Stats.OfferCount món<br />đang chờ giải cứu</span>
     </div>
 </section>
 
@@ -107,6 +107,10 @@
 }
 else
 {
+    @if (query.HasFilter)
+    {
+        <p class="text-muted small mb-2">Tìm thấy <strong>@Model.Offers.TotalCount</strong> món khớp bộ lọc.</p>
+    }
     <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-3">
         @foreach (var offer in Model.Offers.Items)
         {

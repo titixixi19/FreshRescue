@@ -37,6 +37,98 @@ public static class DbSeeder
         ("Combo tiết kiệm", "combo-tiet-kiem")
     ];
 
+    // Dữ liệu demo trông như thật nhưng hoàn toàn hư cấu: tên thương hiệu tự đặt, không trùng chuỗi có thật;
+    // chỉ tên đường là thật (Quận 1), số nhà là bịa. Thương hiệu thứ i khớp danh mục thứ i ở trên.
+    private static readonly (string Name, string Slug, string ShortName, string Description)[] _brands =
+    [
+        ("Tiệm Bánh Mầm Xanh", "mam-xanh", "Mầm Xanh", "Bánh kem, bông lan và tart nướng mỗi sáng."),
+        ("Lò Bánh Mì Phố Cũ", "banh-mi-pho-cu", "Phố Cũ", "Bánh mì nướng lò củi, giòn vỏ mềm ruột."),
+        ("Tiệm Bánh Mặn Lá Dứa", "banh-man-la-dua", "Lá Dứa", "Bánh bao, pateso, bánh pía làm thủ công."),
+        ("Bếp Chay An Nhiên", "bep-chay-an-nhien", "An Nhiên", "Cơm chay, bún chay nấu từ rau nấm tươi."),
+        ("Cơm Nhà Mộc Lan", "com-nha-moc-lan", "Mộc Lan", "Cơm văn phòng vị nhà nấu, đổi món mỗi ngày."),
+        ("Trà & Bánh Gió Nam", "tra-banh-gio-nam", "Gió Nam", "Trà sữa, trà trái cây và bánh ăn kèm."),
+        ("Sạp Trái Cây Vườn Nhà", "trai-cay-vuon-nha", "Vườn Nhà", "Trái cây theo mùa từ nhà vườn miền Tây."),
+        ("Rau Sạch Sớm Mai", "rau-sach-som-mai", "Sớm Mai", "Rau củ thu hoạch trong ngày từ Củ Chi."),
+        ("Chợ Tươi Mỗi Ngày", "cho-tuoi-moi-ngay", "Chợ Tươi", "Thịt cá tươi sơ chế sẵn, giao trong ngày."),
+        ("Bếp Nhanh 247", "bep-nhanh-247", "Bếp Nhanh", "Gà rán, khoai chiên và burger nóng giòn."),
+        ("Quán Bún Chiều Hạ", "bun-chieu-ha", "Chiều Hạ", "Bún bò, hủ tiếu, mì nước dùng hầm xương."),
+        ("Sữa Chua Mây Trắng", "sua-chua-may-trang", "Mây Trắng", "Sữa chua dẻo, sữa chua uống ủ thủ công."),
+        ("Kho Lạnh Biển Xanh", "kho-lanh-bien-xanh", "Biển Xanh", "Hải sản cấp đông và thực phẩm đông lạnh."),
+        ("Cơm Tấm Ngói Đỏ", "com-tam-ngoi-do", "Ngói Đỏ", "Cơm tấm sườn nướng than kiểu Sài Gòn."),
+        ("Điểm Tâm Kim Hoa", "diem-tam-kim-hoa", "Kim Hoa", "Dimsum, há cảo, xíu mại hấp nóng."),
+        ("Bếp Âu Olive", "bep-au-olive", "Olive", "Mì Ý, bò hầm và món Âu phần một người."),
+        ("Salad Lá Non", "salad-la-non", "Lá Non", "Salad rau trộn và sandwich ăn kiêng."),
+        ("Xôi Sáng Bình Minh", "xoi-sang-binh-minh", "Bình Minh", "Xôi mặn, xôi ngọt và bánh mì chảo buổi sáng."),
+        ("Ăn Vặt Góc Phố", "an-vat-goc-pho", "Góc Phố", "Bánh tráng trộn, khoai lắc, chả giò mini."),
+        ("Combo Nhà Mình", "combo-nha-minh", "Nhà Mình", "Mâm cơm gia đình 3–4 người, nấu theo ngày."),
+    ];
+
+    private static readonly (string AddressLine, string Ward)[] _addresses =
+    [
+        ("45 Lê Lợi", "Bến Nghé"), ("12 Nguyễn Thái Bình", "Nguyễn Thái Bình"), ("88 Lê Thánh Tôn", "Bến Thành"),
+        ("21 Tôn Thất Đạm", "Bến Nghé"), ("150 Calmette", "Nguyễn Thái Bình"), ("34 Phó Đức Chính", "Nguyễn Thái Bình"),
+        ("67 Ký Con", "Nguyễn Thái Bình"), ("102 Hàm Nghi", "Bến Thành"), ("19 Nam Kỳ Khởi Nghĩa", "Bến Thành"),
+        ("250 Lê Lai", "Bến Thành"), ("76 Nguyễn Thái Học", "Cầu Ông Lãnh"), ("9 Cống Quỳnh", "Phạm Ngũ Lão"),
+        ("140 Trần Hưng Đạo", "Cầu Ông Lãnh"), ("58 Bùi Viện", "Phạm Ngũ Lão"), ("33 Đề Thám", "Cô Giang"),
+        ("120 Phạm Ngũ Lão", "Phạm Ngũ Lão"), ("27 Lý Tự Trọng", "Bến Nghé"), ("64 Mạc Thị Bưởi", "Bến Nghé"),
+        ("15 Pasteur", "Bến Nghé"), ("200 Nguyễn Trãi", "Phạm Ngũ Lão"),
+    ];
+
+    private static readonly string[] _managerNames =
+    [
+        "Nguyễn Thu Hà", "Trần Minh Khoa", "Lê Bảo Ngọc", "Phạm Quốc Huy", "Hoàng Thanh Tâm",
+        "Huỳnh Gia Linh", "Phan Đức Thịnh", "Vũ Mai Anh", "Võ Hoàng Long", "Đặng Thùy Dương",
+        "Bùi Nhật Nam", "Đỗ Khánh Vy", "Hồ Tuấn Kiệt", "Ngô Phương Thảo", "Dương Anh Tuấn",
+        "Lý Ngọc Hân", "Trịnh Văn Phúc", "Mai Hồng Nhung", "Tạ Quang Vinh", "Cao Bích Trâm",
+    ];
+
+    private static readonly string[] _staffNames =
+    [
+        "Nguyễn Văn An", "Trần Thị Bích", "Lê Hoàng Phúc", "Phạm Thị Lan", "Hoàng Minh Đức",
+        "Huỳnh Thị Mỹ", "Phan Văn Tài", "Vũ Thị Hồng", "Võ Thành Đạt", "Đặng Thị Kim",
+        "Bùi Văn Hùng", "Đỗ Thị Hạnh", "Hồ Minh Trí", "Ngô Thị Thu", "Dương Văn Lộc",
+        "Lý Thị Ngân", "Trịnh Minh Quân", "Mai Thị Yến", "Tạ Văn Sơn", "Cao Thị Diễm",
+    ];
+
+    private static readonly string[] _customerNames =
+    [
+        "Nguyễn Hải Yến", "Trần Gia Bảo", "Lê Minh Châu", "Phạm Hoàng Nam", "Hoàng Ngọc Ánh",
+        "Huỳnh Tấn Phát", "Phan Thảo Nhi", "Vũ Đình Khôi", "Võ Ngọc Trinh", "Đặng Quang Minh",
+        "Bùi Thanh Hương", "Đỗ Hữu Nghĩa", "Hồ Bảo Trân", "Ngô Đức Anh", "Dương Mỹ Linh",
+        "Lý Thành Công", "Trịnh Khánh Linh", "Mai Xuân Bách", "Tạ Thu Trang", "Cao Minh Nhật",
+    ];
+
+    // Mẫu thứ i thuộc thương hiệu (i-1)%20 và danh mục (i-1)%20; i lẻ là túi mù, i chẵn là món xả kho.
+    // Giá gợi ý luôn nằm trong khung BR-07: túi mù 30% giá gốc (giảm 70%), món lẻ 53–55% giá gốc (giảm 45–47%).
+    private static readonly (string Name, string Description, decimal OriginalPrice, decimal SuggestedPrice)[] _templates =
+    [
+        ("Túi mù bánh ngọt cuối ngày", "3–5 chiếc bánh kem, bông lan, tart nướng trong ngày.", 150000m, 45000m),
+        ("Combo 5 ổ bánh mì que pate", "Bánh mì que giòn nhân pate gan, nướng buổi chiều.", 50000m, 27000m),
+        ("Túi mù bánh mặn", "Bánh bao, pateso, bánh xếp — 4 đến 6 cái.", 120000m, 36000m),
+        ("Cơm chay thập cẩm", "Cơm trắng, đậu hũ sốt cà, nấm xào và canh rau.", 50000m, 27000m),
+        ("Túi mù cơm hộp 2 phần", "Hai phần cơm hộp món mặn thay đổi theo ngày.", 110000m, 33000m),
+        ("Trà sữa trân châu size L", "Pha trong ngày, đá để riêng.", 45000m, 24000m),
+        ("Túi mù trái cây 2kg", "Trái cây theo mùa, hơi chín, ăn ngay rất ngọt.", 100000m, 30000m),
+        ("Bó rau củ nấu canh 1kg", "Bí đỏ, cà rốt, rau ngót — thu hoạch hôm qua.", 30000m, 16000m),
+        ("Túi mù thịt cá sơ chế", "Thịt heo, cá basa đã sơ chế, nấu trong ngày.", 160000m, 48000m),
+        ("Gà rán 4 miếng", "Chiên ca chiều, hâm lại vẫn giòn.", 80000m, 44000m),
+        ("Túi mù bún & mì 2 phần", "Bún bò, hủ tiếu hoặc mì — nước dùng để riêng.", 100000m, 30000m),
+        ("Sữa chua dẻo hộp 6", "Còn hạn 2 ngày, bảo quản lạnh.", 60000m, 33000m),
+        ("Túi mù hải sản đông lạnh", "Tôm, mực, chả cá sắp hết hạn trưng bày.", 200000m, 60000m),
+        ("Cơm tấm sườn bì chả", "Sườn nướng than, bì chả làm trong ngày.", 55000m, 30000m),
+        ("Túi mù dimsum 12 viên", "Há cảo, xíu mại, bánh bao nhân thịt hấp sẵn.", 120000m, 36000m),
+        ("Mì Ý sốt bò bằm", "Phần một người, hâm nóng 2 phút là dùng được.", 90000m, 49000m),
+        ("Túi mù salad & sandwich", "2 hộp salad rau trộn và 1 sandwich gà.", 110000m, 33000m),
+        ("Xôi mặn thập cẩm", "Xôi nếp, lạp xưởng, chà bông, trứng cút.", 35000m, 19000m),
+        ("Túi mù ăn vặt", "Bánh tráng trộn, khoai lang lắc, chả giò mini.", 80000m, 24000m),
+        ("Combo cơm gia đình 3 người", "3 món mặn, 1 canh và cơm trắng.", 180000m, 99000m),
+        ("Túi mù croissant & bánh mì ngọt", "Croissant bơ, bánh mì hoa cúc, bánh cuộn.", 130000m, 39000m),
+        ("Bánh mì thịt nguội", "Ổ đặc ruột, thịt nguội, pate và đồ chua.", 30000m, 16000m),
+        ("Túi mù bánh pía & bánh kẹp", "Bánh pía sầu riêng, bánh kẹp lá dứa.", 90000m, 27000m),
+        ("Bún chay Huế", "Nước lèo nấm, chả chay, đậu hũ chiên.", 45000m, 24000m),
+        ("Túi mù cơm văn phòng 3 phần", "Ba phần cơm món mặn và canh trong ngày.", 150000m, 45000m),
+    ];
+
     public static async Task SeedIdentityAsync(
         RoleManager<AppRole> roleManager,
         UserManager<AppUser> userManager,
@@ -139,14 +231,15 @@ public static class DbSeeder
         var brandIds = new List<Guid>();
         for (var i = 1; i <= BrandCount; i++)
         {
+            var brandInfo = _brands[i - 1];
             var manager = await EnsureDemoUserAsync(
                 userManager,
                 $"brandmanager{i:00}@freshrescue.test",
-                $"Quản lý thương hiệu Demo {i:00}",
+                _managerNames[i - 1],
                 AppRoles.BrandManager,
                 demoPassword);
 
-            var slug = $"freshrescue-demo-brand-{i:00}";
+            var slug = brandInfo.Slug;
             var brand = await db.Brands
                 .IgnoreQueryFilters()
                 .SingleOrDefaultAsync(x => x.Slug == slug, cancellationToken);
@@ -155,8 +248,9 @@ public static class DbSeeder
             {
                 brand = new Brand
                 {
-                    Name = $"FreshRescue Demo Brand {i:00}",
+                    Name = brandInfo.Name,
                     Slug = slug,
+                    Description = brandInfo.Description,
                     OwnerUserId = manager.Id,
                     Status = BrandStatus.Approved,
                     ApprovedAt = clock.GetUtcNow().UtcDateTime,
@@ -176,7 +270,10 @@ public static class DbSeeder
 
             brandIds.Add(brand.Id);
 
-            var storeName = $"Chi nhánh Demo {i:00}";
+            var (addressLine, ward) = _addresses[i - 1];
+            // "Mầm Xanh – Lê Lợi": tên ngắn của thương hiệu + tên đường, kiểu các chuỗi F&B hay đặt.
+            var streetName = addressLine[(addressLine.IndexOf(' ') + 1)..];
+            var storeName = $"{brandInfo.ShortName} – {streetName}";
             var store = await db.Stores
                 .IgnoreQueryFilters()
                 .SingleOrDefaultAsync(x => x.BrandId == brand.Id && x.Name == storeName, cancellationToken);
@@ -188,13 +285,13 @@ public static class DbSeeder
                 {
                     BrandId = brand.Id,
                     Name = storeName,
-                    AddressLine = $"Địa điểm minh họa số {i:00} (không phải địa chỉ thật)",
-                    Ward = "Khu vực demo",
+                    AddressLine = addressLine,
+                    Ward = ward,
                     District = "Quận 1",
                     City = "TP. Hồ Chí Minh",
                     Latitude = 10.765000m + (zeroBased / 5) * 0.003m,
                     Longitude = 106.688000m + (zeroBased % 5) * 0.003m,
-                    Phone = $"090000{i:0000}",
+                    Phone = $"0909{i * 48271 % 1000000:000000}",
                     OpenTime = new TimeOnly(7, 0),
                     CloseTime = new TimeOnly(22, 0),
                     Status = StoreStatus.Active
@@ -210,7 +307,7 @@ public static class DbSeeder
             var staff = await EnsureDemoUserAsync(
                 userManager,
                 $"storestaff{i:00}@freshrescue.test",
-                $"Nhân viên chi nhánh Demo {i:00}",
+                _staffNames[i - 1],
                 AppRoles.StoreStaff,
                 demoPassword);
 
@@ -238,7 +335,7 @@ public static class DbSeeder
             await EnsureDemoUserAsync(
                 userManager,
                 $"customer{i:00}@freshrescue.test",
-                $"Khách hàng Demo {i:00}",
+                _customerNames[i - 1],
                 AppRoles.Customer,
                 demoPassword);
         }
@@ -247,7 +344,8 @@ public static class DbSeeder
         {
             var brandId = brandIds[(i - 1) % brandIds.Count];
             var categoryId = categoryIds[(i - 1) % categoryIds.Count];
-            var name = $"Mặt hàng Demo {i:00}";
+            var templateInfo = _templates[i - 1];
+            var name = templateInfo.Name;
 
             var existing = await db.OfferTemplates
                 .IgnoreQueryFilters()
@@ -270,10 +368,10 @@ public static class DbSeeder
                 BrandId = brandId,
                 CategoryId = categoryId,
                 Name = name,
-                Description = "Dữ liệu minh họa cho demo FreshRescue",
+                Description = templateInfo.Description,
                 OfferType = isBag ? OfferType.SurpriseBag : OfferType.ClearanceItem,
-                OriginalPrice = 100000m,
-                SuggestedPrice = isBag ? 30000m : 55000m,
+                OriginalPrice = templateInfo.OriginalPrice,
+                SuggestedPrice = templateInfo.SuggestedPrice,
                 BrandMinDiscountPercent = isBag ? 65m : 40m,
                 BrandMaxDiscountPercent = isBag ? 75m : 50m
             });

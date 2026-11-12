@@ -42,6 +42,7 @@ public class StorefrontController : Controller
             Query = query,
             Offers = offers,
             Categories = await GetCategoriesAsync(cancellationToken),
+            Stats = await GetSiteStatsAsync(cancellationToken),
         });
     }
 
@@ -74,6 +75,24 @@ public class StorefrontController : Controller
         }
 
         return View(new OfferDetailViewModel { Offer = offer, BatchOffers = batchOffers, IsOnSale = isOnSale });
+    }
+
+    // Banner là thống kê toàn sàn nên luôn gọi không kèm bộ lọc; trước đây dùng TotalCount của kết quả lọc
+    // nên lọc "Túi mù" thì con số "đang chờ giải cứu" cũng tụt theo. Lỗi API chỉ làm mất số, không làm sập trang.
+    private async Task<SiteRescueStats> GetSiteStatsAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var all = await _api.GetAsync<PagedResponse<ActiveOfferDto>>(
+                $"offers/active?inStockOnly=true&pageSize={PagedResponse<ActiveOfferDto>.MaxPageSize}",
+                cancellationToken);
+            return new SiteRescueStats(all.TotalCount, all.Items.Sum(o => o.RemainingQuantity), all.TotalCount > all.Items.Count);
+        }
+        catch (ApiException ex) when (ex.Status != StatusCodes.Status401Unauthorized)
+        {
+            _logger.LogWarning("Không tải được thống kê banner. Status={Status}, ErrorCode={ErrorCode}", ex.Status, ex.ErrorCode);
+            return new SiteRescueStats(0, 0, false);
+        }
     }
 
     // Thiếu danh mục thì vẫn bán được — chỉ mất ô lọc, đừng làm sập cả storefront.

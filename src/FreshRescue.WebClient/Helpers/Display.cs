@@ -79,6 +79,45 @@ public static class Display
         _ => reason.ToString(),
     };
 
+    // Dashboard nhận trạng thái dạng chuỗi enum của API (03 §1); đổi sang chữ người dùng đọc được,
+    // kèm class badge của dashboard.css. Giá trị lạ thì hiện nguyên văn thay vì ném lỗi.
+
+    public static (string Label, string Css) BrandStatus(string? status) => status switch
+    {
+        "PendingApproval" => ("Chờ duyệt", "badge"),
+        "Approved" => ("Đã duyệt", "badge badge-ok"),
+        "Rejected" => ("Bị từ chối", "badge badge-warn"),
+        "Suspended" => ("Tạm khoá", "badge badge-warn"),
+        _ => (status ?? "—", "badge"),
+    };
+
+    public static (string Label, string Css) SaleBatchStatus(string? status) => status switch
+    {
+        "Draft" => ("Bản nháp", "badge"),
+        "Scheduled" => ("Đã lên lịch", "badge"),
+        "Active" => ("Đang bán", "badge badge-ok"),
+        "Closed" => ("Đã đóng", "badge"),
+        "Cancelled" => ("Đã huỷ", "badge badge-warn"),
+        _ => (status ?? "—", "badge"),
+    };
+
+    public static (string Label, string Css) DisputeStatus(string? status) => status switch
+    {
+        "Open" => ("Chờ xử lý", "badge"),
+        "Approved" => ("Đã hoàn tiền", "badge badge-ok"),
+        "Rejected" => ("Đã từ chối", "badge badge-warn"),
+        _ => (status ?? "—", "badge"),
+    };
+
+    public static string RoleLabel(string? role) => role switch
+    {
+        "SystemAdmin" => "Quản trị sàn",
+        "BrandManager" => "Quản lý thương hiệu",
+        "StoreStaff" => "Nhân viên cửa hàng",
+        "Customer" => "Khách hàng",
+        _ => role ?? "—",
+    };
+
     // Windows dùng tên riêng, Linux/macOS dùng tên IANA — thử cả hai để chạy được khi deploy.
     private static TimeZoneInfo FindVietnamTimeZone()
     {

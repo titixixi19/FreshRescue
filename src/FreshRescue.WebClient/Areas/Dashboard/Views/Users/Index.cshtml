@@ -24,16 +24,16 @@
 <form method="get" asp-action="Index" class="dash-filters">
     <input type="text" name="q" value="@Model.Query" class="dash-input" placeholder="Tìm email / tên" />
     <select name="role" class="dash-input">
-        <option value="">— Mọi role —</option>
+        <option value="">— Mọi vai trò —</option>
         @foreach (var r in new[] { AppRoles.Admin, AppRoles.BrandManager, AppRoles.StoreStaff, AppRoles.Customer })
         {
             if (Model.Role == r)
             {
-                <option value="@r" selected>@r</option>
+                <option value="@r" selected>@Display.RoleLabel(r)</option>
             }
             else
             {
-                <option value="@r">@r</option>
+                <option value="@r">@Display.RoleLabel(r)</option>
             }
         }
     </select>
@@ -89,16 +89,16 @@ else
                         <td><strong>@u.FullName</strong></td>
                         <td>@u.Email</td>
                         <td class="muted small">
-                            @string.Join(", ", u.Roles)
+                            @string.Join(", ", u.Roles.Select(Display.RoleLabel))
                         </td>
                         <td>
                             @if (u.IsActive)
                             {
-                                <span class="badge">Active</span>
+                                <span class="badge badge-ok">Đang hoạt động</span>
                             }
                             else
                             {
-                                <span class="badge">Locked</span>
+                                <span class="badge badge-warn">Đã khoá</span>
                             }
                         </td>
                         <td class="muted small">
