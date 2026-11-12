@@ -73,7 +73,15 @@ public class StorefrontViewModel
     public required StorefrontQuery Query { get; init; }
     public required PagedResponse<ActiveOfferDto> Offers { get; init; }
     public required IReadOnlyList<CategoryDto> Categories { get; init; }
+
+    /// <summary>Thống kê toàn sàn cho banner — không đổi theo bộ lọc đang chọn.</summary>
+    public required SiteRescueStats Stats { get; init; }
 }
+
+/// <param name="OfferCount">Số món đang mở bán và còn suất.</param>
+/// <param name="PortionCount">Tổng suất còn lại của các món đó.</param>
+/// <param name="IsPartial">Có hơn 100 món nên chỉ cộng được suất của 100 món đầu — hiển thị kèm dấu "+".</param>
+public record SiteRescueStats(int OfferCount, int PortionCount, bool IsPartial);
 
 public class OfferDetailViewModel
 {
