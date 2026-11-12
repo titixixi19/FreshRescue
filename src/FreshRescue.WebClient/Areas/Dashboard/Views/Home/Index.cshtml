@@ -8,49 +8,50 @@
     <p class="muted">
         @if (Model.IsAdmin)
         {
-            <text>Bảng điều khiển <strong>Admin</strong> — duyệt thương hiệu và quản lý người dùng.</text>
+            <text>Bảng điều khiển <strong>Quản trị sàn</strong> — duyệt thương hiệu, quản lý người dùng, danh mục và khiếu nại.</text>
         }
         else if (Model.IsBrandManager)
         {
-            <text>Bảng điều khiển <strong>BrandManager</strong> — quản lý chi nhánh và vận hành chuỗi.</text>
+            <text>Bảng điều khiển <strong>Quản lý thương hiệu</strong> — chi nhánh, mẫu mặt hàng, nhân viên và thống kê.</text>
         }
         else if (Model.IsStoreStaff)
         {
-            <text>Bảng điều khiển <strong>StoreStaff</strong> — đợt bán, đơn cần xử lý và quét QR.</text>
+            <text>Bảng điều khiển <strong>Nhân viên cửa hàng</strong> — mở đợt bán, xử lý đơn và quét QR trao hàng.</text>
         }
         else
         {
-            <text>Dashboard chỉ dành cho Admin, BrandManager và StoreStaff.</text>
+            <text>Bảng điều khiển chỉ dành cho Quản trị sàn, Quản lý thương hiệu và Nhân viên cửa hàng.</text>
         }
     </p>
 </div>
-
-@if (Model.BrandId is not null || Model.StoreId is not null)
-{
-    <div class="muted small" style="margin-bottom:1rem;">
-        @if (Model.BrandId is not null)
-        {
-            <span>brand_id: <code>@Model.BrandId</code></span>
-        }
-        @if (Model.StoreId is not null)
-        {
-            <span style="margin-left:0.75rem;">store_id: <code>@Model.StoreId</code></span>
-        }
-    </div>
-}
 
 <div class="dash-cards">
     @if (Model.IsAdmin)
     {
         <div class="dash-card">
             <h3>Duyệt thương hiệu</h3>
-            <p class="muted">PendingApproval / Approved / Rejected / Suspended.</p>
+            <p class="muted">Duyệt, từ chối hoặc tạm khoá thương hiệu đăng ký trên sàn.</p>
             <a class="dash-btn dash-btn-sm" asp-area="Dashboard" asp-controller="Brands" asp-action="Index">Mở danh sách</a>
         </div>
         <div class="dash-card">
             <h3>Người dùng</h3>
-            <p class="muted">Lọc role / trạng thái, khoá hoặc mở khoá.</p>
+            <p class="muted">Lọc theo vai trò và trạng thái, khoá hoặc mở khoá tài khoản.</p>
             <a class="dash-btn dash-btn-sm" asp-area="Dashboard" asp-controller="Users" asp-action="Index">Mở danh sách</a>
+        </div>
+        <div class="dash-card">
+            <h3>Danh mục</h3>
+            <p class="muted">Danh mục món ăn dùng cho bộ lọc trên trang khách.</p>
+            <a class="dash-btn dash-btn-sm" asp-area="Dashboard" asp-controller="Categories" asp-action="Index">Quản lý danh mục</a>
+        </div>
+        <div class="dash-card">
+            <h3>Khiếu nại</h3>
+            <p class="muted">Xem giải trình của cửa hàng, duyệt hoàn tiền hoặc từ chối.</p>
+            <a class="dash-btn dash-btn-sm" asp-area="Dashboard" asp-controller="Disputes" asp-action="Index">Xử lý khiếu nại</a>
+        </div>
+        <div class="dash-card">
+            <h3>Export đơn hàng</h3>
+            <p class="muted">Xuất danh sách đơn hàng toàn sàn ra file Excel.</p>
+            <a class="dash-btn dash-btn-sm" asp-area="Dashboard" asp-controller="ImportExport" asp-action="Index">Mở trang export</a>
         </div>
     }
 
@@ -58,45 +59,47 @@
     {
         <div class="dash-card">
             <h3>Chi nhánh</h3>
-            <p class="muted">CRUD chi nhánh thuộc thương hiệu (claim <code>brand_id</code>).</p>
+            <p class="muted">Thêm, sửa, xoá chi nhánh và giờ mở cửa của thương hiệu.</p>
             <a class="dash-btn dash-btn-sm" asp-area="Dashboard" asp-controller="Stores" asp-action="Index">Quản lý chi nhánh</a>
         </div>
-        <div class="dash-card dash-card-muted">
-            <h3>Đợt bán &amp; Offer</h3>
-            <p class="muted">Chưa triển khai trong phase khung.</p>
-            <span class="badge">Sắp có</span>
+        <div class="dash-card">
+            <h3>Mẫu mặt hàng</h3>
+            <p class="muted">Túi mù và món xả kho dùng lại cho mọi đợt bán.</p>
+            <a class="dash-btn dash-btn-sm" asp-area="Dashboard" asp-controller="BrandManagement" asp-action="OfferTemplates">Quản lý mẫu</a>
         </div>
-        <div class="dash-card dash-card-muted">
-            <h3>Đơn cần xử lý</h3>
-            <p class="muted">Chưa triển khai trong phase khung.</p>
-            <span class="badge">Sắp có</span>
+        <div class="dash-card">
+            <h3>Nhân viên</h3>
+            <p class="muted">Tạo tài khoản nhân viên và gán vào chi nhánh.</p>
+            <a class="dash-btn dash-btn-sm" asp-area="Dashboard" asp-controller="BrandManagement" asp-action="Staff">Quản lý nhân viên</a>
+        </div>
+        <div class="dash-card">
+            <h3>Thống kê</h3>
+            <p class="muted">Doanh thu, số đơn và lượng thực phẩm được giải cứu.</p>
+            <a class="dash-btn dash-btn-sm" asp-area="Dashboard" asp-controller="BrandManagement" asp-action="Stats">Xem thống kê</a>
+        </div>
+        <div class="dash-card">
+            <h3>Import / Export</h3>
+            <p class="muted">Nhập mẫu mặt hàng từ Excel, xuất đơn hàng của thương hiệu.</p>
+            <a class="dash-btn dash-btn-sm" asp-area="Dashboard" asp-controller="ImportExport" asp-action="Index">Mở trang</a>
+        </div>
+        <div class="dash-card">
+            <h3>Hồ sơ thương hiệu</h3>
+            <p class="muted">Tên, giới thiệu và trạng thái duyệt của thương hiệu.</p>
+            <a class="dash-btn dash-btn-sm" asp-area="Dashboard" asp-controller="BrandManagement" asp-action="Profile">Xem hồ sơ</a>
         </div>
     }
 
     @if (Model.IsStoreStaff)
     {
-        <div class="dash-card dash-card-muted">
+        <div class="dash-card">
             <h3>Đợt bán</h3>
-            <p class="muted">Wizard 4 bước — phase sau.</p>
-            <span class="badge">Sắp có</span>
+            <p class="muted">Mở đợt bán cuối ngày theo 4 bước, theo dõi số suất và đơn trong đợt.</p>
+            <a class="dash-btn dash-btn-sm" asp-area="Dashboard" asp-controller="SaleBatches" asp-action="Index">Xem đợt bán</a>
         </div>
-        <div class="dash-card dash-card-muted">
-            <h3>Đơn cần xử lý</h3>
-            <p class="muted">Phase sau.</p>
-            <span class="badge">Sắp có</span>
-        </div>
-        <div class="dash-card dash-card-muted">
+        <div class="dash-card">
             <h3>Quét QR</h3>
-            <p class="muted">Webcam + mã tay — phase sau.</p>
-            <span class="badge">Sắp có</span>
+            <p class="muted">Quét vé của khách bằng webcam, hoặc nhập mã đơn khi không quét được.</p>
+            <a class="dash-btn dash-btn-sm" asp-area="Dashboard" asp-controller="Redemptions" asp-action="Index">Mở máy quét</a>
         </div>
     }
-</div>
-
-<div class="dash-empty" style="margin-top:1.5rem;">
-    <h3>Trạng thái số liệu</h3>
-    <p class="muted">
-        Phase khung không hiển thị biểu đồ hay KPI giả.
-        Liên kết Chi nhánh / Users / Brands chỉ hoạt động sau khi có controller tương ứng (phase nghiệp vụ).
-    </p>
 </div>

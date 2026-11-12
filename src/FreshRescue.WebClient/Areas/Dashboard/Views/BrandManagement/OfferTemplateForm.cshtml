@@ -9,8 +9,7 @@
     <div>
         <h2>@ViewData["Title"]</h2>
         <p class="muted small">
-            FR-B04 · BR-07 · <code>@(Model.IsEdit ? "PUT brand/offer-templates/{id}" : "POST brand/offer-templates")</code>
-            · mẫu không có số lượng, số lượng chốt khi đưa vào đợt bán
+            Mẫu không có số lượng — số lượng và giá chốt khi đưa vào đợt bán.
         </p>
     </div>
     <a class="dash-btn-secondary" asp-action="OfferTemplates">← Danh sách mẫu</a>
@@ -112,7 +111,7 @@
     </div>
 
     <p class="muted small" style="margin-top: 1rem;">
-        BR-07: khung giảm giá của mẫu chỉ được hẹp hơn, không được rộng hơn mức sàn theo loại — túi mù 65–75%, món lẻ 40–50%.
+        Khung giảm giá của mẫu phải nằm trong mức sàn theo loại: túi mù 65–75%, món lẻ 40–50%.
     </p>
     <div style="margin-top: 1rem;">
         <button type="submit" class="dash-btn">@(Model.IsEdit ? "Lưu thay đổi" : "Tạo mẫu")</button>

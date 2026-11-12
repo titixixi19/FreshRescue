@@ -8,12 +8,7 @@
     <div>
         <h2>Đơn trong đợt</h2>
         <p class="muted small">
-            Batch: <code>@Model.SaleBatchId</code>
-            @if (!string.IsNullOrEmpty(Model.BatchName))
-            {
-                <text>· @Model.BatchName</text>
-            }
-            · <code>GET staff/sale-batches/&#123;id&#125;/orders</code>
+            @(string.IsNullOrEmpty(Model.BatchName) ? "Danh sách đơn của đợt bán." : Model.BatchName)
         </p>
     </div>
     <div class="dash-actions">
