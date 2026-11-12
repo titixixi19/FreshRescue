@@ -27,7 +27,9 @@ namespace FreshRescue.Seed;
 /// </remarks>
 public sealed class TransactionSeeder
 {
-    public const string BatchNamePrefix = "[Demo] ";
+    // Đợt của seeder nằm ở chi nhánh thuộc thương hiệu demo (chủ là brandmanagerNN@freshrescue.test).
+    private const string DemoOwnerPrefix = "brandmanager";
+    private const string DemoOwnerDomain = "@freshrescue.test";
 
     private const int StoreCount = 20;
     private const int CustomersPerBatch = 5;
@@ -77,7 +79,9 @@ public sealed class TransactionSeeder
     {
         using var scope = _root.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<FreshRescueDbContext>();
-        return await db.SaleBatches.IgnoreQueryFilters().AnyAsync(b => b.Name != null && b.Name.StartsWith(BatchNamePrefix), ct);
+        // Nhận ra lần chạy trước qua chi nhánh demo đã có đợt bán, nên tên đợt không cần gắn nhãn "[Demo]" lộ ra giao diện.
+        return await db.SaleBatches.IgnoreQueryFilters().AnyAsync(
+            b => b.Store.Brand.Owner.Email!.StartsWith(DemoOwnerPrefix) && b.Store.Brand.Owner.Email.EndsWith(DemoOwnerDomain), ct);
     }
 
     public async Task SeedAsync(CancellationToken ct = default)
@@ -390,7 +394,7 @@ public sealed class TransactionSeeder
 
     private static CreateSaleBatchRequest BuildBatchRequest(StoreInfo store, BatchTimes times, string title)
         => new(
-            BatchNamePrefix + title,
+            title,
             times.SaleStart,
             times.SaleEnd,
             times.PickupStart,
@@ -441,9 +445,11 @@ public sealed class TransactionSeeder
         using var scope = _root.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<FreshRescueDbContext>();
 
+        // Chi nhánh của thương hiệu demo (chủ là brandmanagerNN@freshrescue.test); sắp theo email chủ
+        // để chi nhánh thứ NN luôn là nơi storestaffNN làm việc, kể cả khi đổi tên hiển thị.
         var stores = await db.Stores
-            .Where(s => s.Name.StartsWith("Chi nhánh Demo"))
-            .OrderBy(s => s.Name)
+            .Where(s => s.Brand.Owner.Email!.StartsWith(DemoOwnerPrefix) && s.Brand.Owner.Email.EndsWith(DemoOwnerDomain))
+            .OrderBy(s => s.Brand.Owner.Email)
             .Select(s => new { s.Id, s.Name, s.BrandId, OwnerUserId = s.Brand.OwnerUserId })
             .ToListAsync(ct);
 

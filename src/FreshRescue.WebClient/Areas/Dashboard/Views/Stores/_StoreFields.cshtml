@@ -1,0 +1,76 @@
+@model FreshRescue.WebClient.Areas.Dashboard.Models.StoreFormViewModel
+
+<div asp-validation-summary="ModelOnly" class="dash-alert dash-alert-err"></div>
+
+<div class="dash-form-grid">
+    <div class="dash-field dash-field-full">
+        <label asp-for="Name">Tên chi nhánh *</label>
+        <input asp-for="Name" class="dash-input" />
+        <span asp-validation-for="Name" class="field-error"></span>
+    </div>
+
+    <div class="dash-field dash-field-full">
+        <label asp-for="AddressLine">Địa chỉ *</label>
+        <input asp-for="AddressLine" class="dash-input" placeholder="Số nhà, tên đường" />
+        <span asp-validation-for="AddressLine" class="field-error"></span>
+    </div>
+
+    <div class="dash-field">
+        <label asp-for="Ward">Phường/Xã</label>
+        <input asp-for="Ward" class="dash-input" />
+        <span asp-validation-for="Ward" class="field-error"></span>
+    </div>
+    <div class="dash-field">
+        <label asp-for="District">Quận/Huyện</label>
+        <input asp-for="District" class="dash-input" />
+        <span asp-validation-for="District" class="field-error"></span>
+    </div>
+    <div class="dash-field">
+        <label asp-for="City">Thành phố *</label>
+        <input asp-for="City" class="dash-input" />
+        <span asp-validation-for="City" class="field-error"></span>
+    </div>
+    <div class="dash-field">
+        <label asp-for="Phone">Số điện thoại</label>
+        <input asp-for="Phone" class="dash-input" />
+        <span asp-validation-for="Phone" class="field-error"></span>
+    </div>
+
+    <div class="dash-field">
+        <label asp-for="Latitude">Vĩ độ</label>
+        <input asp-for="Latitude" type="number" step="any" class="dash-input" />
+        <span asp-validation-for="Latitude" class="field-error"></span>
+    </div>
+    <div class="dash-field">
+        <label asp-for="Longitude">Kinh độ</label>
+        <input asp-for="Longitude" type="number" step="any" class="dash-input" />
+        <span asp-validation-for="Longitude" class="field-error"></span>
+    </div>
+
+    <div class="dash-field">
+        <label asp-for="OpenTime">Giờ mở cửa</label>
+        <input asp-for="OpenTime" type="time" class="dash-input" />
+        <span asp-validation-for="OpenTime" class="field-error"></span>
+    </div>
+    <div class="dash-field">
+        <label asp-for="CloseTime">Giờ đóng cửa</label>
+        <input asp-for="CloseTime" type="time" class="dash-input" />
+        <span asp-validation-for="CloseTime" class="field-error"></span>
+    </div>
+
+    @if (Model.Id is not null)
+    {
+        <div class="dash-field">
+            <label asp-for="Status">Trạng thái</label>
+            <select asp-for="Status" class="dash-input">
+                <option value="Active">Đang hoạt động</option>
+                <option value="Inactive">Ngừng hoạt động</option>
+            </select>
+            <span asp-validation-for="Status" class="field-error"></span>
+        </div>
+    }
+</div>
+
+<p class="muted small" style="margin-top: 1rem;">
+    Toạ độ dùng để khách tìm "Cửa hàng gần tôi" — có thể lấy bằng cách nhấp chuột phải vào vị trí trên Google Maps.
+</p>

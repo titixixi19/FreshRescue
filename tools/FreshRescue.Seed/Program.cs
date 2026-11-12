@@ -111,7 +111,7 @@ if (SeedImages.EnsurePlaceholders() is null)
 
 if (await transactions.AlreadySeededAsync())
 {
-    Console.WriteLine("Seeder pha 2 đã chạy trước đó (có đợt bán '[Demo] ...'), bỏ qua.");
+    Console.WriteLine("Seeder pha 2 đã chạy trước đó (chi nhánh demo đã có đợt bán), bỏ qua. Muốn dựng lại thì xoá DB rồi seed lại.");
 }
 else
 {
