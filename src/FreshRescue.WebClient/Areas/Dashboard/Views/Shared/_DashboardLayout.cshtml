@@ -21,10 +21,10 @@
 <body class="dash-body">
     <div class="dash-shell">
         <aside class="dash-sidebar" id="dashSidebar">
-            <div class="dash-brand">
+            <a class="dash-brand" asp-area="Dashboard" asp-controller="Home" asp-action="Index" title="Về trang Tổng quan">
                 <span class="dash-brand-mark">FR</span>
                 <span class="dash-brand-text">FreshRescue</span>
-            </div>
+            </a>
 
             <nav class="dash-nav" aria-label="Menu Dashboard">
                 <a class="dash-nav-item @(currentController == "Home" && currentAction == "Index" ? "active" : null)"
@@ -127,6 +127,8 @@
                             }
                         </div>
                     </div>
+                    @* Admin/Brand/Staff không mua hàng nhưng cần xem kết quả duyệt, món và chi nhánh hiện với khách thế nào. *@
+                    <a class="dash-site-link" asp-area="Customer" asp-controller="Storefront" asp-action="Index">↗ Xem trang khách</a>
                     <form asp-area="" asp-controller="Account" asp-action="Logout" method="post">
                         @Html.AntiForgeryToken()
                         <button type="submit" class="dash-btn-logout">Đăng xuất</button>

@@ -5,9 +5,9 @@
 
 <div class="dash-toolbar">
     <div>
-        <h2>Xác nhận nhận hàng (Redeem QR)</h2>
+        <h2>Xác nhận nhận hàng</h2>
         <p class="muted small">
-            Camera gửi <code>token</code> · nhập tay gửi <code>orderCode</code> (03 §6.3).
+            Quét mã QR trên vé của khách, hoặc nhập mã đơn khi không quét được.
         </p>
     </div>
 </div>
@@ -59,7 +59,7 @@ else
         <form asp-action="Redeem" method="post" class="dash-form" id="manual-redeem-form">
             @Html.AntiForgeryToken()
             <div class="dash-field">
-                <label asp-for="ManualCode">Mã đơn (orderCode)</label>
+                <label asp-for="ManualCode">Mã đơn</label>
                 <input asp-for="ManualCode" class="dash-input" placeholder="VD: FR-8A3K9MQ2" autocomplete="off" />
                 <span asp-validation-for="ManualCode" class="field-error"></span>
             </div>
