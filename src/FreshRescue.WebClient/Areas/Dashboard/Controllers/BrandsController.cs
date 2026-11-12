@@ -120,13 +120,24 @@ public class BrandsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> SuspendAsync(
         Guid id,
+        string? reason,
         string? status,
         int page = 1,
         CancellationToken cancellationToken = default)
     {
+        // API bắt buộc lý do (SuspendBrandRequestValidator) — gửi body rỗng là luôn nhận 400.
+        if (string.IsNullOrWhiteSpace(reason))
+        {
+            TempData["Error"] = "Bắt buộc nhập lý do tạm khoá.";
+            return RedirectToAction("Index", new { status, page });
+        }
+
         try
         {
-            await _api.PostAsync($"admin/brands/{id}/suspend", null, cancellationToken);
+            await _api.PostAsync(
+                $"admin/brands/{id}/suspend",
+                new SuspendBrandRequest { Reason = reason.Trim() },
+                cancellationToken);
             TempData["Success"] = "Đã tạm khoá thương hiệu.";
         }
         catch (ApiException ex)

@@ -9,11 +9,13 @@
 
 @section Head {
     <link rel="stylesheet" href="~/css/customer.css" asp-append-version="true" />
+    @* Nạp trong <head> vì site.js vẽ mọi [data-qr-token] ngay khi chạy, trước section Scripts;
+       nạp muộn thì trang vé chỉ hiện token dạng chữ. *@
+    <script src="~/lib/qrcode-generator/qrcode.min.js"></script>
     @await RenderSectionAsync("Head", required: false)
 }
 
 @section Scripts {
-    <script src="~/lib/qrcode-generator/qrcode.min.js"></script>
     <script src="~/js/checkout.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 }

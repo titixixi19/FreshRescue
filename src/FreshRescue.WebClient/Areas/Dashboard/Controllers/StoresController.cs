@@ -12,7 +12,7 @@ namespace FreshRescue.WebClient.Areas.Dashboard.Controllers;
 /// Không dùng GET brand/stores/{id} — endpoint không có trong contract.
 /// </summary>
 [Area("Dashboard")]
-[Authorize(Roles = AppRoles.Admin + "," + AppRoles.BrandManager)]
+[Authorize(Roles = AppRoles.BrandManager)]
 public class StoresController : Controller
 {
     private readonly IApiClient _api;
